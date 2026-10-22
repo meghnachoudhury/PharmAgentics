@@ -1,0 +1,587 @@
+{
+  "dataset_name": "PharmAgentics Synthetic Commercial Universe (v1)",
+  "seed": 7,
+  "temporal_grain": "weekly Monday-start / 104 weeks",
+  "synthetic": true,
+  "no_real_patients": true,
+  "rx_metric_definitions": {
+    "trx": "Count of all dispensing events, including new and refills; synthetic operational definition.",
+    "nrx": "Subset of TRx counted as new prescriptions; no individual patients modeled.",
+    "nbrx": "Subset of NRx counted as new-to-brand prescriptions by synthetic definition (requires washout in real claims).",
+    "trx_30day_equivalent": "Synthetic count of 30-day normalized fills; actual CMS standardization uses claim days supply and caps.",
+    "market_share": "product TRx / basket TRx, same week and territory; no extrapolation to US market."
+  },
+  "tables": {
+    "rx_weekly": {
+      "description": "Raw observed weekly aggregate prescription counts. Contains deliberately injected data feed anomalies: never skip data-quality validation.",
+      "rows": 106467,
+      "columns": [
+        {
+          "name": "week_start",
+          "dtype": "object"
+        },
+        {
+          "name": "territory_id",
+          "dtype": "object"
+        },
+        {
+          "name": "region",
+          "dtype": "object"
+        },
+        {
+          "name": "plan_id",
+          "dtype": "object"
+        },
+        {
+          "name": "payer_channel",
+          "dtype": "object"
+        },
+        {
+          "name": "hcp_specialty",
+          "dtype": "object"
+        },
+        {
+          "name": "product_id",
+          "dtype": "object"
+        },
+        {
+          "name": "trx",
+          "dtype": "int32"
+        },
+        {
+          "name": "nrx",
+          "dtype": "int32"
+        },
+        {
+          "name": "nbrx",
+          "dtype": "int32"
+        },
+        {
+          "name": "trx_30day_equivalent",
+          "dtype": "float64"
+        },
+        {
+          "name": "share_90day_fills_proxy",
+          "dtype": "float64"
+        },
+        {
+          "name": "source",
+          "dtype": "object"
+        }
+      ]
+    },
+    "dim_product": {
+      "description": "Fictional product metadata only; product_ndc explicitly not an actual NDC.",
+      "rows": 4,
+      "columns": [
+        {
+          "name": "product_id",
+          "dtype": "object"
+        },
+        {
+          "name": "product_name",
+          "dtype": "object"
+        },
+        {
+          "name": "role",
+          "dtype": "object"
+        },
+        {
+          "name": "fictional_product",
+          "dtype": "bool"
+        },
+        {
+          "name": "therapeutic_area",
+          "dtype": "object"
+        },
+        {
+          "name": "dosage_form",
+          "dtype": "object"
+        },
+        {
+          "name": "route",
+          "dtype": "object"
+        },
+        {
+          "name": "product_ndc",
+          "dtype": "object"
+        }
+      ]
+    },
+    "dim_plan": {
+      "description": "Synthetic region-plan/channel crosswalk; supports plan-level access join.",
+      "rows": 64,
+      "columns": [
+        {
+          "name": "plan_id",
+          "dtype": "object"
+        },
+        {
+          "name": "territory_id",
+          "dtype": "object"
+        },
+        {
+          "name": "region",
+          "dtype": "object"
+        },
+        {
+          "name": "payer_channel",
+          "dtype": "object"
+        },
+        {
+          "name": "plan_weight",
+          "dtype": "float64"
+        },
+        {
+          "name": "covered_lives_weight",
+          "dtype": "float64"
+        },
+        {
+          "name": "is_synthetic",
+          "dtype": "bool"
+        }
+      ]
+    },
+    "dim_territory": {
+      "description": "Synthetic reporting territories and regional groupings.",
+      "rows": 8,
+      "columns": [
+        {
+          "name": "territory_id",
+          "dtype": "object"
+        },
+        {
+          "name": "region",
+          "dtype": "object"
+        },
+        {
+          "name": "population_weight",
+          "dtype": "float64"
+        }
+      ]
+    },
+    "dim_specialty": {
+      "description": "Synthetic HCP specialty segments, no physician-level or patient-level data.",
+      "rows": 4,
+      "columns": [
+        {
+          "name": "hcp_specialty",
+          "dtype": "object"
+        },
+        {
+          "name": "specialty_weight",
+          "dtype": "float64"
+        }
+      ]
+    },
+    "market_basket": {
+      "description": "Market share competitor basket. Launched product becomes active on launch date.",
+      "rows": 4,
+      "columns": [
+        {
+          "name": "product_id",
+          "dtype": "object"
+        },
+        {
+          "name": "effective_start",
+          "dtype": "object"
+        },
+        {
+          "name": "effective_end",
+          "dtype": "object"
+        },
+        {
+          "name": "in_basket_flag",
+          "dtype": "bool"
+        },
+        {
+          "name": "market_id",
+          "dtype": "object"
+        },
+        {
+          "name": "launch_date",
+          "dtype": "object"
+        }
+      ]
+    },
+    "access_status_monthly": {
+      "description": "Synthetic formulary coverage tier, PA, step therapy status at month/plan/product grain.",
+      "rows": 6400,
+      "columns": [
+        {
+          "name": "month",
+          "dtype": "object"
+        },
+        {
+          "name": "plan_id",
+          "dtype": "object"
+        },
+        {
+          "name": "territory_id",
+          "dtype": "object"
+        },
+        {
+          "name": "payer_channel",
+          "dtype": "object"
+        },
+        {
+          "name": "product_id",
+          "dtype": "object"
+        },
+        {
+          "name": "covered",
+          "dtype": "int64"
+        },
+        {
+          "name": "formulary_tier",
+          "dtype": "int64"
+        },
+        {
+          "name": "prior_authorization",
+          "dtype": "int64"
+        },
+        {
+          "name": "step_therapy",
+          "dtype": "int64"
+        },
+        {
+          "name": "quantity_limit",
+          "dtype": "int64"
+        },
+        {
+          "name": "covered_lives_weight",
+          "dtype": "float64"
+        }
+      ]
+    },
+    "promo_activity": {
+      "description": "Aggregated territory x product x week promotion, no identifiable representative records.",
+      "rows": 3328,
+      "columns": [
+        {
+          "name": "week_start",
+          "dtype": "object"
+        },
+        {
+          "name": "territory_id",
+          "dtype": "object"
+        },
+        {
+          "name": "product_id",
+          "dtype": "object"
+        },
+        {
+          "name": "rep_calls_aggregated",
+          "dtype": "int64"
+        },
+        {
+          "name": "digital_impressions",
+          "dtype": "int64"
+        },
+        {
+          "name": "samples_units",
+          "dtype": "int64"
+        },
+        {
+          "name": "speaker_programs",
+          "dtype": "int64"
+        },
+        {
+          "name": "rep_vacancy_count_aggregated",
+          "dtype": "int64"
+        }
+      ]
+    },
+    "inventory_weekly": {
+      "description": "Synthetic territory x product x week supply constraints to explain inventory-driven misses.",
+      "rows": 3328,
+      "columns": [
+        {
+          "name": "week_start",
+          "dtype": "object"
+        },
+        {
+          "name": "territory_id",
+          "dtype": "object"
+        },
+        {
+          "name": "product_id",
+          "dtype": "object"
+        },
+        {
+          "name": "inventory_fill_rate",
+          "dtype": "float64"
+        },
+        {
+          "name": "distribution_backorder_rate",
+          "dtype": "float64"
+        }
+      ]
+    },
+    "calendar": {
+      "description": "Holiday and business-day weekly controls.",
+      "rows": 104,
+      "columns": [
+        {
+          "name": "week_start",
+          "dtype": "object"
+        },
+        {
+          "name": "holiday_flag",
+          "dtype": "int64"
+        },
+        {
+          "name": "holiday_name",
+          "dtype": "object"
+        },
+        {
+          "name": "business_days",
+          "dtype": "int64"
+        },
+        {
+          "name": "plan_year_reset",
+          "dtype": "int64"
+        },
+        {
+          "name": "week_end",
+          "dtype": "object"
+        }
+      ]
+    },
+    "feed_metadata": {
+      "description": "Weekly territory-level source delivery counts, freshness, restatement flags; includes intentionally defective weeks.",
+      "rows": 832,
+      "columns": [
+        {
+          "name": "week_start",
+          "dtype": "object"
+        },
+        {
+          "name": "territory_id",
+          "dtype": "object"
+        },
+        {
+          "name": "expected_rows",
+          "dtype": "int64"
+        },
+        {
+          "name": "received_rows",
+          "dtype": "int64"
+        },
+        {
+          "name": "row_count_delta",
+          "dtype": "int64"
+        },
+        {
+          "name": "panel_coverage_ratio",
+          "dtype": "float64"
+        },
+        {
+          "name": "loaded_at_utc",
+          "dtype": "object"
+        },
+        {
+          "name": "expected_lag_days",
+          "dtype": "int64"
+        },
+        {
+          "name": "actual_lag_days",
+          "dtype": "float64"
+        },
+        {
+          "name": "schema_version",
+          "dtype": "object"
+        },
+        {
+          "name": "source",
+          "dtype": "object"
+        },
+        {
+          "name": "restatement_flag",
+          "dtype": "int64"
+        },
+        {
+          "name": "restatement_recorded_at",
+          "dtype": "object"
+        },
+        {
+          "name": "status",
+          "dtype": "object"
+        }
+      ]
+    },
+    "restatement_log": {
+      "description": "Versioned sample of revised historical metrics, for idempotent reprocessing exercises.",
+      "rows": 32,
+      "columns": [
+        {
+          "name": "week_start",
+          "dtype": "object"
+        },
+        {
+          "name": "territory_id",
+          "dtype": "object"
+        },
+        {
+          "name": "plan_id",
+          "dtype": "object"
+        },
+        {
+          "name": "hcp_specialty",
+          "dtype": "object"
+        },
+        {
+          "name": "product_id",
+          "dtype": "object"
+        },
+        {
+          "name": "trx_revised",
+          "dtype": "int32"
+        },
+        {
+          "name": "nrx_revised",
+          "dtype": "int32"
+        },
+        {
+          "name": "nbrx_revised",
+          "dtype": "int32"
+        },
+        {
+          "name": "trx_prior",
+          "dtype": "int64"
+        },
+        {
+          "name": "nrx_prior",
+          "dtype": "int64"
+        },
+        {
+          "name": "nbrx_prior",
+          "dtype": "int64"
+        },
+        {
+          "name": "revised_at",
+          "dtype": "object"
+        },
+        {
+          "name": "revision_reason",
+          "dtype": "object"
+        }
+      ]
+    },
+    "market_share_weekly": {
+      "description": "Derived Rx market-share table at week x territory x product grain; flagged when underlying feed invalid.",
+      "rows": 3328,
+      "columns": [
+        {
+          "name": "week_start",
+          "dtype": "object"
+        },
+        {
+          "name": "territory_id",
+          "dtype": "object"
+        },
+        {
+          "name": "product_id",
+          "dtype": "object"
+        },
+        {
+          "name": "trx",
+          "dtype": "int32"
+        },
+        {
+          "name": "nrx",
+          "dtype": "int32"
+        },
+        {
+          "name": "nbrx",
+          "dtype": "int32"
+        },
+        {
+          "name": "market_trx",
+          "dtype": "int32"
+        },
+        {
+          "name": "market_share",
+          "dtype": "float64"
+        },
+        {
+          "name": "data_quality_status",
+          "dtype": "object"
+        }
+      ]
+    },
+    "forecast_vs_actual_weekly": {
+      "description": "Week x territory (plus NATIONAL) four-week-ahead forecast vs observed actual TRx for index brand.",
+      "rows": 936,
+      "columns": [
+        {
+          "name": "forecast_issue_week",
+          "dtype": "object"
+        },
+        {
+          "name": "week_start",
+          "dtype": "object"
+        },
+        {
+          "name": "territory_id",
+          "dtype": "object"
+        },
+        {
+          "name": "product_id",
+          "dtype": "object"
+        },
+        {
+          "name": "forecast_trx",
+          "dtype": "int64"
+        },
+        {
+          "name": "actual_trx",
+          "dtype": "int64"
+        },
+        {
+          "name": "variance_trx",
+          "dtype": "int64"
+        },
+        {
+          "name": "variance_pct",
+          "dtype": "float64"
+        },
+        {
+          "name": "actual_is_provisional",
+          "dtype": "int64"
+        },
+        {
+          "name": "horizon_weeks",
+          "dtype": "int64"
+        }
+      ]
+    }
+  },
+  "source_alignment": [
+    {
+      "source": "CMS Medicare Part D Prescribers by Provider and Drug",
+      "url": "https://data.cms.gov/provider-summary-by-type-of-service/medicare-part-d-prescribers/medicare-part-d-prescribers-by-provider-and-drug",
+      "actual_grain": "Annual x prescribing provider x drug",
+      "used_for": "Structural reference for count/standardized fills and specialty concepts only; no numerical parameters fitted."
+    },
+    {
+      "source": "CMS Monthly Part D Formulary",
+      "url": "https://data.cms.gov/provider-summary-by-type-of-service/medicare-part-d-prescribers/monthly-prescription-drug-plan-formulary-and-pharmacy-network-information",
+      "actual_grain": "Monthly x plan x drug(NDC)",
+      "used_for": "Structural reference for formulary coverage, tier, PA, step therapy, quantity limit; no real plan IDs or numeric calibration; commercial/Medicaid/cash categories are invented outside the CMS Part D source."
+    },
+    {
+      "source": "openFDA NDC",
+      "url": "https://open.fda.gov/apis/drug/ndc/",
+      "actual_grain": "NDC product registration metadata",
+      "used_for": "Informed product/dosage metadata categories; no real NDCs used; not a sales/claim source."
+    }
+  ],
+  "limitations": [
+    "No public reference commercial sample uploaded; numeric volumes, shares, noise, seasonality, and event sizes are deliberately assumed.",
+    "CMS Part D annual Medicare claims cannot provide weekly all-payer NRx/NBRx, market share, rep activity, or inventory.",
+    "Fictional names, plan IDs and therapy class; no real clinical or commercial factual statements supported.",
+    "observed rx feed includes intentional data-quality artifacts; market share and forecast actuals are provisional on those dates.",
+    "evaluation truth is in a separate package excluded from agent-visible data."
+  ]
+}

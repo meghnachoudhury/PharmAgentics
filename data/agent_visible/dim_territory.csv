@@ -1,0 +1,9 @@
+territory_id,region,population_weight
+NEW_ENGLAND,Northeast,0.78
+MID_ATLANTIC,Northeast,1.33
+GREAT_LAKES,Midwest,1.25
+SOUTHEAST,South,1.34
+SOUTH_CENTRAL,South,1.18
+MOUNTAIN,West,0.68
+PACIFIC,West,1.42
+NORTHWEST,West,0.77
