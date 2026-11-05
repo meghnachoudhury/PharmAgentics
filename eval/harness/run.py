@@ -9,7 +9,7 @@ import mlflow
 
 from .cases import golden_fingerprint, load_cases
 from .paths import EXPERIMENT, MLFLOW_DIR, tracking_uri
-from .scorers import DETERMINISTIC, EVIDENCE, judge_scorers
+from .scorers import DETERMINISTIC, EVIDENCE, TRAJECTORY, judge_scorers
 from .systems import SYSTEMS
 from .versions import code_version, data_fingerprint
 
@@ -26,12 +26,14 @@ def configure(uri: str | None = None, experiment: str = EXPERIMENT, artifacts: P
 
 def run_suite(system: str, lane: str = "all", reruns: int = 1, judge: str | None = None,
               stories: list[str] | None = None, uri: str | None = None, experiment: str = EXPERIMENT,
-              artifacts: Path | None = None) -> str:
+              artifacts: Path | None = None, model: str | None = None) -> str:
     cases = load_cases(lane, stories)
     if not cases:
         raise SystemExit("No golden cases match; run `python -m eval import-stories` first.")
-    sut = SYSTEMS[system](cases)
-    scorers = DETERMINISTIC + (EVIDENCE if sut.returns_evidence else []) + (judge_scorers(judge) if judge else [])
+    sut = SYSTEMS[system](cases, model=model) if model else SYSTEMS[system](cases)
+    scorers = (DETERMINISTIC + (EVIDENCE if sut.returns_evidence else [])
+               + (TRAJECTORY if getattr(sut, "returns_trajectory", False) else []))
+    judges = judge_scorers(judge) if judge else []
     os.environ["PHARMAGENTICS_TRACING"] = "1"  # stage and tool spans inside the system under test
     # One prediction at a time: parallel trace writes to the SQLite store lose traces to lock
     # contention, and a local model serves one request at a time anyway.
@@ -60,17 +62,22 @@ def run_suite(system: str, lane: str = "all", reruns: int = 1, judge: str | None
         "lane": lane, "cases": len(cases), "reruns": reruns, "judge": judge or "off",
         "golden_version": golden_fingerprint(None if lane == "all" else lane),
         "data_version": data_fingerprint(), "code_version": code_version(),
+        **getattr(sut, "params", {}),  # e.g. an agent's configuration version
     }
     per_rerun: list[dict] = []
     with mlflow.start_run(run_name=f"{system} · {lane}") as parent:
         mlflow.log_params(params)
         mlflow.set_tags({"suite": "golden", "system": system, "lane": lane})
         for i in range(1, reruns + 1):
-            with mlflow.start_run(run_name=f"{system} · {lane} · rerun {i}", nested=True):
+            with mlflow.start_run(run_name=f"{system} · {lane} · rerun {i}", nested=True) as child:
                 mlflow.log_params({**params, "rerun": i})
                 errors.clear()
                 result = mlflow.genai.evaluate(data=rows, predict_fn=predict_fn, scorers=scorers)
                 metrics = {k: float(v) for k, v in result.metrics.items() if isinstance(v, (int, float))}
+                if hasattr(sut, "runtime"):  # before the judge, which may evict a local agent model
+                    mlflow.set_tags(sut.runtime())
+                if judges:
+                    metrics.update(_judge_rerun(child.info.run_id, judges, len(rows)))
                 metrics["run_errors/mean"] = float(len(errors))  # failure tag "run error" (Evaluation Pack section 8)
                 mlflow.log_metric("run_errors/mean", float(len(errors)))
                 if errors:
@@ -88,6 +95,19 @@ def run_suite(system: str, lane: str = "all", reruns: int = 1, judge: str | None
         values = [m[key] for m in per_rerun if key in m]
         print(f"  {key:<40} {statistics.fmean(values):.3f}")
     return parent.info.run_id
+
+
+def _judge_rerun(run_id: str, judges: list, expected: int) -> dict:
+    """Judge a rerun's traces once every case is answered. MLflow 3.17 otherwise scores one case while it
+    predicts the next, and on one small GPU the judge and a local agent model then swap on every request.
+    Same experiment, so MLflow links the existing traces instead of copying them; the judge reads each
+    trace's inputs, outputs and the expectations phase one logged on it."""
+    traces = mlflow.search_traces(run_id=run_id, return_type="list")
+    traces = [t for t in traces if t.info.trace_metadata.get("mlflow.sourceRun") == run_id]
+    if len(traces) != expected:
+        print(f"  judge: found {len(traces)} traces for {expected} cases in run {run_id}")
+    result = mlflow.genai.evaluate(data=[{"trace": t} for t in traces], scorers=judges)
+    return {k: float(v) for k, v in result.metrics.items() if isinstance(v, (int, float))}
 
 
 def gate(candidate: str, baseline: str, uri: str | None = None) -> int:

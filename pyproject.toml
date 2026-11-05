@@ -16,7 +16,12 @@ dev = [
 ]
 # The Briefing lane's fresh scripted baseline and, later, the agent.
 agent = [
+    "agent-framework-core>=1.24.0",
+    "agent-framework-gemini>=1.0.0b261030",
+    "agent-framework-ollama>=1.0.0b261030",
+    "agent-framework-orchestrations>=1.4.1",
     "google-genai>=1.0",
+    "mcp>=2.3.0",
     "pydantic>=2.7",
     "pyyaml>=6",
 ]

@@ -6,7 +6,7 @@ import pytest
 from eval.harness import numbers
 from eval.harness.cases import load_cases
 from eval.harness.scorers import (DETERMINISTIC, governed_terms, must_not_say, no_individual_rep,
-                                  numbers_match_golden)
+                                  numbers_match_golden, numbers_traced)
 
 EXPECT = {
     "expected_response": "National BXA TRx was 3,860, down 18.4% from 4,729 the week before.",
@@ -73,3 +73,11 @@ def test_golden_answers_pass_every_code_check(case):
         fb = run_scorer(s, inputs={"question": case.question}, outputs=answer(case.reference_answer),
                         expectations=case.expectations())
         assert fb.value in (True, 1.0), f"{s.name}: {fb.rationale}"
+
+
+def test_numbers_traced_counts_an_unfilled_claim_token():
+    claims = [{"value": "19.5%", "evidence_id": "e1"}]
+    clean = numbers_traced.run(outputs={"answer": "The headline total is down 19.5%.", "claims": claims, "evidence": []})
+    left = numbers_traced.run(outputs={"answer": "Down 19.5%. {c8} calendar effects are present.", "claims": claims, "evidence": []})
+    assert clean.value == 1.0
+    assert left.value == 0.5 and "{c8}" in left.rationale

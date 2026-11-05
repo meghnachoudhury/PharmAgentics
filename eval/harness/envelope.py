@@ -24,3 +24,6 @@ class AnswerEnvelope(BaseModel):
     claims: list[Claim] = []
     evidence: list[Evidence] = []
     abstained: bool = False
+    # How an agent got there (tools called, LLM calls, tokens, cap hit). White-box and report-only:
+    # no eval item scores it (black-box rule); it feeds the autonomy ledger's trajectory evidence.
+    trajectory: dict | None = None
