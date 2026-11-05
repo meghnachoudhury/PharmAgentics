@@ -113,17 +113,24 @@ def claims_reconcile(outputs) -> Feedback:
                     rationale=f"{ok} of {len(claims)} claims reconcile" + (f"; failed: {'; '.join(bad[:8])}" if bad else "."))
 
 
+_UNFILLED = re.compile(r"\{c\d+\}")
+
+
 @scorer(name="numbers_traced",
         description="Share of numbers in the answer text that are filled claims with evidence (EV-6.1).")
 def numbers_traced(outputs) -> Feedback:
     claims, _ = _claims(outputs)
-    found = extract(_answer(outputs))
-    if not found:
+    text = _answer(outputs)
+    # A claim token left in the text is a number no code filled: a model wrote a token that does not exist.
+    unfilled = _UNFILLED.findall(text)
+    found = extract(_UNFILLED.sub(" ", text))
+    total = len(found) + len(unfilled)
+    if not total:
         return Feedback(value=1.0, rationale="The answer states no numbers.")
     known = [n for n in (parse_token(c["value"]) for c in claims) if n]
-    loose = [n.text for n in found if not any(same(n, k) for k in known)]
-    return Feedback(value=round(1 - len(loose) / len(found), 4),
-                    rationale=f"{len(found) - len(loose)} of {len(found)} numbers trace to a claim"
+    loose = [n.text for n in found if not any(same(n, k) for k in known)] + unfilled
+    return Feedback(value=round(1 - len(loose) / total, 4),
+                    rationale=f"{total - len(loose)} of {total} numbers trace to a claim"
                               + (f"; untraced: {', '.join(loose[:8])}" if loose else "."))
 
 
@@ -142,6 +149,46 @@ def links_resolve(outputs) -> Feedback:
 
 
 EVIDENCE = [claims_reconcile, numbers_traced, links_resolve]
+
+
+# Trajectory: white-box and report-only, never gated. For agent systems that return `trajectory`.
+def _trajectory(outputs) -> dict:
+    return (outputs or {}).get("trajectory") or {}
+
+
+@scorer(name="tool_calls", description="MCP tool calls the agents made (report only).")
+def tool_calls(outputs) -> Feedback:
+    tools = _trajectory(outputs).get("tools", [])
+    return Feedback(value=len(tools), rationale=" > ".join(tools) or "No tool call.")
+
+
+@scorer(name="llm_calls", description="Model calls across manager and specialists (report only).")
+def llm_calls(outputs) -> Feedback:
+    t = _trajectory(outputs)
+    tokens = t.get("tokens", {})
+    return Feedback(value=t.get("llm_calls", 0),
+                    rationale=f"{tokens.get('input', 0)} input and {tokens.get('output', 0)} output tokens; {t.get('model', '?')}.")
+
+
+@scorer(name="seconds", description="Wall time of one answer (report only).")
+def seconds(outputs) -> Feedback:
+    return Feedback(value=_trajectory(outputs).get("seconds", 0.0))
+
+
+@scorer(name="hit_cap", description="The team hit its round cap and the brief came from the reports so far (report only).")
+def hit_cap(outputs) -> Feedback:
+    why = _trajectory(outputs).get("capped")
+    return Feedback(value=bool(why), rationale=f"Stopped early: {why}." if why else "Finished within its caps.")
+
+
+@scorer(name="needed_revision", description="The draft had digits outside claim tokens and got one revision (report only).")
+def needed_revision(outputs) -> Feedback:
+    t = _trajectory(outputs)
+    left = t.get("digits_outside_tokens") or []
+    return Feedback(value=bool(t.get("revised")), rationale=("Still outside tokens: " + ", ".join(left[:8])) if left else None)
+
+
+TRAJECTORY = [tool_calls, llm_calls, seconds, hit_cap, needed_revision]
 
 
 def judge_scorers(model: str) -> list:

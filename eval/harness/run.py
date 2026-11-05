@@ -9,7 +9,7 @@ import mlflow
 
 from .cases import golden_fingerprint, load_cases
 from .paths import EXPERIMENT, MLFLOW_DIR, tracking_uri
-from .scorers import DETERMINISTIC, EVIDENCE, judge_scorers
+from .scorers import DETERMINISTIC, EVIDENCE, TRAJECTORY, judge_scorers
 from .systems import SYSTEMS
 from .versions import code_version, data_fingerprint
 
@@ -26,12 +26,13 @@ def configure(uri: str | None = None, experiment: str = EXPERIMENT, artifacts: P
 
 def run_suite(system: str, lane: str = "all", reruns: int = 1, judge: str | None = None,
               stories: list[str] | None = None, uri: str | None = None, experiment: str = EXPERIMENT,
-              artifacts: Path | None = None) -> str:
+              artifacts: Path | None = None, model: str | None = None) -> str:
     cases = load_cases(lane, stories)
     if not cases:
         raise SystemExit("No golden cases match; run `python -m eval import-stories` first.")
-    sut = SYSTEMS[system](cases)
-    scorers = DETERMINISTIC + (EVIDENCE if sut.returns_evidence else []) + (judge_scorers(judge) if judge else [])
+    sut = SYSTEMS[system](cases, model=model) if model else SYSTEMS[system](cases)
+    scorers = (DETERMINISTIC + (EVIDENCE if sut.returns_evidence else [])
+               + (TRAJECTORY if getattr(sut, "returns_trajectory", False) else []) + (judge_scorers(judge) if judge else []))
     os.environ["PHARMAGENTICS_TRACING"] = "1"  # stage and tool spans inside the system under test
     # One prediction at a time: parallel trace writes to the SQLite store lose traces to lock
     # contention, and a local model serves one request at a time anyway.
@@ -60,6 +61,7 @@ def run_suite(system: str, lane: str = "all", reruns: int = 1, judge: str | None
         "lane": lane, "cases": len(cases), "reruns": reruns, "judge": judge or "off",
         "golden_version": golden_fingerprint(None if lane == "all" else lane),
         "data_version": data_fingerprint(), "code_version": code_version(),
+        **getattr(sut, "params", {}),  # e.g. an agent's configuration version
     }
     per_rerun: list[dict] = []
     with mlflow.start_run(run_name=f"{system} · {lane}") as parent:

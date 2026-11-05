@@ -18,8 +18,8 @@ This file is the single set of instructions for coding agents; `AGENTS.md` only 
 ## Layout
 
 ```text
-src/pharmagentics/             shared data layer and orchestration: data/ (loader, checks), tools/ (governed read-only queries, evidence, claim tokens, the driver checks, question parser), tracing.py
-agents/brand-briefing/         Briefing lane; briefing_baseline/ is its scripted baseline
+src/pharmagentics/             shared data layer and orchestration: data/ (loader, checks), tools/ (governed read-only queries, evidence, claim tokens, the driver checks, question parser, stage steps), mcp_server/ (the tools over MCP; Proposed as the shared interface, S9), llm.py (agent model clients), tracing.py
+agents/brand-briefing/         Briefing lane; briefing_baseline/ is its scripted baseline, briefing_lowcode/ its low-code build (Magentic-One over the MCP server)
 agents/forecast-explanation/   Forecast lane; forecast_baseline/ is the scripted baseline BL-0 (draft for Alvin and Sienna); the rest of Alvin's code is on the alvin-forecast-explanation branch until it merges
 eval/                          golden set (42 cases), scorers, controls, MLflow store (eval/mlflow/, git-ignored)
 SoT/                           dated Drive exports of the source docs; drops git-ignored, README and check.py committed
@@ -65,6 +65,7 @@ Dependencies are managed with uv. `pyproject.toml` declares them, `uv.lock` pins
 - Tests: `uv run pytest` (data-foundation tests, `tests/test_tools.py` and `eval/tests/`)
 - Golden set: `uv run python -m eval check` validates the 42 cases and recomputes every fact from the data
 - Baselines: `uv run python -m eval run --system briefing_scripted --lane briefing` and `--system forecast_scripted --lane forecast`. They use no model; every number is a claim token filled from a stored SQL query
+- Low-code agent: `uv run python -m eval run --system briefing_lowcode --lane briefing`. Local `qwen3:4b-instruct-2507-q4_K_M` on Ollama by default (needs tool calling: the gemma3 models have none); `--model gemini:` uses `GEMINI_API_KEY` and `GEMINI_MODEL` from the git-ignored `.env`. About a minute or more per case locally. The MCP server alone: `uv run python -m pharmagentics.mcp_server`
 - Controls: `uv run python -m eval run --system reference` (golden answers; must score 1.0 on every code check) and `--system naive_llm` (local model with no data; must fail the numeric checks)
 - Judge: add `--judge` for RAGAS judges on local Ollama `gemma3:4b` (no API credits; needs Ollama running). Later, `--judge gemini:/<model>` switches provider. Expect minutes per case on a laptop GPU, so judge on demand, not on every run
 - Dashboard: `uv run python -m eval ui`, then http://127.0.0.1:5000

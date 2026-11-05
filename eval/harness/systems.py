@@ -89,5 +89,26 @@ class ForecastScripted(_ScriptedLane):
     name, folder, package = "forecast_scripted", "forecast-explanation", "forecast_baseline"
 
 
+class BriefingLowCode:
+    """Briefing low-code build: Agent Framework's Magentic-One over the PharmAgentics MCP server
+    (agents/brand-briefing/briefing_lowcode/). Local model by default; `--model gemini:<model>` switches."""
+
+    name = "briefing_lowcode"
+    uses_llm = True
+    returns_evidence = True
+    returns_trajectory = True
+
+    def __init__(self, cases: list[Case], model: str | None = None):
+        pkg = _lane_package("brand-briefing", "briefing_lowcode")
+        from pharmagentics.llm import model_spec
+
+        self._answer = pkg.answer
+        self.model = model_spec(model)
+        self.params = {"agent_config_version": pkg.config_version()}
+
+    def predict(self, question: str) -> dict:
+        return AnswerEnvelope.model_validate(self._answer(question, self.model)).model_dump()
+
+
 SYSTEMS = {"reference": ReferenceSystem, "naive_llm": NaiveLLMSystem, "briefing_scripted": BriefingScripted,
-           "forecast_scripted": ForecastScripted}
+           "forecast_scripted": ForecastScripted, "briefing_lowcode": BriefingLowCode}

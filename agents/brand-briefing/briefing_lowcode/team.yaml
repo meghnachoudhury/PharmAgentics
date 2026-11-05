@@ -1,0 +1,35 @@
+# Briefing low-code build (Briefing Architecture §14, build 2 of 3).
+# Microsoft Agent Framework's Magentic-One orchestration at its defaults: the framework's manager plans,
+# keeps the task and progress ledgers, picks who acts next, detects stalls and replans. This file and
+# prompts/ are the whole configuration; team.py only wires them to the framework and the MCP server.
+# Build 3 (brief-002) replaces the framework manager with our own: catalog, no-repeat rule, layered triage.
+
+model: null            # null: PHARMAGENTICS_AGENT_MODEL, else ollama:qwen3:4b-instruct-2507-q4_K_M (src/pharmagentics/llm.py)
+
+manager:
+  instructions: prompts/manager.md
+  final_answer_prompt: prompts/final_answer.md   # the only framework prompt overridden: it enforces claim tokens
+
+caps:                  # backstop only (Briefing §10.1 rule 3; values are Evaluation Pack open item 17)
+  max_round_count: 12
+  max_stall_count: 2
+  max_reset_count: 1
+wall_seconds: 420      # wall-clock cap per question; at the cap the brief comes from the reports so far
+
+participants:          # depth two: specialists have MCP tools and no agent tools, so they cannot call agents
+  - name: data_forensics
+    description: >-
+      Checks whether the data can be trusted before anyone explains a change: which territory-week cuts
+      pass the feed gate and why any are withheld, restatements, calendar effects, and the like-for-like
+      national BXA change. Ask it first.
+    instructions: prompts/data_forensics.md
+    tools: data_forensics          # tool group in pharmagentics.mcp_server.AGENT_TOOLS
+  - name: driver_investigator
+    description: >-
+      Finds which territories moved beyond their normal range and tests why: payer access, promotion,
+      supply, competitor and data checks, each with a verdict by code, then closes each story with a
+      confidence level computed by code. Also reports competitor Metacora as a continuing story.
+    instructions: prompts/driver_investigator.md
+    tools: driver_investigator
+
+revision_prompt: prompts/revise.md   # one revision when a digit sits outside a claim token (Briefing §5.6)

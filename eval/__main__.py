@@ -16,12 +16,15 @@ def main(argv=None) -> int:
     sub.add_parser("check", help="validate the golden set and recompute every fact from the data")
 
     run = sub.add_parser("run", help="score a system on the golden set and log it to MLflow")
-    run.add_argument("--system", required=True, choices=["reference", "naive_llm", "briefing_scripted", "forecast_scripted"])
+    run.add_argument("--system", required=True, choices=["reference", "naive_llm", "briefing_scripted", "forecast_scripted",
+                                                          "briefing_lowcode"])
     run.add_argument("--lane", default="all", choices=["all", "briefing", "forecast"])
     run.add_argument("--reruns", type=int, default=1)
     run.add_argument("--stories", help="comma-separated story IDs, e.g. P1-Q2,CA-Q1")
     run.add_argument("--judge", nargs="?", const="default", default=None,
                      help="add LLM judges; optional model URI (default ollama:/gemma3:4b)")
+    run.add_argument("--model", help="model for agent systems: ollama:<model> or gemini:<model> "
+                                     "(default PHARMAGENTICS_AGENT_MODEL, else the local default)")
 
     gate = sub.add_parser("gate", help="fail if a candidate run regresses on gated checks")
     gate.add_argument("candidate")
@@ -61,7 +64,7 @@ def main(argv=None) -> int:
         from .harness.run import run_suite
         judge = DEFAULT_JUDGE if args.judge == "default" else args.judge
         stories = [s.strip() for s in args.stories.split(",")] if args.stories else None
-        run_suite(args.system, args.lane, args.reruns, judge, stories)
+        run_suite(args.system, args.lane, args.reruns, judge, stories, model=args.model)
         return 0
 
     if args.cmd == "gate":
