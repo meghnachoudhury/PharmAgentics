@@ -46,6 +46,11 @@ def model_spec(spec: str | None = None) -> str:
     return f"{provider}:{model}"
 
 
+def _ollama_host() -> str:
+    host = os.environ.get("OLLAMA_HOST", "http://127.0.0.1:11434")
+    return host if host.startswith("http") else "http://" + host
+
+
 def chat_client(spec: str | None = None):
     """An Agent Framework chat client for the model string."""
     provider, _, model = model_spec(spec).partition(":")
@@ -53,15 +58,35 @@ def chat_client(spec: str | None = None):
         from agent_framework.ollama import OllamaChatClient
         from ollama import AsyncClient
 
-        host = os.environ.get("OLLAMA_HOST", "http://127.0.0.1:11434")
-        host = host if host.startswith("http") else "http://" + host
-        return OllamaChatClient(model=model, client=AsyncClient(host=host, timeout=OLLAMA_TIMEOUT))
+        return OllamaChatClient(model=model, client=AsyncClient(host=_ollama_host(), timeout=OLLAMA_TIMEOUT))
     from agent_framework.gemini import GeminiChatClient
 
     key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
     if not key:
         raise ValueError("GEMINI_API_KEY is not set (environment or .env)")
     return GeminiChatClient(api_key=key, model=model)
+
+
+def ollama_runtime(spec: str | None = None) -> dict:
+    """How the local Ollama server holds the model right now: total size, the share in VRAM, the context.
+    Server settings such as the KV cache type are invisible to clients, so a run records their effect.
+    Empty for other providers, or when the model is not loaded or the server does not answer."""
+    provider, _, model = model_spec(spec).partition(":")
+    if provider != "ollama":
+        return {}
+    try:
+        from ollama import Client
+
+        loaded = Client(host=_ollama_host(), timeout=5).ps().models
+    except Exception:
+        return {}
+    for m in loaded:
+        if model in (m.model, getattr(m, "name", None)) and m.size:
+            out = {"ollama.size_mb": round(m.size / 2**20), "ollama.vram_share": round((m.size_vram or 0) / m.size, 3)}
+            if getattr(m, "context_length", None):
+                out["ollama.context"] = m.context_length
+            return out
+    return {}
 
 
 def chat_options(spec: str | None = None, temperature: float = 0.0) -> dict:

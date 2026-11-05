@@ -109,6 +109,12 @@ class BriefingLowCode:
     def predict(self, question: str) -> dict:
         return AnswerEnvelope.model_validate(self._answer(question, self.model)).model_dump()
 
+    def runtime(self) -> dict:
+        """The model server's state after a rerun (e.g. how much of a local model sits in VRAM)."""
+        from pharmagentics.llm import ollama_runtime
+
+        return ollama_runtime(self.model)
+
 
 SYSTEMS = {"reference": ReferenceSystem, "naive_llm": NaiveLLMSystem, "briefing_scripted": BriefingScripted,
            "forecast_scripted": ForecastScripted, "briefing_lowcode": BriefingLowCode}
