@@ -1,0 +1,64 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap");
+@import 'tailwindcss';
+
+@theme {
+  --font-serif: "Inter", system-ui, sans-serif;
+  --font-sans: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+  /* Warm ivory workspace */
+  --color-paper: #f7f5f0;
+  --color-sheet: #ffffff;
+  --color-ink: #111214;
+  --color-muted: #6b6e75;
+  --color-rule: #e6e3dc;
+  --color-accent: #111214;
+  --color-warn: #3a3c41;
+  --color-warnbg: #eeeff1;
+  /* Deep navy: sidebar, navigation and major chrome */
+  --color-navy: #0f172a;
+  /* Human review */
+  --color-human: #1e3a8a;
+  --color-humanbg: #e8eefb;
+  /* Agent interactions and primary controls */
+  --color-agent: #4f46e5;
+  --color-agentdeep: #3730a3;
+  --color-agentbg: #eef0fd;
+  /* Verified results and successful states */
+  --color-ok: #0f766e;
+  --color-okbg: #e7f4f1;
+  /* Data-health alerts, uncertainty, review required */
+  --color-amber: #b45309;
+  --color-amberbg: #fdf6e7;
+  --color-amberline: #f3d58a;
+  --color-neg: #b91c1c;
+}
+
+@layer base {
+  body {
+    background: var(--color-paper);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+@keyframes pa-rise {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes pa-slide {
+  from { transform: translateX(24px); opacity: 0; }
+  to { transform: none; opacity: 1; }
+}
+@keyframes pa-pulse {
+  0%, 100% { opacity: 0.35; }
+  50% { opacity: 1; }
+}
+@layer utilities {
+  .pa-rise { animation: pa-rise 260ms ease-out both; }
+  .pa-slide { animation: pa-slide 220ms ease-out both; }
+  .pa-pulse { animation: pa-pulse 1.2s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce) {
+    .pa-rise, .pa-slide, .pa-pulse { animation: none; }
+  }
+}
