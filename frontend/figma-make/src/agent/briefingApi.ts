@@ -1,4 +1,4 @@
-// Exact TypeScript representation of the NEW Briefing API contracts.
+// Exact TypeScript representation of the Briefing API contracts (core-007: roles and views).
 // Never substitute sample data if a request or contract check fails.
 export type ReleaseContext = {
   first_week: string
@@ -18,9 +18,14 @@ export type Evidence = {
   data_version: string | null
 }
 export type Claim = { value: string; evidence_id: string }
+export type ReviewStatus = "pending" | "approved" | "rejected"
 export type BriefingResult = {
+  brief_id: string
+  view: "analyst"
   status: "draft_requires_review"
-  review_status: "not_submitted"
+  review_status: ReviewStatus
+  reviewed_at: string | null
+  review_reason: string | null
   engine: "scripted"
   system: string
   question: string
@@ -33,6 +38,39 @@ export type BriefingResult = {
   data_version: string | null
   abstained: boolean
 }
+// The leadership view: an executive summary cut from the answer by the server. It never
+// carries claims, evidence, query text or a trace.
+export type LeadershipBrief = {
+  brief_id: string
+  view: "leadership"
+  engine: "scripted"
+  system: string
+  brand_id: string
+  territory_id: string
+  week_start: string
+  data_version: string | null
+  abstained: boolean
+  review_status: ReviewStatus
+  reviewed_at: string | null
+  summary: string
+}
+export type PublishedBrief = {
+  brief_id: string
+  week_start: string
+  territory_id: string
+  engine: string
+  reviewed_at: string | null
+  abstained: boolean
+}
+export type LaneRole = {
+  role: string
+  persona: string
+  label: string
+  views: ("analyst" | "leadership")[]
+  actions: string[]
+  available: boolean
+}
+export type Me = { name: string; auth_mode: "oidc" | "dev"; lanes: { briefing?: LaneRole; forecast?: LaneRole } }
 export type BriefingQuery = {
   intent: "weekly_brief"
   brand_id: string
@@ -40,6 +78,8 @@ export type BriefingQuery = {
   week_start: string
   question: string
 }
+
+export class NotSignedIn extends Error {}
 
 const BASE = (import.meta.env.VITE_PHARMAGENTICS_API_BASE_URL || "").trim().replace(/\/+$/, "")
 
@@ -49,11 +89,14 @@ function expectObject(v: unknown): asserts v is Record<string, unknown> {
 function stringArray(v: unknown): v is string[] {
   return Array.isArray(v) && v.every(x => typeof x === "string")
 }
+const REVIEW = new Set(["pending", "approved", "rejected"])
+
 async function api<T>(path: string, init?: RequestInit): Promise<T> {
   if (!BASE) throw new Error("API URL is not configured. Set VITE_PHARMAGENTICS_API_BASE_URL. No mock fallback is enabled.")
   let response: Response
-  try { response = await fetch(`${BASE}${path}`, { cache: "no-store", ...init }) }
+  try { response = await fetch(`${BASE}${path}`, { cache: "no-store", credentials: "same-origin", ...init }) }
   catch { throw new Error("Cannot reach Briefing API. Check server, HTTPS/CORS settings, and API URL.") }
+  if (response.status === 401) throw new NotSignedIn("Sign in first.")
   if (!response.ok) {
     let message = `Briefing API returned HTTP ${response.status}`
     try {
@@ -63,7 +106,17 @@ async function api<T>(path: string, init?: RequestInit): Promise<T> {
     } catch { /* keep status */ }
     throw new Error(message)
   }
+  if (response.status === 204) return undefined as T
   return await response.json() as T
+}
+const post = (body: unknown): RequestInit => ({ method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
+
+export async function getMe(): Promise<Me> {
+  const v: unknown = await api("/api/me")
+  expectObject(v)
+  if (typeof v.name !== "string" || (v.auth_mode !== "oidc" && v.auth_mode !== "dev")) throw new Error("The backend identity contract is incompatible with this frontend.")
+  expectObject(v.lanes)
+  return v as unknown as Me
 }
 export async function getContext(): Promise<ReleaseContext> {
   const v: unknown = await api("/api/briefing/context")
@@ -79,13 +132,10 @@ export async function getContext(): Promise<ReleaseContext> {
   }
   return v as unknown as ReleaseContext
 }
-export async function getBriefing(q: BriefingQuery): Promise<BriefingResult> {
-  const v: unknown = await api("/api/briefing/query", {
-    method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(q),
-  })
+function checkAnalyst(v: unknown): BriefingResult {
   expectObject(v)
-  if (v.status !== "draft_requires_review" || v.engine !== "scripted" ||
-      v.review_status !== "not_submitted" || typeof v.answer !== "string" ||
+  if (v.view !== "analyst" || typeof v.brief_id !== "string" || v.status !== "draft_requires_review" || v.engine !== "scripted" ||
+      !REVIEW.has(v.review_status as string) || typeof v.answer !== "string" ||
       !Array.isArray(v.claims) || !Array.isArray(v.evidence) || typeof v.abstained !== "boolean") {
     throw new Error("Backend returned a response incompatible with the implemented weekly briefing UI.")
   }
@@ -102,4 +152,32 @@ export async function getBriefing(q: BriefingQuery): Promise<BriefingResult> {
     }
   }
   return v as unknown as BriefingResult
+}
+function checkLeadership(v: unknown): LeadershipBrief {
+  expectObject(v)
+  if (v.view !== "leadership" || typeof v.brief_id !== "string" || typeof v.summary !== "string" ||
+      "claims" in v || "evidence" in v || "answer" in v) {
+    throw new Error("Backend returned a leadership view that is not a plain executive summary.")
+  }
+  return v as unknown as LeadershipBrief
+}
+export async function getBriefing(q: BriefingQuery): Promise<BriefingResult> {
+  return checkAnalyst(await api("/api/briefing/query", post(q)))
+}
+export async function openBrief(id: string, view: "analyst"): Promise<BriefingResult>
+export async function openBrief(id: string, view: "leadership"): Promise<LeadershipBrief>
+export async function openBrief(id: string, view: "analyst" | "leadership"): Promise<BriefingResult | LeadershipBrief> {
+  const v: unknown = await api(`/api/briefing/${encodeURIComponent(id)}?view=${view}`)
+  return view === "analyst" ? checkAnalyst(v) : checkLeadership(v)
+}
+export async function listPublished(): Promise<PublishedBrief[]> {
+  const v: unknown = await api("/api/briefing/published")
+  if (!Array.isArray(v)) throw new Error("The backend published-briefs contract is incompatible with this frontend.")
+  return v as PublishedBrief[]
+}
+export async function reviewBrief(id: string, decision: "approved" | "rejected", reason?: string): Promise<BriefingResult> {
+  return checkAnalyst(await api(`/api/briefing/${encodeURIComponent(id)}/review`, post({ decision, reason: reason || null })))
+}
+export async function markInsight(id: string, view: "analyst" | "leadership"): Promise<void> {
+  await api("/api/uat/insight", post({ brief_id: id, view }))
 }

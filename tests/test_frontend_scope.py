@@ -13,8 +13,8 @@ def test_frontend_contains_only_supported_feature_modules():
 
 
 def test_live_frontend_no_mock_fallback_or_fake_review():
-    app = (SRC / "App.tsx").read_text()
-    api = (SRC / "agent" / "briefingApi.ts").read_text()
+    app = (SRC / "App.tsx").read_text(encoding="utf-8")
+    api = (SRC / "agent" / "briefingApi.ts").read_text(encoding="utf-8")
     for s in ["mockAgentService", "mockService", "SEED.runs", "sampleFixture", "sample_fixture", "offline (simulated)"]:
         assert s not in app and s not in api
     assert 'getBriefing({' in app

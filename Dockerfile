@@ -11,7 +11,9 @@ RUN pnpm install --frozen-lockfile
 COPY frontend/figma-make/ ./
 # "." makes the UI call ./api/... on the origin that served it (no CORS, no host baked in).
 ENV VITE_PHARMAGENTICS_API_BASE_URL=.
-RUN pnpm exec vite build --config vite.config.standalone.ts
+# Type-check first (vite build does not), then build.
+RUN pnpm exec tsc --noEmit -p tsconfig.app.json \
+ && pnpm exec vite build --config vite.config.standalone.ts
 
 # ---- 2. Runtime: Python 3.12, base deps + api group only ----
 FROM python:3.12-slim
@@ -28,8 +30,12 @@ RUN uv sync --locked --no-default-groups --group api \
  && uv run --no-sync python src/pharmagentics/data/load_duckdb.py \
  && uv run --no-sync python src/pharmagentics/data/check_duckdb.py
 COPY --from=ui /ui/dist /app/ui
-ENV PHARMAGENTICS_STATIC_DIR=/app/ui PORT=8080 PATH="/app/.venv/bin:$PATH"
-RUN useradd --uid 10001 app && chown -R app /app
+ARG PHARMAGENTICS_VERSION=dev
+# /state holds approvals and UAT events: a volume locally, a Cloud Storage bucket mount on Cloud Run.
+ENV PHARMAGENTICS_STATIC_DIR=/app/ui PHARMAGENTICS_STATE_DIR=/state PHARMAGENTICS_VERSION=${PHARMAGENTICS_VERSION} \
+    PORT=8080 PATH="/app/.venv/bin:$PATH"
+RUN useradd --uid 10001 app && mkdir /state && chown -R app /app /state
 USER app
 EXPOSE 8080
-CMD ["sh", "-c", "exec uvicorn pharmagentics.api.app:app --host 0.0.0.0 --port ${PORT}"]
+# --proxy-headers: behind Cloud Run's HTTPS front end, sign-in callback URLs must use https.
+CMD ["sh", "-c", "exec uvicorn pharmagentics.api.app:app --host 0.0.0.0 --port ${PORT} --proxy-headers --forwarded-allow-ips='*'"]

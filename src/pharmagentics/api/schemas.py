@@ -45,6 +45,7 @@ class Evidence(BaseModel):
 
 
 class BriefingResult(BaseModel):
+    """What the engine returns. The API adds brief_id, view and the review state (views.analyst)."""
     status: Literal["draft_requires_review"] = "draft_requires_review"
     review_status: Literal["not_submitted"] = "not_submitted"
     engine: Literal["scripted"] = "scripted"
@@ -69,3 +70,24 @@ class ReleaseContext(BaseModel):
     product_ids: list[Literal["BXA"]] = Field(default_factory=lambda: ["BXA"])
     supported_intents: list[Literal["weekly_brief"]] = Field(default_factory=lambda: ["weekly_brief"])
     engine: Literal["scripted"] = "scripted"
+
+
+class ReviewRequest(BaseModel):
+    """The analyst's decision on one brief (core-007 FR-010). A rejection needs a reason."""
+    model_config = ConfigDict(extra="forbid")
+
+    decision: Literal["approved", "rejected"]
+    reason: str | None = Field(default=None, max_length=500)
+
+    @field_validator("reason")
+    @classmethod
+    def strip(cls, value: str | None) -> str | None:
+        return value.strip() or None if value else None
+
+
+class InsightMark(BaseModel):
+    """The participant marks that they have what they need (time to insight, FR-025)."""
+    model_config = ConfigDict(extra="forbid")
+
+    brief_id: str = Field(min_length=3, max_length=40)
+    view: Literal["analyst", "leadership"]

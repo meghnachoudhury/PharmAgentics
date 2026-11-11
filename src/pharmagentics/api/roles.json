@@ -1,0 +1,38 @@
+{
+  "_comment": "Role-to-permission map (core-007 FR-001). One analyst and one leader per lane. Role names match the Keycloak realm roles. P2, P4 and FM have no role. Forecast roles: Alvin and Sienna confirm.",
+  "version": "2026-11-11",
+  "roles": {
+    "briefing-analyst": {
+      "lane": "briefing",
+      "persona": "P1",
+      "label": "Commercial Analyst",
+      "views": ["analyst", "leadership"],
+      "actions": ["run", "review", "read"]
+    },
+    "briefing-director": {
+      "lane": "briefing",
+      "persona": "P3",
+      "label": "Brand Director",
+      "views": ["leadership"],
+      "actions": ["read"]
+    },
+    "forecast-analyst": {
+      "lane": "forecast",
+      "persona": "CA",
+      "label": "Commercial Analytics Analyst",
+      "views": ["analyst", "leadership"],
+      "actions": []
+    },
+    "forecast-manager": {
+      "lane": "forecast",
+      "persona": "BM",
+      "label": "Brand Manager",
+      "views": ["leadership"],
+      "actions": []
+    }
+  },
+  "lanes": {
+    "briefing": {"available": true},
+    "forecast": {"available": false}
+  }
+}

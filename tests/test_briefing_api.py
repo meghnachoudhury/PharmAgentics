@@ -18,6 +18,17 @@ from pharmagentics.api import service
 from pharmagentics.api.schemas import BriefingQuery, ReleaseContext
 
 CLIENT = TestClient(app)
+
+
+@pytest.fixture(autouse=True)
+def _signed_in_analyst(monkeypatch, tmp_path):
+    """core-007: every data route needs a signed-in role. Sign in as the stand-in Commercial Analyst."""
+    monkeypatch.setenv("PHARMAGENTICS_AUTH", "dev")
+    monkeypatch.setenv("PHARMAGENTICS_STATE_DIR", str(tmp_path))
+    CLIENT.cookies.clear()
+    assert CLIENT.post("/auth/dev-login", data={"username": "dev-analyst"}, follow_redirects=False).status_code == 303
+
+
 VALID = {
     "intent": "weekly_brief",
     "brand_id": "BXA",
@@ -50,6 +61,7 @@ def test_success_contract_and_no_store():
     assert response.json()["claims"][0]["evidence_id"] == response.json()["evidence"][0]["id"]
     runner.assert_called_once()
     assert runner.call_args.args[0].territory_id == "PACIFIC"
+    assert response.json()["view"] == "analyst" and response.json()["review_status"] == "pending"
 
 
 @pytest.mark.parametrize("changes", [

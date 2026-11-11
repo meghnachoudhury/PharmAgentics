@@ -13,8 +13,12 @@ from pharmagentics.api import service
 
 
 @pytest.mark.skipif(not service.DB.is_file(), reason="Build local/pharmagentics.duckdb first")
-def test_real_weekly_briefing_end_to_end():
-    response = TestClient(app).post("/api/briefing/query", json={
+def test_real_weekly_briefing_end_to_end(monkeypatch, tmp_path):
+    monkeypatch.setenv("PHARMAGENTICS_AUTH", "dev")
+    monkeypatch.setenv("PHARMAGENTICS_STATE_DIR", str(tmp_path))
+    client = TestClient(app)
+    client.post("/auth/dev-login", data={"username": "dev-analyst"})
+    response = client.post("/api/briefing/query", json={
         "intent": "weekly_brief",
         "brand_id": "BXA",
         "territory_id": "PACIFIC",
@@ -25,7 +29,7 @@ def test_real_weekly_briefing_end_to_end():
     body = response.json()
     assert body["system"] == "briefing_scripted"
     assert body["status"] == "draft_requires_review"
-    assert body["review_status"] == "not_submitted"
+    assert body["review_status"] == "pending"  # stored for the analyst's review (core-007)
     assert "2026-06-08" in body["answer"]
     assert body["claims"] and body["evidence"]
     evidence = {item["id"]: item for item in body["evidence"]}
@@ -33,5 +37,5 @@ def test_real_weekly_briefing_end_to_end():
     for claim in body["claims"]:
         assert claim["evidence_id"] in evidence
         assert evidence[claim["evidence_id"]]["data_version"] == body["data_version"]
-    # No approval/persistent review is performed by this endpoint.
-    assert body["review_status"] == "not_submitted"
+    # Running a brief never approves it; only the analyst's review does (core-007 FR-009).
+    assert body["review_status"] == "pending"

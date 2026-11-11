@@ -70,6 +70,19 @@ def release_context() -> ReleaseContext:
     )
 
 
+def current_data_version() -> str:
+    """The pinned version of the loaded release; approved briefs from another version are not served."""
+    if not DB.is_file():
+        raise MissingDatabase("DuckDB has not been built. Run the data loader first.")
+    from pharmagentics.tools import Registry
+
+    reg = Registry(DB)
+    try:
+        return reg.data_version
+    finally:
+        reg.close()
+
+
 def normalize_question(request: BriefingQuery) -> str:
     """Place *both* the ISO date and territory before ':' for window.parse().
 
