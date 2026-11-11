@@ -19,8 +19,9 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
           enable-cache: true
-      # Same uv.lock as every laptop; the data tests need only the base and dev groups.
-      - run: uv sync --locked --no-default-groups --group dev
+      # Same uv.lock as every laptop; the data tests need the base and dev groups, and the api
+      # group so unittest discovery can import the API test modules.
+      - run: uv sync --locked --no-default-groups --group dev --group api
       - run: uv run python src/pharmagentics/data/load_duckdb.py
       # The fixture intentionally contains feed flags; the tests assert them.
       - run: uv run python src/pharmagentics/data/check_duckdb.py
@@ -38,3 +39,28 @@ jobs:
       - run: uv sync --locked
       - run: uv run python src/pharmagentics/data/load_duckdb.py
       - run: uv run pytest tests/test_tools.py eval/tests -q
+
+  # core-007: role-based views, sign-in and the Briefing API, against the real release.
+  api:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
+        with:
+          enable-cache: true
+      - run: uv sync --locked --no-default-groups --group dev --group api
+      - run: uv run python src/pharmagentics/data/load_duckdb.py
+      - run: uv run pytest tests/test_rbac.py tests/test_briefing_api.py tests/test_briefing_smoke.py tests/test_frontend_scope.py tests/test_deploy.py -q
+
+  # core-007 FR-018: the UAT image builds (UI type-checked) and holds no eval or ground-truth file.
+  image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t pharmagentics:ci .
+      - name: Content check
+        run: >
+          docker run --rm --entrypoint sh pharmagentics:ci -c
+          "test ! -e /app/eval && test ! -e /app/.env && test ! -e /app/SoT &&
+          ! find / -xdev \( -name 'answer_key*' -o -name '*counterfactual*' -o -name 'heldout_params*'
+          -o -name '*true_before_feed_artifacts*' \) 2>/dev/null | grep -q ."
