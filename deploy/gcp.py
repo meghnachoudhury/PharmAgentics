@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import shutil
 import subprocess
@@ -116,11 +117,19 @@ def git_sha() -> str:
 
 # ---- commands -------------------------------------------------------------------------------
 
-def setup(c: Ctx, billing: str, github_repo: str) -> None:
+def setup(c: Ctx, billing: str | None, github_repo: str) -> None:
     if not c.ok("projects", "describe", c.project):
         print(f"Creating project {c.project}")
         subprocess.run([GCLOUD, "projects", "create", c.project, "--name=PharmAgentics UAT", "--quiet"], check=True)
-    c.gc("billing", "projects", "link", c.project, f"--billing-account={billing}")
+    info = c.gc("billing", "projects", "describe", c.project, "--format=value(billingEnabled,billingAccountName)",
+                quiet_fail=True).split()
+    if billing:
+        c.gc("billing", "projects", "link", c.project, f"--billing-account={billing}")
+    elif info and info[0].lower() == "true":
+        billing = info[1].rsplit("/", 1)[-1]
+        print(f"  billing already linked: {billing}")
+    else:
+        sys.exit(f"{c.project} has no open billing account linked. Link one in the console or pass --billing.")
     c.gc("services", "enable", *APIS)
     pn = c.number
 
@@ -250,16 +259,18 @@ def main() -> None:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("command", choices=["setup", "keycloak", "app", "status", "rollback", "github-vars"])
     p.add_argument("--project", required=True)
+    p.add_argument("--account", help="gcloud account to use (e.g. mwc2150@columbia.edu); the active account is not changed")
     p.add_argument("--region", default="us-central1")
     p.add_argument("--billing", help="billing account ID (setup only)")
     p.add_argument("--github-repo", default="mwc2150/PharmAgentics")
     p.add_argument("--image", help="app: deploy this pushed image instead of building")
     p.add_argument("--service", choices=["app", "keycloak"], default="app")
     a = p.parse_args()
+    if a.account:
+        # Applies to every gcloud call and to Docker's gcloud credential helper, for this process only.
+        os.environ["CLOUDSDK_CORE_ACCOUNT"] = a.account
     c = Ctx(a.project, a.region)
     if a.command == "setup":
-        if not a.billing:
-            sys.exit("setup needs --billing ACCOUNT_ID (gcloud billing accounts list)")
         setup(c, a.billing, a.github_repo)
     elif a.command == "keycloak":
         keycloak(c)
