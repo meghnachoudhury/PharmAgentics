@@ -47,10 +47,10 @@ tests/                         data-foundation tests
 
 **Eval loop.** Change a system, then `uv run python -m eval run --system <name>`, read the result in the MLflow dashboard (`uv run python -m eval ui`), and run `uv run python -m eval gate <candidate-run-id> <baseline-run-id>` before merging. No change merges if a gated check regresses (Briefing B-VII). A new system (the low-code version, then the agents) plugs in through `eval/harness/systems.py` and returns the answer contract in `eval/harness/envelope.py`: answer text, claims, evidence items. Reuse `src/pharmagentics/tools/` so every number stays traceable.
 
-**Spec Kit.** `/speckit-specify` → `/speckit-clarify` → `/speckit-plan` → `/speckit-tasks` → `/speckit-analyze` → `/speckit-implement` → `/speckit-converge`, one spec per component. Spec Kit finds the active spec from `.specify/feature.json` (now core-006), not the branch name:
+**Spec Kit.** `/speckit-specify` → `/speckit-clarify` → `/speckit-plan` → `/speckit-tasks` → `/speckit-analyze` → `/speckit-implement` → `/speckit-converge`, one spec per component. Spec Kit finds the active spec from `.specify/feature.json` (now core-007), not the branch name:
 
 ```powershell
-'{"feature_directory":"specs/core-006-eval-harness-tracing"}' | Out-File -Encoding ascii .specify/feature.json
+'{"feature_directory":"specs/core-007-rbac-uat-deployment"}' | Out-File -Encoding ascii .specify/feature.json
 ```
 
 Only the five `brief-###` specs (`brief-001` to `brief-005`, Briefing lane only) lost their `plan.md` and `tasks.md` on 2026-10-29; they are re-planned against the golden set. The `core-###` specs (both lanes) keep their plans. The Forecast lane has no specs in this repo yet (`fcst-###` is reserved for Alvin and Sienna).
@@ -69,5 +69,6 @@ Dependencies are managed with uv. `pyproject.toml` declares them, `uv.lock` pins
 - Controls: `uv run python -m eval run --system reference` (golden answers; must score 1.0 on every code check) and `--system naive_llm` (local model with no data; must fail the numeric checks)
 - Judge: add `--judge` for RAGAS judges on local Ollama `gemma3:4b` (no API credits; needs Ollama running). Later, `--judge gemini:/<model>` switches provider. Expect minutes per case on a laptop GPU, so judge on demand, not on every run
 - Dashboard: `uv run python -m eval ui`, then http://127.0.0.1:5000
+- Briefing web app (core-007): `docker build -t pharmagentics:uat .` then `docker run --rm -p 8080:8080 pharmagentics:uat`, then http://localhost:8080. One image holds Meghna's UI (`frontend/figma-make`, built with `vite.config.standalone.ts`) and the API (`src/pharmagentics/api`) on one origin, scripted engine only; `.dockerignore` is an allow-list, so `eval/`, `SoT/` and `.env` never enter it. Without Docker: `uv run uvicorn pharmagentics.api.app:app --port 8000` plus `pnpm exec vite --config vite.config.standalone.ts` in `frontend/figma-make` (proxies `/api` to :8000)
 
 MLflow telemetry is turned off in `eval/__init__.py`: it sends usage data to an external service and deadlocks parallel scorer threads in MLflow 3.17.

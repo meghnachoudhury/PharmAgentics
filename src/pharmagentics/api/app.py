@@ -1,7 +1,10 @@
 """Local/development HTTP API for PharmAgentics Briefing.
 
 Run:
-  uv run --with fastapi --with uvicorn uvicorn pharmagentics.api.app:app --app-dir src --reload
+  uv run uvicorn pharmagentics.api.app:app --reload
+
+Set PHARMAGENTICS_STATIC_DIR to a built frontend (vite build output) to serve the
+UI from the same origin as the API; the container image does this (core-007).
 
 CORS is a *browser policy*, not authentication. This demo is not a public,
 production-ready service. Keep it local or on a restricted development tunnel.
@@ -10,10 +13,12 @@ from __future__ import annotations
 
 import logging
 import os
+from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, Response
 from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from . import service
 from .schemas import BriefingQuery, BriefingResult, ReleaseContext
@@ -69,3 +74,9 @@ async def briefing_query(payload: BriefingQuery, response: Response) -> Briefing
     except Exception as exc:
         logger.exception("Briefing request failed")
         raise HTTPException(status_code=500, detail="Briefing execution failed. Check server logs.") from exc
+
+
+# Same-origin UI (core-007 FR-017). Mounted last so every /api route above wins.
+_static = os.environ.get("PHARMAGENTICS_STATIC_DIR")
+if _static and Path(_static).is_dir():
+    app.mount("/", StaticFiles(directory=_static, html=True), name="ui")

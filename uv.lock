@@ -3444,7 +3444,12 @@ agent = [
     { name = "pydantic" },
     { name = "pyyaml" },
 ]
+api = [
+    { name = "fastapi" },
+    { name = "uvicorn" },
+]
 dev = [
+    { name = "httpx" },
     { name = "pypdf" },
     { name = "pytest" },
 ]
@@ -3469,7 +3474,12 @@ agent = [
     { name = "pydantic", specifier = ">=2.7" },
     { name = "pyyaml", specifier = ">=6" },
 ]
+api = [
+    { name = "fastapi", specifier = ">=0.115" },
+    { name = "uvicorn", specifier = ">=0.30" },
+]
 dev = [
+    { name = "httpx", specifier = ">=0.28.1" },
     { name = "pypdf", specifier = ">=6.21.4" },
     { name = "pytest", specifier = ">=8" },
 ]
