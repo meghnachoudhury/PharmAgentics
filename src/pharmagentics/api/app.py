@@ -27,7 +27,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
-from . import auth, forecast, jobs, rbac, service, store, views
+from . import auth, cloud, forecast, jobs, rbac, service, store, views
 from .schemas import (AgentJobRequest, BriefingQuery, InsightMark, ReleaseContext, ReviewRequest, WorkerPoll,
                       WorkerResult)
 
@@ -208,10 +208,17 @@ def _job_view(job: dict) -> dict:
     return out
 
 
+def _wake_cloud_host() -> None:
+    """Work is waiting and nobody is hosting: start the cloud CPU host (it has its own budget and cooldown)."""
+    st = jobs.status()
+    cloud.maybe_start(st["queued"], st["online"])
+
+
 @app.get("/api/agent/status")
 def agent_status(response: Response, who=Briefing) -> dict:
     _no_store(response)
-    return {**jobs.status(), "configured": bool(os.environ.get("PHARMAGENTICS_WORKER_TOKEN"))}
+    _wake_cloud_host()
+    return {**jobs.status(), "configured": bool(os.environ.get("PHARMAGENTICS_WORKER_TOKEN")), "cloud": cloud.status()}
 
 
 @app.post("/api/agent/jobs")
@@ -237,6 +244,7 @@ async def agent_submit(req: AgentJobRequest, response: Response, who=Briefing) -
         payload.update(plan=plan, decision=req.decision.model_dump(), triage_job=plan_job["id"])
     job = jobs.submit(req.kind, payload, by=rbac.pseudonym(p.sub))
     store.record_event("agent_job", **_who(p, role), job_id=job["id"], job_kind=req.kind)
+    await run_in_threadpool(_wake_cloud_host)
     return _job_view(job)
 
 
@@ -248,6 +256,8 @@ def agent_job(job_id: str, response: Response, who=Briefing) -> dict:
     job = jobs.get(job_id)
     if job is None:
         raise HTTPException(status_code=404, detail="No such job.")
+    if job["status"] == "queued":
+        _wake_cloud_host()  # a poll is also the retry if the first start failed or the host went away
     return _job_view(job)
 
 
@@ -260,6 +270,13 @@ def _worker(authorization: str | None = Header(default=None)) -> None:
         raise HTTPException(status_code=401, detail="Worker token required.")
 
 
+@app.post("/api/worker/heartbeat", dependencies=[Depends(_worker)], status_code=204)
+def worker_heartbeat(poll: WorkerPoll) -> Response:
+    """A worker busy on a job says it is alive. It never hands out work, so a job cannot be lost to it."""
+    jobs.heartbeat(poll.model, poll.worker)
+    return Response(status_code=204)
+
+
 @app.post("/api/worker/next", dependencies=[Depends(_worker)])
 def worker_next(poll: WorkerPoll) -> Response:
     job = jobs.next_job(poll.model, poll.worker)
@@ -268,13 +285,19 @@ def worker_next(poll: WorkerPoll) -> Response:
     return JSONResponse({"id": job["id"], "kind": job["kind"], "payload": job["payload"]})
 
 
+def _charge_cloud(job: dict) -> None:
+    """Jobs the cloud host ran count against this month's CPU budget (core-007 FR-031)."""
+    if job.get("worker") == "cloud" and job.get("started_ts"):
+        cloud.record_job_seconds(time.time() - job["started_ts"])
+
+
 @app.post("/api/worker/jobs/{job_id}", dependencies=[Depends(_worker)])
 async def worker_result(job_id: str, posted: WorkerResult) -> dict:
     job = jobs.get(job_id)
     if job is None or job["status"] != "running":
         raise HTTPException(status_code=404, detail="No running job with that ID.")
     if not posted.ok:
-        jobs.complete(job_id, False, None, posted.error)
+        _charge_cloud(jobs.complete(job_id, False, None, posted.error))
         return {"status": "failed"}
     query = BriefingQuery.model_validate(job["payload"]["query"])
     try:
@@ -283,11 +306,11 @@ async def worker_result(job_id: str, posted: WorkerResult) -> dict:
             if plan.get("state") != "OUT_OF_SCOPE":
                 service._traceable(plan.get("claims", []), plan.get("evidence", []))
             plan.update(brand_id=query.brand_id, territory_id=query.territory_id, week_start=query.week_start.isoformat())
-            jobs.complete(job_id, True, plan, None)
+            _charge_cloud(jobs.complete(job_id, True, plan, None))
         else:
             result = await run_in_threadpool(service.accept_agent_brief, query, posted.result or {})
             record = store.save_brief(result.model_dump(mode="json"), by=job["by"])
-            jobs.complete(job_id, True, {"brief_id": record["brief_id"]}, None)
+            _charge_cloud(jobs.complete(job_id, True, {"brief_id": record["brief_id"]}, None))
             store.record_event("requested", user=job["by"], role="briefing-analyst", persona="P1",
                                brief_id=record["brief_id"], engine="agent", system=result.system,
                                data_version=result.data_version, week_start=str(result.week_start),
@@ -295,7 +318,7 @@ async def worker_result(job_id: str, posted: WorkerResult) -> dict:
                                agent_seconds=((posted.result or {}).get("envelope") or {}).get("trajectory", {}).get("seconds"))
     except Exception as exc:  # noqa: BLE001 - an untraceable or malformed result fails the job, visibly
         logger.warning("Agent result refused: %s", exc)
-        jobs.complete(job_id, False, None, f"The agent's result did not pass the traceability check: {exc}")
+        _charge_cloud(jobs.complete(job_id, False, None, f"The agent's result did not pass the traceability check: {exc}"))
         return {"status": "failed"}
     return {"status": "done"}
 

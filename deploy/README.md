@@ -77,6 +77,20 @@ uv run python agents/brand-briefing/run_worker.py --app http://localhost:8080
 
 The token comes from `PHARMAGENTICS_WORKER_TOKEN` in `deploy/.env.uat` (also a secret on Cloud Run). The worker polls every 10 s, outbound only; nothing on your PC is reachable from the internet. One job runs at a time. When the worker is stopped, the UI shows "host offline" and requests wait. Do not run evals while hosting: one 6 GB GPU serves one model run at a time.
 
+## Cloud agent host (core-007 FR-031)
+
+If no teammate's machine is hosting, the app starts a Cloud Run **job**, `pharmagentics-agent`: Ollama (CPU only) with the qwen3 model baked into the image, plus the same worker. It drains the queue, exits when idle, and bills only while it runs. Nothing leaves the project, so there is no external model provider.
+
+```powershell
+uv run python deploy/gcp.py agent --project pharmagentics --account <you>   # build, push, create the job, let the app start it
+```
+
+- **Size:** 8 vCPU, 8 GiB, one task, no retries, one hour at most.
+- **Budget:** the app counts the job's seconds (and a fixed overhead per start) per month in the state bucket (`cloud/usage-YYYY-MM.json`) and starts nothing past `PHARMAGENTICS_CLOUD_MAX_SECONDS` (default 18,000 s: 8 vCPUs for 5 hours, 80% of the free tier's 180,000 vCPU-seconds). Set `PHARMAGENTICS_CLOUD_ETA_MINUTES` in `deploy/.env.uat` to show an estimate in the UI.
+- **Slow by design:** the agent's wall-clock caps are stretched 6x (`PHARMAGENTICS_AGENT_WALL_SCALE`) so slow is not mistaken for stuck. A teammate's GPU always goes first.
+- **Permissions:** the app's service account may only *start* this job (`roles/run.invoker` on it); the job's own service account may only read the worker token.
+- **Storage:** the image is about 3 GB (the model). Artifact Registry keeps two versions and shares the unchanged layers.
+
 ## Cost
 
 Everything is sized for the free tiers (core-007 SC-003: under $1 a month). Both services scale to zero and are capped (Keycloak 1 instance, app 2), so idle time costs nothing. A cold start takes about 16 s for Keycloak and 2 s for the app.

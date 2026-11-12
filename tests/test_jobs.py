@@ -11,7 +11,7 @@ from fastapi.testclient import TestClient
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "agents" / "brand-briefing"))
 
-from pharmagentics.api import jobs, service  # noqa: E402
+from pharmagentics.api import cloud, jobs, service  # noqa: E402
 from pharmagentics.api.app import app  # noqa: E402
 
 pytestmark = pytest.mark.skipif(not service.DB.is_file(), reason="Build local/pharmagentics.duckdb first")
@@ -27,9 +27,13 @@ def _env(monkeypatch, tmp_path):
     monkeypatch.setenv("PHARMAGENTICS_STATE_DIR", str(tmp_path))
     monkeypatch.setenv("PHARMAGENTICS_WORKER_TOKEN", TOKEN)
     monkeypatch.delenv("K_SERVICE", raising=False)
+    for k in ("PHARMAGENTICS_CLOUD_AGENT_JOB", "PHARMAGENTICS_GCP_PROJECT", "PHARMAGENTICS_CLOUD_MAX_SECONDS"):
+        monkeypatch.delenv(k, raising=False)
     jobs.reset()
+    cloud.reset()
     yield
     jobs.reset()
+    cloud.reset()
 
 
 def signed_in(user: str) -> TestClient:
@@ -121,3 +125,91 @@ def test_untraced_numbers_ignore_dates_versions_and_plan_ids():
     text = "Brief for week of 2026-07-13. Data version 06bcba77fbe1. Plan SYN_MID_ATLANTIC_MEDICARE_PART_D_1 fell 22.5%."
     assert service.untraced_numbers(text, [{"value": "22.5%"}], "06bcba77fbe1") == []
     assert service.untraced_numbers(text, [], "06bcba77fbe1") == ["22.5%"]
+
+
+# --- core-007 FR-031: heartbeat, stale jobs, and the cloud CPU host ---------------------------------
+
+def _running_job_on(worker_name: str):
+    analyst = signed_in("dev-analyst")
+    job = analyst.post("/api/agent/jobs", json={"kind": "triage", "query": Q}).json()
+    assert worker().post("/api/worker/next", json={"worker": worker_name}, headers=W).json()["id"] == job["id"]
+    return analyst, job["id"]
+
+
+def test_heartbeat_keeps_a_long_job_alive_and_silence_fails_it():
+    analyst, job_id = _running_job_on("pc-1")
+    jobs.get(job_id)["started_ts"] -= 1200  # twenty minutes in: a slow CPU run, not a stuck one
+    assert worker().post("/api/worker/heartbeat", json={"worker": "pc-1"}, headers=W).status_code == 204
+    assert analyst.get(f"/api/agent/jobs/{job_id}").json()["status"] == "running"
+    jobs._BOOT -= 1000  # (the grace period after an app restart is over)
+    jobs._hosts["pc-1"]["last_seen"] -= 400  # the worker went quiet
+    failed = analyst.get(f"/api/agent/jobs/{job_id}").json()
+    assert failed["status"] == "failed" and "stopped answering" in failed["error"]
+    assert worker().post("/api/worker/heartbeat", json={"worker": "x"}).status_code == 401  # token required
+
+
+def test_a_job_over_the_hard_cap_fails_even_with_a_heartbeat():
+    analyst, job_id = _running_job_on("pc-1")
+    jobs.get(job_id)["started_ts"] -= jobs.MAX_RUN_SECONDS + 5
+    worker().post("/api/worker/heartbeat", json={"worker": "pc-1"}, headers=W)
+    assert analyst.get(f"/api/agent/jobs/{job_id}").json()["status"] == "failed"
+
+
+def _enable_cloud(monkeypatch, calls):
+    monkeypatch.setenv("PHARMAGENTICS_CLOUD_AGENT_JOB", "pharmagentics-agent")
+    monkeypatch.setenv("PHARMAGENTICS_GCP_PROJECT", "pharmagentics")
+    monkeypatch.setattr(cloud, "_post", lambda url: calls.append(url))
+
+
+def test_cloud_host_starts_only_when_work_waits_and_nobody_hosts(monkeypatch):
+    calls: list[str] = []
+    _enable_cloud(monkeypatch, calls)
+    analyst = signed_in("dev-analyst")
+    assert analyst.get("/api/agent/status").json()["cloud"]["enabled"] is True
+    assert calls == []  # nothing is waiting
+    analyst.post("/api/agent/jobs", json={"kind": "triage", "query": Q})
+    assert calls == ["https://run.googleapis.com/v2/projects/pharmagentics/locations/us-central1/jobs/pharmagentics-agent:run"]
+    analyst.get("/api/agent/status")
+    assert len(calls) == 1  # one start, not one per poll (cooldown)
+    assert analyst.get("/api/agent/status").json()["cloud"]["starting"] is True
+
+
+def test_a_teammates_machine_goes_first(monkeypatch):
+    calls: list[str] = []
+    _enable_cloud(monkeypatch, calls)
+    worker().post("/api/worker/next", json={"worker": "meghna-pc"}, headers=W)  # a host is online
+    signed_in("dev-analyst").post("/api/agent/jobs", json={"kind": "triage", "query": Q})
+    assert calls == []
+
+
+def test_cloud_budget_stops_new_starts_and_counts_cloud_jobs(monkeypatch):
+    calls: list[str] = []
+    _enable_cloud(monkeypatch, calls)
+    monkeypatch.setenv("PHARMAGENTICS_CLOUD_MAX_SECONDS", str(cloud.START_OVERHEAD + 50))
+    analyst = signed_in("dev-analyst")
+    analyst.post("/api/agent/jobs", json={"kind": "triage", "query": Q})
+    assert len(calls) == 1 and cloud.seconds_left() == 50
+    # the cloud host takes the job and finishes it: its running time is charged to the budget
+    job = worker().post("/api/worker/next", json={"worker": "cloud"}, headers=W).json()
+    jobs.get(job["id"])["started_ts"] -= 120
+    worker().post(f"/api/worker/jobs/{job['id']}", json={"ok": False, "error": "test"}, headers=W)
+    assert cloud.seconds_left() == 0 and cloud.usage()["job_seconds"] >= 120
+    cloud.reset()
+    jobs._hosts.clear()
+    analyst.post("/api/agent/jobs", json={"kind": "triage", "query": Q})
+    assert len(calls) == 1  # budget used up: no second start
+    assert "budget" in analyst.get("/api/agent/status").json()["cloud"]["error"]
+
+
+def test_a_failed_start_is_reported_and_refunded(monkeypatch):
+    _enable_cloud(monkeypatch, [])
+    monkeypatch.setattr(cloud, "_post", lambda url: (_ for _ in ()).throw(RuntimeError("HTTP 403")))
+    analyst = signed_in("dev-analyst")
+    analyst.post("/api/agent/jobs", json={"kind": "triage", "query": Q})
+    st = analyst.get("/api/agent/status").json()["cloud"]
+    assert "could not start" in st["error"] and cloud.usage()["starts"] == 0
+
+
+def test_cloud_is_off_unless_configured():
+    st = signed_in("dev-analyst").get("/api/agent/status").json()["cloud"]
+    assert st["enabled"] is False

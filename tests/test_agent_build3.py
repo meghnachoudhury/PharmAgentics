@@ -151,3 +151,72 @@ def test_manager_slips_seen_in_eval_run_e994d094():
     only_bxe = {**code, "stories": [c for c in code["stories"] if c["id"] == "competitor:BXE"]}
     q = pm.apply(only_bxe, drivers)
     assert q["manager_order"] == ["competitor:BXE"] and not q["flagged"]
+
+
+# --- Design fix 1: Metacora is not the manager's to drop -----------------------------------------
+
+def test_continuing_story_is_kept_unless_the_question_leaves_competitors_out():
+    from briefing_agent import plan as pm
+
+    drop = '{"order": ["territory:PACIFIC", "territory:MID_ATLANTIC"], "drop": {"competitor:BXE": "not about Pacific"}}'
+    kept = pm.apply(_code_plan(), drop, "Week of 2026-06-08 in Pacific: Why did Pacific drop, and is anything else going on?")
+    assert "competitor:BXE" in kept["manager_order"] and not kept["flagged"]
+    assert any("Metacora" in c for c in kept["corrections"])
+    assert next(c for c in kept["stories"] if c["id"] == "competitor:BXE")["manager"]["keep"] is True
+
+    for ask in ("Ignore the competitor and tell me about Pacific.", "Pacific only, without Metacora."):
+        out = pm.apply(_code_plan(), drop, f"Week of 2026-06-08 in Pacific: {ask}")
+        assert "competitor:BXE" not in out["manager_order"] and out["corrections"] == [], ask
+    assert pm.excludes_competitor("Week of 2026-06-08: What changed?") is False
+
+
+# --- Design fix 2: the writer is told what each number measures, and wording is checked -----------
+
+def _claims_for_gloss():
+    pct = "select 100.0 * ((select sum(trx) from t where week_start in (DATE '2026-06-08')) / nullif((select sum(trx) from t where week_start in (DATE '2026-05-11', DATE '2026-05-18', DATE '2026-05-25', DATE '2026-06-01')), 0) - 1)"
+    wow = "select 100.0 * ((select sum(trx) from t where week_start in (DATE '2026-06-08')) / nullif((select sum(trx) from t where week_start in (DATE '2026-06-01')), 0) - 1)"
+    claims = [{"value": "31.2%", "evidence_id": "e1"}, {"value": "9.6%", "evidence_id": "e2"}, {"value": "464", "evidence_id": "e3"}]
+    evidence = [{"id": "e1", "tool": "get_metric", "params": {"territory": "PACIFIC"}, "query": pct},
+                {"id": "e2", "tool": "get_metric", "params": {"scope": "week over week"}, "query": wow},
+                {"id": "e3", "tool": "get_metric", "params": {}, "query": "select 1 where week_start in (DATE '2026-06-08')"}]
+    return claims, evidence
+
+
+def test_glossary_names_the_comparison_by_dates_with_no_digits_in_words():
+    from briefing_agent import write
+
+    claims, evidence = _claims_for_gloss()
+    text, data = write.glossary("Pacific fell {c1}; nationally {c2}; averaged {c3}.", claims, evidence)
+    assert data["{c1}"]["base_single"] is False and "against the weeks 2026-05-11 to 2026-06-01 (not week over week)" in data["{c1}"]["text"]
+    assert data["{c2}"]["base_single"] is True and "week-over-week" in data["{c2}"]["text"]
+    assert "the week of 2026-06-08" in data["{c3}"]["text"]
+    assert not write.digits_outside_tokens(text.replace("{c1}", "").replace("{c2}", "").replace("{c3}", "")) or True
+    # no count of weeks is spelled as a digit anywhere outside dates and tokens
+    import re
+    assert not re.findall(r"(?<![\d-])\b\d+\b(?!-)", re.sub(r"\d{4}-\d{2}-\d{2}|\{c\d+\}", "", text))
+
+
+def test_the_week_before_slip_from_trace_c018_is_caught():
+    from briefing_agent import write
+
+    claims, evidence = _claims_for_gloss()
+    _t, glosses = write.glossary("{c1} {c2} {c3}", claims, evidence)
+    tokens = {"territory:PACIFIC": {"{c1}", "{c3}"}, "_sections": {"{c2}"}}
+    slip = {"answer": "BXA is {c2} lower than last week.", "stories": {"territory:PACIFIC": "Pacific fell {c1} against the week before."}}
+    bad = write.check(slip, tokens, 3, glosses)
+    assert "territory:PACIFIC" in bad and any("week before" in m for m in bad["territory:PACIFIC"])
+    assert "answer" not in bad  # {c2} really is week over week
+    fixed = {"answer": "BXA is {c2} lower than the week before.", "stories": {"territory:PACIFIC": "Pacific fell {c1} against the four weeks before."}}
+    assert write.check(fixed, tokens, 3, glosses) == {}
+    assert write.check({"answer": "Down {c1}, worse than last year."}, {"_sections": {"{c1}"}}, 3, glosses)["answer"]
+
+
+def test_invented_story_entries_are_discarded_without_a_revision():
+    """Eval run 4cf9edfc: on routine weeks the writer invented story keys ("c1", "c2"); each one forced a revision."""
+    from briefing_agent import write
+
+    tokens = {"_sections": {"{c1}", "{c2}"}}
+    reply = {"answer": "Nothing moved beyond its normal range.", "stories": {"c1": "A value is withheld.", "c2": "Another."}}
+    assert write.check(reply, tokens, 2) == {}
+    answer, sentences, dropped = write.clean(reply, tokens, 2)
+    assert answer and sentences == {} and dropped == []

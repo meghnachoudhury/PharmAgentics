@@ -14,8 +14,10 @@ import uuid
 
 from . import store
 
-STALE_SECONDS = 600      # a running job with no result after this is failed (the host went away)
-OFFLINE_AFTER = 60       # no poll for this long: the agent host is offline
+HEARTBEAT_STALE = 180    # a running job whose worker has been silent this long is failed (the host went away)
+MAX_RUN_SECONDS = 5400   # no job runs longer than this, whatever its worker says (the CPU host is slow, not endless)
+OFFLINE_AFTER = 60       # no poll or heartbeat for this long: the agent host is offline
+_BOOT = time.time()      # after a restart a worker has this long to heartbeat again before its job is failed
 _lock = threading.Lock()
 _jobs: dict[str, dict] = {}
 _loaded = False
@@ -41,11 +43,12 @@ def _load() -> None:
 
 def reset() -> None:
     """Tests only: forget the in-memory queue."""
-    global _loaded
+    global _loaded, _BOOT
     with _lock:
         _jobs.clear()
         _hosts.clear()
         _loaded = False
+        _BOOT = time.time()
 
 
 def submit(kind: str, payload: dict, by: str) -> dict:
@@ -62,14 +65,31 @@ def submit(kind: str, payload: dict, by: str) -> dict:
 def get(job_id: str) -> dict | None:
     with _lock:
         _load()
+        _expire(time.time())  # a job whose worker went silent must show as failed, not "running" for ever
         return _jobs.get(job_id)
 
 
 def _expire(now: float) -> None:
     for job in _jobs.values():
-        if job["status"] == "running" and job["started_ts"] and now - job["started_ts"] > STALE_SECONDS:
-            job.update(status="failed", error="The agent host did not return a result in time.", finished_at=store.now())
+        if job["status"] != "running" or not job["started_ts"]:
+            continue
+        seen = max(_hosts.get(job.get("worker"), {}).get("last_seen", 0.0), _BOOT)
+        if now - seen > HEARTBEAT_STALE or now - job["started_ts"] > MAX_RUN_SECONDS:
+            job.update(status="failed", error="The agent host stopped answering before it returned a result.",
+                       finished_at=store.now())
             _save(job)
+
+
+def heartbeat(model: str | None, worker: str) -> None:
+    """A worker busy on a job says it is alive (it does not poll while it runs one)."""
+    with _lock:
+        _hosts[worker] = {"last_seen": time.time(), "model": model}
+
+
+def queued_count() -> int:
+    with _lock:
+        _load()
+        return sum(j["status"] == "queued" for j in _jobs.values())
 
 
 def next_job(model: str | None, worker: str = "worker") -> dict | None:

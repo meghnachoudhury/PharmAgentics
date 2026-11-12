@@ -8,6 +8,9 @@ Rules again: every number is a claim token copied from the allowed list; never w
 Allowed tokens per piece:
 {allowed}
 
+What each number measures (describe a comparison only as this list does):
+{glossary}
+
 Your previous reply:
 {reply}
 

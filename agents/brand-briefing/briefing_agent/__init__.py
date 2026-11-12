@@ -84,12 +84,12 @@ async def _triage(question: str, spec: str, log: RunLog) -> dict:
         return dict(code_plan, engine="agent", state="OUT_OF_SCOPE", scope=scope, stories=[], flagged=False, flags=[],
                     manager_order=[], manager_drop={}, manager_note="", model=spec)
     if code_plan["state"] != "TRIAGE_REVIEW":
-        return dict(planmod.apply(code_plan, '{"order": []}'), model=spec)
+        return dict(planmod.apply(code_plan, '{"order": []}', question), model=spec)
     prompt = (HERE / cfg["prompts"]["manager_triage"]).read_text(encoding="utf-8").format(
         question=question.split(":", 1)[-1].strip(), cards=planmod.cards_text(code_plan))
     with span("4_triage_manager", inputs={"cards": planmod.cards_text(code_plan)}) as sp:
         reply = await _ask(spec, prompt, log, "manager_triage")
-        plan = planmod.apply(code_plan, reply)
+        plan = planmod.apply(code_plan, reply, question)
         finish(sp, {"reply": reply, "order": plan["manager_order"], "flags": plan["flags"]})
     return dict(plan, model=spec)
 
@@ -111,12 +111,15 @@ def _left_out(plan: dict, order: list[str]) -> list[str]:
            ([f"Left out of this brief by the analyst: {', '.join(by_analyst)}."] if by_analyst else [])
 
 
-async def _write(cfg: dict, spec: str, question: str, sections: dict, stories: list[dict], n_claims: int,
-                 log: RunLog) -> tuple[str, dict, bool, list[str]]:
+async def _write(cfg: dict, spec: str, question: str, sections: dict, stories: list[dict], claims: list[dict],
+                 evidence: list[dict], log: RunLog) -> tuple[str, dict, bool, list[str]]:
+    n_claims = len(claims)
     story_tokens = {s["id"]: write.tokens(s["section"]) for s in stories}
     story_tokens["_sections"] = write.tokens("\n".join(sections["header"] + sections["data_health"] + sections["kpis"]))
+    shown = write.sections_text(sections, stories)
+    gloss_text, glosses = write.glossary(shown, claims, evidence)  # what each number measures, written by code
     prompt = (HERE / cfg["prompts"]["writer"]).read_text(encoding="utf-8").format(
-        question=question.split(":", 1)[-1].strip(), sections=write.sections_text(sections, stories))
+        question=question.split(":", 1)[-1].strip(), sections=shown, glossary=gloss_text or "(no numbers)")
     with span("5_writer") as sp:
         raw = await _ask(spec, prompt, log, "writer")
         try:
@@ -126,20 +129,20 @@ async def _write(cfg: dict, spec: str, question: str, sections: dict, stories: l
         finish(sp, {"reply": raw})
     revised = False
     with span("6_verification") as sp:
-        bad = write.check(reply, story_tokens, n_claims)
+        bad = write.check(reply, story_tokens, n_claims, glosses)
         if bad:
             allowed = "\n".join(f"- {k}: {', '.join(sorted(v)) or '(none)'}" for k, v in story_tokens.items() if k != "_sections")
             allowed += "\n- answer: any token above, or " + (", ".join(sorted(story_tokens["_sections"])) or "(none)")
             fix = (HERE / cfg["prompts"]["revise"]).read_text(encoding="utf-8").format(
                 problems="\n".join(f"- {k}: {'; '.join(v)}" for k, v in bad.items()), allowed=allowed,
-                reply=json.dumps(reply))
+                glossary=gloss_text or "(no numbers)", reply=json.dumps(reply))
             raw2 = await _ask(spec, fix, log, "reviser")
             try:
                 reply = planmod.parse(raw2)
             except Exception:  # noqa: BLE001
                 pass
             revised = True
-        answer_text, sentences, dropped = write.clean(reply, story_tokens, n_claims)
+        answer_text, sentences, dropped = write.clean(reply, story_tokens, n_claims, glosses)
         finish(sp, {"problems": bad, "revised": revised, "dropped": dropped})
     return answer_text, sentences, revised, dropped
 
@@ -164,7 +167,8 @@ async def _run(question: str, plan: dict, order: list[str], spec: str, reviewed:
         dropped_line = await _call(mcp, "dropped_line")
         run = json.loads(await _call(mcp, "export_run"))
     claims = run["claims"]
-    answer_text, sentences, revised, dropped = await _write(cfg, spec, question, sections, stories, len(claims), log)
+    answer_text, sentences, revised, dropped = await _write(cfg, spec, question, sections, stories, claims,
+                                                            run["evidence"], log)
     template = write.assemble(sections, stories, answer_text, sentences, _left_out(plan, order), dropped_line)
     if (bad := digits_outside_tokens(template)):  # code sections are clean; this guards the assembly itself
         raise AssertionError(f"digit outside a claim token: {bad[:3]}")

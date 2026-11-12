@@ -34,14 +34,21 @@ After that, every command in this guide works with `--account <your Google accou
 
 1. Sign in as `uat-analyst`, choose a territory and a week, pick an engine, and generate.
    - **Scripted:** instant. The fixed order of checks runs with the manager off.
-   - **Agent team:** the manager, Data Forensics and the Driver Investigator run on a teammate's machine (see below). It takes minutes and is experimental. You can type your own question.
+   - **Agent team:** the manager, Data Forensics and the Driver Investigator run on a teammate's GPU machine if one is hosting (see below), or else on the cloud CPU host, which starts by itself. Experimental; you can type your own question.
 2. **Triage review.** Code proposes the stories to investigate. On the agent engine, the manager's changes are shown and flagged. Keep, drop or reorder the stories, then approve.
 3. **The brief.** Every underlined number is a claim: click it to see the query and record behind it. "How this brief was made" shows each stage and who did it: code, an agent or a person.
 4. Approve or reject the brief. Only approved briefs reach `uat-director`.
 
-## Host the agent team (anyone on the team)
+## Who runs the agent team
 
-The app never runs a model. When someone picks **Agent team**, the request waits in a queue until a teammate's machine takes it. Any number of teammates can host at once: each machine runs one request at a time, and the app shows who is online.
+The web app never runs a model. When someone picks **Agent team**, the request goes into a queue and a *worker* takes it. There are two kinds:
+
+1. **A teammate's machine** (fast, free): anyone can run the worker next to Ollama on their own GPU (below). Any number can host at once; each takes one request at a time, and the app shows who is online. A teammate's machine always goes first.
+2. **The cloud CPU host** (slow, always available): if the queue has work and nobody is hosting, the app starts a Cloud Run job (`pharmagentics-agent`) that runs the same qwen3 model on CPU inside our own project. It works through the queue and shuts itself down when idle. A first request takes about a minute to start and then runs several times slower than a GPU. It has a monthly budget set to stay inside Google Cloud's free tier; when the budget is used up, the UI says so and requests wait for a teammate's machine. No prompt leaves the project.
+
+So nobody has to keep a PC on for the app to work; hosting just makes it faster.
+
+## Host the agent team on your machine
 
 1. Install [Ollama](https://ollama.com/download) and pull the model: `ollama pull qwen3:4b-instruct-2507-q4_K_M`. A GPU with 6 GB or more is best; a CPU works, but slowly.
 2. Load the data (setup step 1). Your data version must match the app's. It does as long as both come from the same `data/agent_visible/` release.
@@ -72,7 +79,10 @@ uv run python deploy/gcp.py status   --project pharmagentics --account <you>   #
 uv run python deploy/gcp.py app      --project pharmagentics --account <you>   # build and deploy the app
 uv run python deploy/gcp.py rollback --project pharmagentics --account <you>   # previous app revision, no rebuild
 uv run python deploy/gcp.py keycloak --project pharmagentics --account <you>   # only after a realm or password change
+uv run python deploy/gcp.py agent    --project pharmagentics --account <you>   # the cloud CPU agent host (agent code, prompts or data changed)
 ```
+
+The agent host is a separate image from the app: it carries the agent code, the model and the same data release. After changing `agents/brand-briefing/briefing_agent/` or the data release, run `agent` as well as `app`. The app refuses a brief from a host on another data version, so a stale host shows up as a failed job, never a wrong number.
 
 Once the GitHub repository variables are set, a merge to `main` deploys the app automatically, but only after CI passes (tests, golden set, image content check). Keycloak never deploys from CI.
 
@@ -82,7 +92,8 @@ Once the GitHub repository variables are set, a merge to `main` deploys the app 
 
 - **Ground truth never enters the repo, the image or the app.** The answer key and held-out parameters stay in the private store (`CLAUDE.md`, hard rules). Agent code never reads `eval/`.
 - **Every number is a claim filled by code.** The app refuses an agent brief with a number that has no claim behind it.
-- **Don't create cloud resources by hand.** Use `deploy/gcp.py`. Everything is sized for the free tiers, with a $1 budget alert. Your access covers deploys, rollbacks, logs and secrets, but not billing or granting access.
+- **Don't create cloud resources by hand.** Use `deploy/gcp.py`. Everything is sized for the free tiers, with a $1 budget alert and a monthly cap on the cloud agent host. Your access covers deploys, rollbacks, logs and secrets, but not billing or granting access.
+- **Access:** teammates get the deployer role set from the project owner (`gcp.py team --member`). Mentors and other readers get read-only access (`gcp.py team --viewer`): the project Viewer role, with no secret values, deploys or billing.
 - Say "competitive intelligence", never "surveillance". "New patients" means NBRx only. No output names a rep.
 
 ## Forecast lane
@@ -98,7 +109,8 @@ The roles CA (analyst view) and BM (leadership view) already exist.
 
 | You see | Do |
 | :- | :- |
-| "No host online" on Agent team | Nobody is running the worker; start it (Host the agent team) |
+| "No host online" on Agent team | Nobody is hosting and the cloud host is off or out of budget this month; start a worker on your machine (above) |
+| An agent request sits at "Starting the cloud CPU host" | A cold start takes about a minute; after that it is slow (CPU). If it never starts, check `gcp.py status` and the job's logs; the app shows the reason under the engine card |
 | An agent job fails with "did not pass the traceability check" | The agent stated a number with no claim; the app refused it as designed. Run it again or use Scripted |
 | "Ran on data version X, not this app's Y" | Your local data differs from the app's; reload the data from the same release |
 | `keycloak` says your `.env.uat` differs | `env-pull` (take the team's) or `env-push` (if your change should become the team's) |

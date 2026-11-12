@@ -34,6 +34,15 @@ def _read(rel: str) -> str:
     return (HERE / rel).read_text(encoding="utf-8")
 
 
+def wall_scale() -> float:
+    """The wall-clock caps in agent.yaml are tuned for a GPU. A CPU host sets PHARMAGENTICS_AGENT_WALL_SCALE to
+    stretch them, so slow is not mistaken for stuck (a capped story would close with drivers untested)."""
+    try:
+        return max(1.0, float(os.environ.get("PHARMAGENTICS_AGENT_WALL_SCALE", "1")))
+    except ValueError:
+        return 1.0
+
+
 def story_task(card: dict, hypotheses: list[str]) -> str:
     t = card["territory"]
     order = ", ".join(hypotheses)
@@ -75,6 +84,7 @@ async def investigate(cfg: dict, spec: str, mcp, plan: dict, order: list[str], l
     """Each approved story in P1's (or the manager's) order. Returns the story sections and per-story notes."""
     by_id = {c["id"]: c for c in plan["stories"]}
     started, stories, notes, n = time.time(), [], [], 0
+    scale = wall_scale()
     for sid in order:
         card = by_id[sid]
         if card["kind"] == "competitor":
@@ -84,12 +94,12 @@ async def investigate(cfg: dict, spec: str, mcp, plan: dict, order: list[str], l
                 stories.append({"id": sid, "n": n, "section": text})
             continue
         n += 1
-        left = cfg["run_wall_seconds"] - (time.time() - started)
+        left = cfg["run_wall_seconds"] * scale - (time.time() - started)
         capped = "run_cap" if left < 20 else None
         with span(f"story_{n}_{card['territory']}", inputs={"story": sid, "hypotheses": card["manager"]["hypotheses"]}) as sp:
             if not capped:
                 capped = await _team(cfg, spec, mcp, story_task(card, card["manager"]["hypotheses"]), log,
-                                     min(cfg["story_wall_seconds"], left))
+                                     min(cfg["story_wall_seconds"] * scale, left))
             section = await _call(mcp, "story_section", territory=card["territory"], n=n)  # code closes the story
             finish(sp, {"capped": capped, "section": section})
         stories.append({"id": sid, "n": n, "section": section})

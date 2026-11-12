@@ -68,6 +68,7 @@ export type TriagePlan = {
   manager_note?: string
   flagged?: boolean
   flags?: string[]
+  corrections?: string[]
   weeks: string[]
   baseline: string[]
   context: string
@@ -80,7 +81,8 @@ export type TriagePlan = {
   week_start: string
 }
 export type TriageDecision = { plan_id: string; stories: string[] }
-export type AgentStatus = { online: boolean; configured: boolean; model: string | null; hosts?: { name: string; model: string | null }[]; queued: number; running: number; last_seen_seconds: number | null }
+export type CloudHost = { enabled: boolean; seconds_left: number; starting: boolean; error: string | null; eta_minutes: number | null; cpu: boolean }
+export type AgentStatus = { cloud?: CloudHost; online: boolean; configured: boolean; model: string | null; hosts?: { name: string; model: string | null }[]; queued: number; running: number; last_seen_seconds: number | null }
 export type AgentJob = { id: string; kind: "triage" | "brief"; status: "queued" | "running" | "done" | "failed"; error: string | null; result?: unknown }
 export type TriageRecord = {
   plan_id: string

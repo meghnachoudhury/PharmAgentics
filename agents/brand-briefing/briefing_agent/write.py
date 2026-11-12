@@ -7,6 +7,7 @@ still fails is dropped. Then the brief is assembled and rendered from the run's 
 from __future__ import annotations
 
 import re
+from datetime import date, timedelta
 
 from pharmagentics.tools.registry import digits_outside_tokens
 
@@ -15,11 +16,53 @@ BANNED = [(re.compile(r"surveillance", re.I), 'says "surveillance" (use "competi
           (re.compile(r"new patients?(?![^.]*\bNBRx\b)", re.I), 'says "new patients" about something other than NBRx')]
 
 
+# What each number measures, written by code from the claim's own SQL, so the writer never has to guess a
+# comparison (Nov 6 trace C-018; brief-002 FR-026). No counts: weeks are named by their dates.
+_WEEK_SETS = re.compile(r"week_start in \(([^)]*)\)")
+_ISO = re.compile(r"\d{4}-\d{2}-\d{2}")
+TOKEN_NUMBERS = re.compile(r"\{c(\d+)\}")
+RELATIVE_WEEK = re.compile(r"\b(week before|last week|previous week|prior week|week earlier|week[- ]over[- ]week)\b", re.I)
+YEAR_BACK = re.compile(r"\b(last year|year[- ]over[- ]year|a year ago|same week last year)\b", re.I)
+
+
+def _span(weeks: list[str]) -> str:
+    return f"the week of {weeks[0]}" if len(weeks) == 1 else f"the weeks {weeks[0]} to {weeks[-1]}"
+
+
+def gloss(claim: dict, evidence: dict | None) -> dict:
+    """{'text': what the number is, 'base_single': True when it compares with the single week before}."""
+    query = (evidence or {}).get("query") or ""
+    sets: list[list[str]] = []
+    for group in _WEEK_SETS.findall(query):
+        weeks = sorted(set(_ISO.findall(group)))
+        if weeks and (not sets or sets[-1] != weeks):
+            sets.append(weeks)
+    params = ", ".join(f"{k} {v}" for k, v in ((evidence or {}).get("params") or {}).items())
+    single = False
+    if len(sets) >= 2 and claim["value"].endswith("%"):
+        new, old = sets[0], sets[1]
+        single = len(old) == 1 and len(new) == 1 and date.fromisoformat(old[0]) == date.fromisoformat(new[0]) - timedelta(days=7)
+        text = f"a change: {_span(new)} against {_span(old)}" + (" (a week-over-week comparison)" if single else " (not week over week)")
+    elif sets:
+        text = f"a value for {_span(sets[0])}"
+    else:
+        text = "a value taken from the data"
+    return {"text": text + (f" [{params}]" if params else ""), "base_single": single}
+
+
+def glossary(shown: str, claims: list[dict], evidence: list[dict]) -> tuple[str, dict[str, dict]]:
+    """Lines for the writer, one per token that appears in the sections, and the gloss data by token."""
+    by_id = {e["id"]: e for e in evidence}
+    seen = sorted({int(n) for n in TOKEN_NUMBERS.findall(shown) if 0 < int(n) <= len(claims)})
+    data = {f"{{c{n}}}": gloss(claims[n - 1], by_id.get(claims[n - 1]["evidence_id"])) for n in seen}
+    return "\n".join(f"{t} = {g['text']}" for t, g in data.items()), data
+
+
 def tokens(text: str) -> set[str]:
     return {m.group(0) for m in TOKEN.finditer(text or "")}
 
 
-def problems(piece: str, allowed: set[str], n_claims: int) -> list[str]:
+def problems(piece: str, allowed: set[str], n_claims: int, glosses: dict[str, dict] | None = None) -> list[str]:
     out = []
     if (bad := digits_outside_tokens(piece)):
         out.append(f"typed numbers {', '.join(bad[:5])}")
@@ -31,6 +74,12 @@ def problems(piece: str, allowed: set[str], n_claims: int) -> list[str]:
     if foreign:
         out.append(f"tokens from another part of the brief {', '.join(foreign)}")
     out += [why for rx, why in BANNED if rx.search(piece or "")]
+    if glosses is not None:  # wording: a comparison is described only as the glossary states it
+        if RELATIVE_WEEK.search(piece or "") and not any(glosses.get(t, {}).get("base_single") for t in used):
+            out.append('compares with "the week before", but none of its numbers is a week-over-week comparison '
+                       "(describe it as the glossary does)")
+        if YEAR_BACK.search(piece or ""):
+            out.append("compares with last year, but no number in this brief does")
     return out
 
 
@@ -45,25 +94,27 @@ def normalize(reply: dict, story_ids) -> dict:
     return {**reply, "stories": out}
 
 
-def check(reply: dict, story_tokens: dict[str, set[str]], n_claims: int) -> dict[str, list[str]]:
+def check(reply: dict, story_tokens: dict[str, set[str]], n_claims: int,
+          glosses: dict[str, dict] | None = None) -> dict[str, list[str]]:
     """Problems per piece: 'answer' and each story id."""
     reply = normalize(reply, story_tokens)
     every = set().union(*story_tokens.values(), story_tokens.get("_sections", set()))
     found = {}
-    if (p := problems(str(reply.get("answer", "")), every, n_claims)):
+    if (p := problems(str(reply.get("answer", "")), every, n_claims, glosses)):
         found["answer"] = p
     for sid, sentence in (reply.get("stories") or {}).items():
         if sid not in story_tokens:
-            found[sid] = ["not a story in this brief"]
-        elif (p := problems(str(sentence), story_tokens[sid], n_claims)):
+            continue  # an entry for a story this brief does not have is discarded, not revised (small models invent them)
+        elif (p := problems(str(sentence), story_tokens[sid], n_claims, glosses)):
             found[sid] = p
     return found
 
 
-def clean(reply: dict, story_tokens: dict[str, set[str]], n_claims: int) -> tuple[str, dict[str, str], list[str]]:
+def clean(reply: dict, story_tokens: dict[str, set[str]], n_claims: int,
+          glosses: dict[str, dict] | None = None) -> tuple[str, dict[str, str], list[str]]:
     """Keep only the pieces that pass; report what was dropped."""
     reply = normalize(reply, story_tokens)
-    bad = check(reply, story_tokens, n_claims)
+    bad = check(reply, story_tokens, n_claims, glosses)
     answer = "" if "answer" in bad else str(reply.get("answer", "")).strip()
     stories = {sid: str(s).strip() for sid, s in (reply.get("stories") or {}).items()
                if sid in story_tokens and sid != "_sections" and sid not in bad and str(s).strip()}

@@ -8,7 +8,8 @@
 !src/
 !sql/
 !data/agent_visible/
-!agents/brand-briefing/briefing_baseline/
+!agents/brand-briefing/
+!deploy/agent/entrypoint.sh
 !frontend/figma-make/
 **/__pycache__
 **/node_modules

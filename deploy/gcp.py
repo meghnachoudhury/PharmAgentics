@@ -5,9 +5,10 @@ Every gcloud call passes --project, so the global gcloud config is never changed
   uv run python deploy/gcp.py setup    --project ID --billing ACCOUNT_ID   # once
   uv run python deploy/gcp.py keycloak --project ID                        # realm or Keycloak change
   uv run python deploy/gcp.py app      --project ID                        # manual app deploy (CI does this on main)
+  uv run python deploy/gcp.py agent    --project ID                        # the cloud CPU agent host (a Cloud Run job)
   uv run python deploy/gcp.py status   --project ID
   uv run python deploy/gcp.py rollback --project ID [--service app|keycloak]
-  uv run python deploy/gcp.py team     --project ID [--member EMAIL ...] [--remove EMAIL ...]   # owner only
+  uv run python deploy/gcp.py team     --project ID [--member EMAIL ...] [--viewer EMAIL ...] [--remove EMAIL ...]   # owner only
   uv run python deploy/gcp.py env-pull --project ID [--force]               # shared deploy/.env.uat -> local
   uv run python deploy/gcp.py env-push --project ID                         # local deploy/.env.uat -> shared
 
@@ -39,12 +40,13 @@ ENV_FILE = HERE / ".env.uat"
 REALM = HERE / "keycloak" / "realm-pharmagentics.json"
 REPO = "pharmagentics"
 APP, KC = "pharmagentics-app", "pharmagentics-keycloak"
-SA = {"app": "pa-app", "kc": "pa-keycloak", "deployer": "pa-deployer"}
+SA = {"app": "pa-app", "kc": "pa-keycloak", "deployer": "pa-deployer", "agent": "pa-agent"}
 SECRETS = {"session": "pa-session-secret", "client": "pa-oidc-client-secret", "realm": "pa-keycloak-realm",
            "worker": "pa-worker-token"}
 APIS = ["run.googleapis.com", "artifactregistry.googleapis.com", "secretmanager.googleapis.com",
         "iam.googleapis.com", "iamcredentials.googleapis.com", "sts.googleapis.com",
         "cloudresourcemanager.googleapis.com", "billingbudgets.googleapis.com", "storage.googleapis.com"]
+AGENT_JOB = "pharmagentics-agent"  # the cloud CPU agent host (core-007 FR-031)
 ENV_SECRET = "pa-env-uat"  # the whole deploy/.env.uat, shared with the team (FR-030)
 # FR-029: what a teammate needs for keycloak, app, rollback, status, logs and env-pull/env-push.
 # Not included: billing, budgets, project deletion, or setting the project's IAM policy (granting access).
@@ -249,6 +251,50 @@ def keycloak(c: Ctx) -> None:
     print(f"\nKeycloak: {c.url(KC)}  (realm pharmagentics; restart to reload accounts)")
 
 
+def cloud_env(c: Ctx) -> list[str]:
+    """Environment that tells the app how to start the cloud agent host; empty until that job exists."""
+    if not c.ok("run", "jobs", "describe", AGENT_JOB, f"--region={c.region}"):
+        return []
+    out = [f"PHARMAGENTICS_CLOUD_AGENT_JOB={AGENT_JOB}", f"PHARMAGENTICS_GCP_PROJECT={c.project}",
+           f"PHARMAGENTICS_CLOUD_AGENT_REGION={c.region}"]
+    eta = (read_env() if ENV_FILE.is_file() else {}).get("PHARMAGENTICS_CLOUD_ETA_MINUTES")
+    return out + ([f"PHARMAGENTICS_CLOUD_ETA_MINUTES={eta}"] if eta else [])
+
+
+def agent(c: Ctx, image: str | None = None) -> None:
+    """Build and deploy the cloud agent host: Ollama (CPU) with the model, plus the worker, as a Cloud Run job.
+    The app starts it on demand (cloud.py); it exits when idle, so it bills only while it works."""
+    read_env()
+    if not c.ok("iam", "service-accounts", "describe", c.sa("agent")):
+        c.gc("iam", "service-accounts", "create", SA["agent"], "--display-name=PharmAgentics cloud agent host (job)")
+    c.gc("secrets", "add-iam-policy-binding", SECRETS["worker"], f"--member=serviceAccount:{c.sa('agent')}",
+         "--role=roles/secretmanager.secretAccessor")
+    if image is None:
+        image = f"{c.registry}/agent:{git_sha()}"
+        c.gc("auth", "configure-docker", f"{c.region}-docker.pkg.dev", quiet_fail=True)
+        docker("build", "-f", str(HERE / "agent" / "Dockerfile"), "-t", image, str(ROOT))
+        content_check(image)
+        docker("push", image)
+    # 8 vCPUs and 8 GiB: the 4B model needs about 6 GiB. One task, no retries, one hour at most.
+    c.gc("run", "jobs", "deploy", AGENT_JOB, f"--image={image}", f"--region={c.region}",
+         f"--service-account={c.sa('agent')}", "--cpu=8", "--memory=8Gi", "--tasks=1", "--parallelism=1",
+         "--max-retries=0", "--task-timeout=3600s",
+         f"--set-env-vars=PHARMAGENTICS_APP_URL={c.url(APP)}",
+         f"--set-secrets=PHARMAGENTICS_WORKER_TOKEN={SECRETS['worker']}:latest")
+    # The app may start this job and nothing else; teammates who can deploy may deploy it.
+    c.gc("run", "jobs", "add-iam-policy-binding", AGENT_JOB, f"--region={c.region}",
+         f"--member=serviceAccount:{c.sa('app')}", "--role=roles/run.invoker")
+    admins = c.gc("projects", "get-iam-policy", c.project, "--flatten=bindings[].members",
+                  "--filter=bindings.role=roles/run.admin", "--format=value(bindings.members)", quiet_fail=True).split()
+    for m in admins:
+        if m.startswith("user:"):
+            c.gc("iam", "service-accounts", "add-iam-policy-binding", c.sa("agent"), f"--member={m}",
+                 "--role=roles/iam.serviceAccountUser")
+    c.gc("run", "services", "update", APP, f"--region={c.region}", "--update-env-vars=" + ",".join(cloud_env(c)))
+    print(f"\nCloud agent host: job {AGENT_JOB} (8 vCPU, 8 GiB, CPU only). The app starts it when an agent job "
+          "waits and no teammate's machine is hosting.")
+
+
 def app(c: Ctx, image: str | None = None) -> None:
     if image is None:
         image = f"{c.registry}/app:{git_sha()}"
@@ -262,7 +308,8 @@ def app(c: Ctx, image: str | None = None) -> None:
          "--cpu-boost", "--timeout=120", "--concurrency=40",
          "--set-env-vars=" + ",".join([
              "PHARMAGENTICS_AUTH=oidc", f"PHARMAGENTICS_OIDC_ISSUER={c.url(KC)}/realms/pharmagentics",
-             "PHARMAGENTICS_OIDC_CLIENT_ID=pharmagentics-app", f"PHARMAGENTICS_STATE_BUCKET={c.bucket}"]),
+             "PHARMAGENTICS_OIDC_CLIENT_ID=pharmagentics-app", f"PHARMAGENTICS_STATE_BUCKET={c.bucket}",
+             *cloud_env(c)]),
          f"--set-secrets=PHARMAGENTICS_SESSION_SECRET={SECRETS['session']}:latest,"
          f"PHARMAGENTICS_OIDC_CLIENT_SECRET={SECRETS['client']}:latest,"
          f"PHARMAGENTICS_WORKER_TOKEN={SECRETS['worker']}:latest")
@@ -283,6 +330,10 @@ def status(c: Ctx) -> None:
         rev = c.gc("run", "services", "describe", svc, f"--region={c.region}",
                    "--format=value(status.latestReadyRevisionName)", check=False, quiet_fail=True)
         print(f"{svc}: {c.url(svc)}  revision {rev or '(not deployed)'}")
+    job = c.gc("run", "jobs", "describe", AGENT_JOB, f"--region={c.region}",
+               "--format=value(status.latestCreatedExecution.name)", check=False, quiet_fail=True)
+    print(f"{AGENT_JOB}: {'deployed' if c.ok('run', 'jobs', 'describe', AGENT_JOB, f'--region={c.region}') else '(not deployed)'}"
+          + (f"  last execution {job}" if job else ""))
     for k, v in github_vars(c).items():
         print(f"  {k}={v}")
 
@@ -301,22 +352,32 @@ def _member(m: str) -> str:
     return m if ":" in m else f"user:{m}"
 
 
-def team(c: Ctx, add: list[str], remove: list[str]) -> None:
-    """Grant or revoke the FR-029 deployer role set. Needs the project owner."""
+def team(c: Ctx, add: list[str], remove: list[str], viewers: list[str] | None = None) -> None:
+    """Grant or revoke access. `add`: the FR-029 deployer role set. `viewers`: read-only (the project Viewer
+    role and nothing else: no secret values, no deploys, no billing), for example a mentor. Needs the owner."""
+    for raw in viewers or []:
+        m = _member(raw)
+        print(f"Granting read-only access: {m}")
+        c.gc("projects", "add-iam-policy-binding", c.project, f"--member={m}", "--role=roles/viewer", "--condition=None")
     for raw in add + remove:
         m, granting = _member(raw), raw in add
         verb = "add-iam-policy-binding" if granting else "remove-iam-policy-binding"
         print(f"{'Granting' if granting else 'Revoking'} deployer access: {m}")
         for role in TEAM_PROJECT_ROLES:
             c.gc("projects", verb, c.project, f"--member={m}", f"--role={role}", "--condition=None", check=granting)
-        for key in ("app", "kc"):  # deploy Cloud Run services that run as these accounts
+        for key in ("app", "kc", "agent"):  # deploy Cloud Run services and jobs that run as these accounts
+            if key == "agent" and not c.ok("iam", "service-accounts", "describe", c.sa("agent")):
+                continue  # the cloud agent host is not deployed yet; `gcp.py agent` grants the team then
             c.gc("iam", "service-accounts", verb, c.sa(key), f"--member={m}",
                  "--role=roles/iam.serviceAccountUser", check=granting)
         c.gc("storage", "buckets", verb, f"gs://{c.bucket}", f"--member={m}",
              "--role=roles/storage.objectViewer", check=granting)  # UAT events for the MLflow import (FR-026)
-    members = c.gc("projects", "get-iam-policy", c.project, "--flatten=bindings[].members",
-                   "--filter=bindings.role=roles/run.admin", "--format=value(bindings.members)", quiet_fail=True)
-    print("\nTeam with deployer access:", ", ".join(sorted(members.split())) or "(none)")
+        if not granting:  # a revoked person loses a read-only grant too
+            c.gc("projects", verb, c.project, f"--member={m}", "--role=roles/viewer", "--condition=None", check=False)
+    for label, role in (("deployer access", "roles/run.admin"), ("read-only access", "roles/viewer")):
+        members = c.gc("projects", "get-iam-policy", c.project, "--flatten=bindings[].members",
+                       f"--filter=bindings.role={role}", "--format=value(bindings.members)", quiet_fail=True)
+        print(f"\nWith {label}:", ", ".join(sorted(x for x in members.split() if x.startswith("user:"))) or "(none)")
     if add:
         print("Each teammate: install gcloud and Docker, run `gcloud auth login`, then\n"
               f"  uv run python deploy/gcp.py env-pull --project {c.project} --account <their Google account>")
@@ -347,7 +408,7 @@ def env_pull(c: Ctx, force: bool) -> None:
 
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("command", choices=["setup", "keycloak", "app", "status", "rollback", "github-vars",
+    p.add_argument("command", choices=["setup", "keycloak", "app", "agent", "status", "rollback", "github-vars",
                                        "team", "env-push", "env-pull"])
     p.add_argument("--project", required=True)
     p.add_argument("--account", help="gcloud account to use (e.g. mwc2150@columbia.edu); the active account is not changed")
@@ -357,6 +418,7 @@ def main() -> None:
     p.add_argument("--image", help="app: deploy this pushed image instead of building")
     p.add_argument("--service", choices=["app", "keycloak"], default="app")
     p.add_argument("--member", action="append", default=[], help="team: Google account to grant (repeatable)")
+    p.add_argument("--viewer", action="append", default=[], help="team: Google account to give read-only access (repeatable)")
     p.add_argument("--remove", action="append", default=[], help="team: Google account to revoke (repeatable)")
     p.add_argument("--force", action="store_true", help="env-pull: replace a local file that differs")
     a = p.parse_args()
@@ -370,12 +432,14 @@ def main() -> None:
         keycloak(c)
     elif a.command == "app":
         app(c, a.image)
+    elif a.command == "agent":
+        agent(c, a.image)
     elif a.command == "status":
         status(c)
     elif a.command == "rollback":
         rollback(c, a.service)
     elif a.command == "team":
-        team(c, a.member, a.remove)
+        team(c, a.member, a.remove, a.viewer)
     elif a.command == "env-push":
         env_push(c)
     elif a.command == "env-pull":

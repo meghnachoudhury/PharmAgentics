@@ -5,3 +5,4 @@
 .agents/** text eol=lf
 specs/** text eol=lf
 *.md text eol=lf
+deploy/agent/entrypoint.sh text eol=lf

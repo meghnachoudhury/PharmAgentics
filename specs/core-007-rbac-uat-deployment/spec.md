@@ -32,6 +32,12 @@ P2 (Insights Manager), P4 (Marketer) and FM (Forecasting Manager) get no role.
 - Q: How does locally run agent output reach the hosted app? → A: As versioned briefing snapshots that the owner generates locally (low-code build on `qwen3:4b-instruct-2507-q4_K_M`) for a fixed list of weeks and territories, and commits to `main` (core-007 open item 2, closed). Because the low-code build has not yet passed `eval gate` against the scripted baseline (run `0cd14c5f4266`, 2026-11-05), each snapshot must instead pass its own traceability check and is labelled experimental.
 - Q: What may the sign-in service and hosting cost? → A: Nothing beyond Google Cloud usage billing for a basic project; Keycloak is the free open-source edition, and every service stays within the free tiers.
 
+### Session 2026-11-12
+
+- Q: Should the agent team be usable when no teammate's machine is hosting it? → A: **Yes: option B, a cloud CPU host** (Michael). This reverses the 2026-11-11 decision that no language model runs on Google Cloud. A model now runs there, but only inside our own container, on CPU, as a Cloud Run *job* the app starts on demand (FR-031). The web app itself still never calls a model (FR-016). No external model provider is added (System S14 unchanged): prompts never leave the project.
+- Q: What may it cost? → A: Nothing beyond Google Cloud's free tier: the app keeps a monthly budget of job-seconds at 80% of the free vCPU allowance and starts nothing once it is used (FR-031). A teammate's machine always goes first.
+- Q: Who gets access? → A: Teammates (Alvin's two accounts, Meghna, Sienna) get the FR-029 deployer role set; the mentor (Dr. Admasu, two accounts) gets read-only access (the project Viewer role: no secret values, no deploys, no billing).
+
 ### Session 2026-11-11b
 
 - Q: Can UAT users run the agent live, on the owner's local models? → A: Yes, through a **local worker** (Michael). The app queues an agent job; a worker on the owner's PC polls the app (outbound only, with a worker token), runs the agent on Ollama, and posts the result back. Ollama is never exposed. When no worker has polled recently, the UI says the agent host is offline and the job waits. This widens open item 2: committed snapshots stay possible, and live jobs are added. The app itself still never calls a model (FR-016).
@@ -217,7 +223,7 @@ The Forecast lane's roles are defined now so that the Forecast view can plug in 
 
 **Hosting and cost**
 
-- **FR-016**: The hosted app MUST run only the deterministic scripted engine itself, plus committed agent snapshots (FR-027) and agent results posted by the owner's local worker (FR-028). It MUST NOT call a language model.
+- **FR-016**: The hosted web app MUST run only the deterministic scripted engine itself, plus committed agent snapshots (FR-027) and agent results posted by a worker (FR-028, FR-031). The web app MUST NOT call a language model; a model runs only in a worker, on a teammate's machine or in the cloud agent host (FR-031).
 - **FR-028**: Agent jobs MUST go through a queue the app keeps: only the analyst role may submit; only a caller with the worker token may take or complete a job; the worker connects outbound only; one job runs at a time; a job not finished within its cap is marked failed. A posted result MUST pass the FR-027 traceability check on the app's data version before anyone sees it, and is labelled "agent output, experimental" with its model. The UI MUST show whether the agent host is online.
 - **FR-017**: The hosted app MUST serve the frontend and the server from the same address.
 - **FR-018**: The hosted app MUST contain no file from the eval package and no ground-truth file (shared Principle III). A check in the pipeline MUST fail if one is present.
@@ -233,6 +239,7 @@ The Forecast lane's roles are defined now so that the Forecast view can plug in 
 
 **Team operation**
 
+- **FR-031**: When an agent job waits and no worker is online, the app MUST start the cloud agent host: a Cloud Run job running the same worker and the same local model (Ollama, CPU only) in our own container, with no external model provider. The host MUST drain the queue and exit when idle, so it bills only while it works. It MUST NOT start while a teammate's machine is hosting, and MUST NOT start twice within a cooldown. The app MUST keep a monthly budget of the host's job-seconds, at most 80% of the Cloud Run free vCPU allowance, charge each cloud-run job and each start against it, and start nothing once it is used up. A running job MUST stay alive only while its worker heartbeats, and MUST fail after a hard time limit. The UI MUST say when the cloud host will start, that it is slower, and when its budget is used up. Posted results pass the FR-027 check like any other.
 - **FR-029**: The owner MUST be able to grant and revoke, per teammate Google account, a deployer role set that lets the teammate deploy the app and Keycloak, roll back, and read status, logs and the shared environment file (FR-030), with no long-lived key. The role set MUST NOT include billing, budgets, project deletion or granting access to others.
 - **FR-030**: The deployment's environment file (UAT passwords, session, client and worker secrets) MUST be shared in the project's secret store, never in the repository. A teammate with the FR-029 role set MUST be able to pull it into their own `deploy/.env.uat` with one command and push a changed one back. A Keycloak deploy MUST refuse to run from a local file that differs from the shared copy, so one teammate's stale file never overwrites another's passwords.
 
@@ -268,6 +275,7 @@ The Forecast lane's roles are defined now so that the Forecast view can plug in 
 - **SC-006**: The pipeline's content check finds no eval or ground-truth file in any deployed version.
 - **SC-007**: At least 90% of UAT briefings have a complete UAT event in the MLflow UAT experiment.
 - **SC-008**: 100% of numbers in executive summaries and in served agent snapshots match a claim with resolvable evidence.
+- **SC-010**: With no teammate hosting, an agent request is answered by the cloud host without any teammate's action, and the month's Cloud Run use stays inside the free tier (SC-003).
 - **SC-009**: Each UAT participant, in their role, reaches their first briefing on their first sign-in without help from an owner.
 
 ## Assumptions

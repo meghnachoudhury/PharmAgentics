@@ -9,6 +9,15 @@ import re
 from pharmagentics.tools.checks import DRIVERS
 
 DEFAULT_HYPOTHESES = ["data", "access", "promotion", "supply", "competitor"]  # the scripted engine's fixed order
+COMPETITOR = "competitor:BXE"
+# The question leaves competitors out ("ignore Metacora", "without the competitor story", "skip competitors").
+_EXCLUDES = re.compile(r"\b(ignore|ignoring|exclude|excluding|skip|skipping|without|leave out|leaving out|not about)\b"
+                       r"[^.?!]*\b(competitors?|competition|metacora)\b", re.I)
+
+
+def excludes_competitor(question: str) -> bool:
+    """True when the question itself asks to leave competitors out (the text after the code-written prefix)."""
+    return bool(_EXCLUDES.search(question.split(":", 1)[-1]))
 
 
 def cards_text(plan: dict) -> str:
@@ -41,12 +50,12 @@ def _match(name: str, proposed: list[str]) -> str:
     return n
 
 
-def apply(code_plan: dict, reply: str) -> dict:
+def apply(code_plan: dict, reply: str, question: str = "") -> dict:
     """The plan P1 reviews: the code plan plus the manager's calls, checked by code. Invalid output falls back
     to the code plan and says so (a defined exit, never a crash)."""
     plan = copy.deepcopy(code_plan)
     proposed = [c["id"] for c in plan["stories"] if c["proposed"] == "investigate"]
-    flags, problems = [], []
+    flags, problems, corrections = [], [], []
     try:
         out = parse(reply)
         known = lambda s: _match(s, proposed)  # noqa: E731
@@ -63,6 +72,13 @@ def apply(code_plan: dict, reply: str) -> dict:
             problems.append(f"named stories code did not propose: {', '.join(foreign)}")
         # A story both ordered and dropped is kept: "order" is the plan; contradictions never lose a story.
         drop = {k: v for k, v in drop.items() if k not in order}
+        # A continuing story (Metacora) is not the manager's to drop: it stays unless the question leaves
+        # competitors out. A small model drops it too readily, even when asked "is anything else going on?".
+        if COMPETITOR in drop and COMPETITOR in proposed and not excludes_competitor(question):
+            drop.pop(COMPETITOR)
+            order.append(COMPETITOR)
+            corrections.append("Code kept the Metacora story: a continuing story stays in the brief unless the question "
+                               "leaves competitors out.")
         order = [s for s in dict.fromkeys(order) if s in proposed and s not in drop]
         # A proposed story the manager neither ordered nor dropped keeps code's position after the ordered ones.
         order += [s for s in proposed if s not in order and s not in drop]
@@ -86,7 +102,8 @@ def apply(code_plan: dict, reply: str) -> dict:
     if problems:
         flags.append("Code corrected the manager's plan: " + "; ".join(problems) + ".")
     plan.update(engine="agent", manager_order=order, manager_drop=drop, manager_note=note,
-                manager_confidence="low" if conf == "low" else "high", flagged=bool(flags), flags=flags)
+                manager_confidence="low" if conf == "low" else "high", flagged=bool(flags), flags=flags,
+                corrections=corrections)
     return plan
 
 
