@@ -20,8 +20,10 @@ RUN mkdir -p /models \
  && (ollama serve >/tmp/ollama-build.log 2>&1 &) \
  && for i in $(seq 1 90); do curl -sf http://127.0.0.1:11434/api/version >/dev/null && break; sleep 1; done \
  && ollama pull "$MODEL" \
- && pkill ollama || true
-RUN test -d /models/manifests && chmod -R a+rX /models
+ && test -d /models/manifests \
+ ; pkill ollama || true
+# (No chmod or chown over /models or /app: each would copy the whole tree into a new layer. The files are
+# already world-readable, and the worker only reads them.)
 
 # ---- Python: the agent group only (no web server, no eval).
 COPY --from=ghcr.io/astral-sh/uv:0.12.15 /uv /usr/local/bin/uv
@@ -38,7 +40,7 @@ RUN uv sync --locked --no-default-groups --group agent \
  && uv run --no-sync python src/pharmagentics/data/load_duckdb.py \
  && uv run --no-sync python src/pharmagentics/data/check_duckdb.py
 COPY deploy/agent/entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh && useradd --uid 10001 --create-home app && chown -R app /app
+RUN chmod +x /entrypoint.sh && useradd --uid 10001 --create-home app
 USER app
 
 # CPU settings: one model, kept loaded, one request at a time; the same cache settings as the evals.
