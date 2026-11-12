@@ -257,3 +257,17 @@ def test_flow_and_triage_record_reach_the_analyst_only():
     a = analyst.post("/api/briefing/query", json={**TRIAGE_Q, "triage": default}).json()
     b = analyst.post("/api/briefing/query", json=TRIAGE_Q).json()
     assert a["brief_id"] == b["brief_id"] and a["answer"] == b["answer"] and a["brief_id"] != brief["brief_id"]
+
+
+def test_login_shows_a_retry_page_while_keycloak_is_starting(monkeypatch):
+    """core-007 SC-004: Keycloak scales to zero; an unreachable sign-in service is a retry page, never a 500."""
+    monkeypatch.setenv("PHARMAGENTICS_AUTH", "oidc")
+    monkeypatch.setenv("PHARMAGENTICS_OIDC_ISSUER", "http://127.0.0.1:9/realms/pharmagentics")  # nothing listens here
+    monkeypatch.setenv("PHARMAGENTICS_OIDC_CLIENT_ID", "pharmagentics-app")
+    monkeypatch.setenv("PHARMAGENTICS_OIDC_CLIENT_SECRET", "x")
+    monkeypatch.delenv("PHARMAGENTICS_OIDC_METADATA_URL", raising=False)
+    monkeypatch.setattr(auth, "_oauth", None)
+    response = TestClient(app).get("/auth/login", follow_redirects=False)
+    monkeypatch.setattr(auth, "_oauth", None)
+    assert response.status_code == 503 and response.headers["retry-after"] == "5"
+    assert "Starting the sign-in service" in response.text

@@ -11,15 +11,16 @@ PHARMAGENTICS_AUTH selects the mode:
 from __future__ import annotations
 
 import html
+import logging
 import os
 from urllib.parse import urlencode
-
 from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
 from . import rbac
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 DEV_USERS = {
     "dev-analyst": ("Dev Commercial Analyst", ["briefing-analyst"]),
@@ -55,7 +56,9 @@ def _client():
             "keycloak", client_id=client_id, client_secret=secret,
             server_metadata_url=os.environ.get("PHARMAGENTICS_OIDC_METADATA_URL")
             or f"{issuer}/.well-known/openid-configuration",
-            client_kwargs={"scope": "openid profile", "code_challenge_method": "S256"},
+            # Keycloak scales to zero and needs about 16 s to start (core-007 SC-004 allows 60 s with a cold start),
+            # so wait longer than httpx's default of 5 s.
+            client_kwargs={"scope": "openid profile", "code_challenge_method": "S256", "timeout": 50.0},
         )
         _oauth = oauth
     return _oauth.keycloak
@@ -83,7 +86,22 @@ small{{display:block;color:#5b6472;margin-top:2px}}</style></head><body><main><h
 <p>Stand-in identities for local work. The deployed app signs in through Keycloak instead.</p>
 <form method="post" action="/auth/dev-login">{buttons}</form></main></body></html>""")
     redirect_uri = str(request.url_for("auth_callback"))
-    return await _client().authorize_redirect(request, redirect_uri)
+    client = _client()  # a 503 here means sign-in is not configured, which is not a cold start
+    try:
+        return await client.authorize_redirect(request, redirect_uri)
+    except Exception:  # noqa: BLE001 - any failure to reach Keycloak (timeouts, refused connections; the transport's types vary)
+        logger.warning("Sign-in service unreachable; showing the retry page", exc_info=True)
+        return _starting_page()
+
+
+def _starting_page() -> HTMLResponse:
+    """The sign-in service did not answer in time (a cold start that ran long): retry instead of a bare 500."""
+    return HTMLResponse("""<!doctype html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="refresh" content="5">
+<meta name="viewport" content="width=device-width,initial-scale=1"><title>Starting sign-in</title>
+<style>body{font-family:system-ui,sans-serif;background:#f7f4ee;color:#1b2433;display:grid;place-items:center;height:100vh;margin:0;padding:0 16px}
+p{color:#5b6472}</style></head><body><main><h1>Starting the sign-in service</h1>
+<p>It sleeps when nobody is using it and takes a few seconds to wake. This page retries by itself.</p></main></body></html>""",
+                        status_code=503, headers={"Retry-After": "5", "Cache-Control": "no-store"})
 
 
 @router.post("/auth/dev-login", include_in_schema=False)
