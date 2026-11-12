@@ -37,6 +37,51 @@ export type BriefingResult = {
   evidence: Evidence[]
   data_version: string | null
   abstained: boolean
+  triage?: TriageRecord | null  // brief-002: who made each triage call (analyst view only)
+  flow?: Stage[] | null         // brief-002: the seven stages, run states and actors (analyst view only)
+}
+// brief-002 Phase A: the code triage plan P1 reviews, and how a brief was made.
+export type StoryCard = {
+  id: string
+  kind: "territory" | "plan" | "competitor"
+  title: string
+  rank: number
+  proposed: "investigate" | "over_cap"
+  what_moved: string
+  decision: string
+  population: string
+  granularity: string
+  time: string
+}
+export type TriagePlan = {
+  plan_id: string
+  question: string
+  data_version: string
+  state: "TRIAGE_REVIEW" | "ROUTINE" | "CALENDAR"
+  weeks: string[]
+  baseline: string[]
+  context: string
+  stories: StoryCard[]
+  dropped: { territory: string; reason: string; layer: "code" }[]
+  claims: Claim[]
+  evidence: Evidence[]
+  brand_id: string
+  territory_id: string
+  week_start: string
+}
+export type TriageDecision = { plan_id: string; stories: string[] }
+export type TriageRecord = {
+  plan_id: string
+  default: boolean
+  order: string[]
+  calls: { story: string; title: string; outcome: string; layer: "code" | "human"; position?: number }[]
+}
+export type Stage = {
+  stage: number
+  name: string
+  actors: { kind: "code" | "agent" | "llm" | "human"; name: string }[]
+  states: string[]
+  note: string
 }
 // The leadership view: an executive summary cut from the answer by the server. It never
 // carries claims, evidence, query text or a trace.
@@ -161,8 +206,26 @@ function checkLeadership(v: unknown): LeadershipBrief {
   }
   return v as unknown as LeadershipBrief
 }
-export async function getBriefing(q: BriefingQuery): Promise<BriefingResult> {
-  return checkAnalyst(await api("/api/briefing/query", post(q)))
+export async function getTriage(q: BriefingQuery): Promise<TriagePlan> {
+  const v: unknown = await api("/api/briefing/triage", post(q))
+  expectObject(v)
+  if (typeof v.plan_id !== "string" || !["TRIAGE_REVIEW", "ROUTINE", "CALENDAR"].includes(v.state as string) ||
+      !Array.isArray(v.stories) || !Array.isArray(v.dropped) || !Array.isArray(v.claims) || !Array.isArray(v.evidence)) {
+    throw new Error("Backend returned a triage plan incompatible with this frontend.")
+  }
+  const ids = new Set((v.evidence as { id: string }[]).map(e => e.id))
+  if ((v.claims as Claim[]).some(c => !ids.has(c.evidence_id))) throw new Error("The triage plan contains a claim without a resolvable evidence record")
+  for (const c of v.stories as unknown[]) {
+    expectObject(c)
+    if (typeof c.id !== "string" || (c.proposed !== "investigate" && c.proposed !== "over_cap") ||
+        ["what_moved", "decision", "population", "granularity", "time"].some(k => typeof c[k] !== "string")) {
+      throw new Error("A triage card is incompatible with this frontend.")
+    }
+  }
+  return v as unknown as TriagePlan
+}
+export async function getBriefing(q: BriefingQuery, triage?: TriageDecision): Promise<BriefingResult> {
+  return checkAnalyst(await api("/api/briefing/query", post(triage ? { ...q, triage } : q)))
 }
 export async function openBrief(id: string, view: "analyst"): Promise<BriefingResult>
 export async function openBrief(id: string, view: "leadership"): Promise<LeadershipBrief>

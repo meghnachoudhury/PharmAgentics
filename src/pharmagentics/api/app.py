@@ -97,6 +97,27 @@ async def context(who=Briefing) -> ReleaseContext:
         raise HTTPException(status_code=500, detail="Could not read data release") from exc
 
 
+@app.post("/api/briefing/triage")
+async def briefing_triage(payload: BriefingQuery, response: Response, who=Briefing) -> dict:
+    """Stages 1 to 3 and the code triage plan the analyst reviews before investigation (brief-002 US8)."""
+    p, role = who
+    rbac.allow(role, "run")
+    _no_store(response)
+    started = time.perf_counter()
+    try:
+        plan = await run_in_threadpool(service.run_triage, payload)
+    except service.MissingDatabase as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    except (service.OutsideRelease, ValueError) as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        logger.exception("Triage failed")
+        raise HTTPException(status_code=500, detail="Triage failed. Check server logs.") from exc
+    store.record_event("triaged", **_who(p, role), plan_id=plan["plan_id"], cards=len(plan["stories"]),
+                       latency_ms=round((time.perf_counter() - started) * 1000), state=plan["state"])
+    return plan
+
+
 @app.post("/api/briefing/query")
 async def briefing_query(payload: BriefingQuery, response: Response, who=Briefing) -> dict:
     p, role = who
@@ -107,7 +128,9 @@ async def briefing_query(payload: BriefingQuery, response: Response, who=Briefin
         result = await run_in_threadpool(service.run_briefing, payload)
     except service.MissingDatabase as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
-    except service.OutsideRelease as exc:
+    except service.StalePlan as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    except (service.OutsideRelease, service.BadDecision) as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     except Exception as exc:
         logger.exception("Briefing request failed")
@@ -116,7 +139,8 @@ async def briefing_query(payload: BriefingQuery, response: Response, who=Briefin
     record = store.save_brief(result.model_dump(mode="json"), by=rbac.pseudonym(p.sub))
     store.record_event("requested", **_who(p, role), brief_id=record["brief_id"], latency_ms=latency_ms,
                        engine=result.engine, system=result.system, data_version=result.data_version,
-                       week_start=str(result.week_start), territory_id=result.territory_id)
+                       week_start=str(result.week_start), territory_id=result.territory_id,
+                       triage_default=(result.triage or {}).get("default"))
     return views.analyst(record)
 
 

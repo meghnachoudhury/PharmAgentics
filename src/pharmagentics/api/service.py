@@ -93,7 +93,15 @@ def normalize_question(request: BriefingQuery) -> str:
     return f"Week of {request.week_start.isoformat()} in {label}: {request.question.strip()}"
 
 
-def run_briefing(request: BriefingQuery) -> BriefingResult:
+class StalePlan(ValueError):
+    """The triage decision names a plan that code no longer builds (brief-002; HTTP 409)."""
+
+
+class BadDecision(ValueError):
+    """The triage decision names a story the plan does not propose (brief-002 FR-023; HTTP 400)."""
+
+
+def _check_scope(request: BriefingQuery) -> None:
     bounds = release_context()
     if request.week_start not in bounds.available_weeks:
         raise OutsideRelease(
@@ -107,25 +115,55 @@ def run_briefing(request: BriefingQuery) -> BriefingResult:
     path = str(BRIEFING_DIR)
     if path not in sys.path:
         sys.path.insert(0, path)
-    from briefing_baseline.pipeline import answer
 
-    question = normalize_question(request)
-    raw = answer(question, db=DB)
 
-    claims = raw.get("claims", [])
-    evidence = raw.get("evidence", [])
+def _traceable(claims: list, evidence: list) -> str | None:
     evidence_by_id = {e["id"]: e for e in evidence}
     if any(c["evidence_id"] not in evidence_by_id for c in claims):
         raise RuntimeError("The briefing returned an untraceable claim.")
     versions = {e.get("data_version") for e in evidence if e.get("data_version")}
     if len(versions) > 1:
         raise RuntimeError("The briefing returned evidence from multiple data versions.")
+    return next(iter(versions), None)
 
+
+def run_triage(request: BriefingQuery) -> dict:
+    """Stages 1 to 3 and the code triage plan for P1 (brief-002 US8)."""
+    _check_scope(request)
+    from briefing_baseline.pipeline import triage
+
+    plan = triage(normalize_question(request), db=DB)
+    _traceable(plan["claims"], plan["evidence"])
+    plan.update(brand_id=request.brand_id, territory_id=request.territory_id, week_start=request.week_start.isoformat())
+    return plan
+
+
+def run_briefing(request: BriefingQuery) -> BriefingResult:
+    _check_scope(request)
+    question = normalize_question(request)
+    extra = {}
+    if request.triage is None:
+        from briefing_baseline.pipeline import answer
+
+        raw = answer(question, db=DB)
+    else:
+        from briefing_baseline import pipeline
+
+        try:
+            out = pipeline.run_with_plan(question, request.triage.model_dump(), db=DB)
+        except pipeline.StalePlan as exc:
+            raise StalePlan(str(exc)) from exc
+        except ValueError as exc:
+            raise BadDecision(str(exc)) from exc
+        raw, extra = out["envelope"], {"triage": out["triage"], "flow": out["flow"]}
+
+    claims = raw.get("claims", [])
+    evidence = raw.get("evidence", [])
     return BriefingResult(
         system=raw["system"], question=question,
         brand_id=request.brand_id, territory_id=request.territory_id,
         week_start=request.week_start,
         answer=raw["answer"], claims=claims, evidence=evidence,
-        data_version=next(iter(versions), None),
-        abstained=bool(raw.get("abstained", False)),
+        data_version=_traceable(claims, evidence),
+        abstained=bool(raw.get("abstained", False)), **extra,
     )

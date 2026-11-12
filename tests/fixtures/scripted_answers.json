@@ -1,0 +1,1807 @@
+{
+ "Week of 2026-06-08 in Pacific: Generate the weekly brand-performance briefing.": {
+  "answer": "Brief for week of 2026-06-08. Data version 06bcba77fbe1. Product: BXA. Territory questions use only cuts that pass the feed gate.\nData health: 8 of 8 territories pass the feed gate for 2026-06-08. No cut is withheld.\nKPIs: BXA TRx averaged 3,860 a week across 8 of 8 territories (like for like), down 11.7% against the weeks before.\nWeek over week, summed over reportable cuts: BXA TRx is 3,860 against 4,269 the week before (down 9.6%).\nStory one: Pacific. BXA TRx averaged 464 a week against 674 before (down 31.2%), while the other territories were down 8.2%.\nChecked, in this order:\n- Data artifact: ruled out. Every Pacific cut in these weeks passes the feed gate.\n- Access: ruled out. No BXA access change in the Pacific plans in these months.\n- Promotion: ruled out. Aggregated rep calls held at 64 a week against 52 before.\n- Supply: supported. BXA inventory fill averaged 0.69 (close to full supply is normal), with 22.5% of orders backordered.\n- Competitor launch: ruled out as a local cause. Before the change Metacora held 7.3% of the basket here against 7.5% elsewhere.\nConfidence: High. Leading driver: supply. Next: involve supply chain and trade.\nStory two: competitor Metacora (launched 2026-03-02). This is a continuing story, week 14 since launch, still growing. Metacora held 12.5% of the four-brand basket and BXA held 31.1%, against 35.4% for BXA in the four weeks before launch. Confidence: Medium. The share loss is measured; its effect on volume is not separated from other drivers. Next: involve marketing and sales.\nConsidered and dropped: 7 territories moved within their normal range.",
+  "claims": [
+   {
+    "value": "8",
+    "evidence_id": "e1"
+   },
+   {
+    "value": "8",
+    "evidence_id": "e2"
+   },
+   {
+    "value": "8",
+    "evidence_id": "e3"
+   },
+   {
+    "value": "3,860",
+    "evidence_id": "e4"
+   },
+   {
+    "value": "8",
+    "evidence_id": "e5"
+   },
+   {
+    "value": "11.7%",
+    "evidence_id": "e6"
+   },
+   {
+    "value": "3,860",
+    "evidence_id": "e7"
+   },
+   {
+    "value": "4,269",
+    "evidence_id": "e8"
+   },
+   {
+    "value": "9.6%",
+    "evidence_id": "e9"
+   },
+   {
+    "value": "64",
+    "evidence_id": "e10"
+   },
+   {
+    "value": "52",
+    "evidence_id": "e11"
+   },
+   {
+    "value": "0.69",
+    "evidence_id": "e12"
+   },
+   {
+    "value": "22.5%",
+    "evidence_id": "e13"
+   },
+   {
+    "value": "7.3%",
+    "evidence_id": "e14"
+   },
+   {
+    "value": "7.5%",
+    "evidence_id": "e15"
+   },
+   {
+    "value": "464",
+    "evidence_id": "e16"
+   },
+   {
+    "value": "674",
+    "evidence_id": "e17"
+   },
+   {
+    "value": "31.2%",
+    "evidence_id": "e18"
+   },
+   {
+    "value": "8.2%",
+    "evidence_id": "e19"
+   },
+   {
+    "value": "14",
+    "evidence_id": "e20"
+   },
+   {
+    "value": "12.5%",
+    "evidence_id": "e21"
+   },
+   {
+    "value": "31.1%",
+    "evidence_id": "e22"
+   },
+   {
+    "value": "35.4%",
+    "evidence_id": "e23"
+   },
+   {
+    "value": "7",
+    "evidence_id": "e24"
+   }
+  ],
+  "evidence": [
+   {
+    "id": "e1",
+    "tool": "validate_feed",
+    "params": {
+     "week": "2026-06-08"
+    },
+    "query": "select count(*) from reporting.v_feed_health where week_start = DATE '2026-06-08' and health_status = 'PASS'",
+    "result": 8.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e2",
+    "tool": "validate_feed",
+    "params": {
+     "week": "2026-06-08"
+    },
+    "query": "select count(*) from reporting.v_feed_health where week_start = DATE '2026-06-08'",
+    "result": 8.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e3",
+    "tool": "get_metric",
+    "params": {},
+    "query": "select count(distinct territory_id) from reporting.v_reportable_rx where week_start in (DATE '2026-06-08') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')",
+    "result": 8.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e4",
+    "tool": "get_metric",
+    "params": {
+     "scope": "like-for-like national"
+    },
+    "query": "select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-06-08') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 1.0",
+    "result": 3860.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e5",
+    "tool": "get_metric",
+    "params": {},
+    "query": "select count(*) from raw.dim_territory",
+    "result": 8.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e6",
+    "tool": "get_metric",
+    "params": {
+     "scope": "like-for-like national"
+    },
+    "query": "select 100.0 * ((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-06-08') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 1.0) / nullif((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-05-11',DATE '2026-05-18',DATE '2026-05-25',DATE '2026-06-01') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 4.0), 0) - 1)",
+    "result": -11.736123020636825,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e7",
+    "tool": "get_metric",
+    "params": {
+     "week": "2026-06-08"
+    },
+    "query": "select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-06-08')",
+    "result": 3860.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e8",
+    "tool": "get_metric",
+    "params": {
+     "week": "2026-06-01"
+    },
+    "query": "select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-06-01')",
+    "result": 4269.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e9",
+    "tool": "get_metric",
+    "params": {
+     "scope": "week over week, reportable cuts"
+    },
+    "query": "select 100.0 * ((select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-06-08')) / nullif((select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-06-01')), 0) - 1)",
+    "result": -9.580698055750759,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e10",
+    "tool": "lookup_promo",
+    "params": {
+     "territory": "PACIFIC"
+    },
+    "query": "select 1.0 * avg(rep_calls_aggregated) from raw.promo_activity where product_id = 'BXA' and territory_id = 'PACIFIC' and week_start in (DATE '2026-06-08')",
+    "result": 64.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e11",
+    "tool": "lookup_promo",
+    "params": {
+     "territory": "PACIFIC"
+    },
+    "query": "select 1.0 * avg(rep_calls_aggregated) from raw.promo_activity where product_id = 'BXA' and territory_id = 'PACIFIC' and week_start in (DATE '2026-03-09',DATE '2026-03-16',DATE '2026-03-23',DATE '2026-03-30',DATE '2026-04-06',DATE '2026-04-13',DATE '2026-04-20',DATE '2026-04-27',DATE '2026-05-04',DATE '2026-05-11',DATE '2026-05-18',DATE '2026-05-25',DATE '2026-06-01')",
+    "result": 51.76923076923077,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e12",
+    "tool": "lookup_inventory",
+    "params": {
+     "territory": "PACIFIC"
+    },
+    "query": "select 1.0 * avg(inventory_fill_rate) from raw.inventory_weekly where product_id = 'BXA' and territory_id = 'PACIFIC' and week_start in (DATE '2026-06-08')",
+    "result": 0.6868,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e13",
+    "tool": "lookup_inventory",
+    "params": {
+     "territory": "PACIFIC"
+    },
+    "query": "select 100 * avg(distribution_backorder_rate) from raw.inventory_weekly where product_id = 'BXA' and territory_id = 'PACIFIC' and week_start in (DATE '2026-06-08')",
+    "result": 22.45,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e14",
+    "tool": "compare_competitors",
+    "params": {
+     "territory": "PACIFIC",
+     "weeks": "before the change"
+    },
+    "query": "select 100.0 * sum(trx) filter (where product_id = 'BXE') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-03-09',DATE '2026-03-16',DATE '2026-03-23',DATE '2026-03-30',DATE '2026-04-06',DATE '2026-04-13',DATE '2026-04-20',DATE '2026-04-27',DATE '2026-05-04',DATE '2026-05-11',DATE '2026-05-18',DATE '2026-05-25',DATE '2026-06-01') and territory_id in ('PACIFIC')",
+    "result": 7.333797424295162,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e15",
+    "tool": "compare_competitors",
+    "params": {
+     "scope": "other territories",
+     "weeks": "before the change"
+    },
+    "query": "select 100.0 * sum(trx) filter (where product_id = 'BXE') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-03-09',DATE '2026-03-16',DATE '2026-03-23',DATE '2026-03-30',DATE '2026-04-06',DATE '2026-04-13',DATE '2026-04-20',DATE '2026-04-27',DATE '2026-05-04',DATE '2026-05-11',DATE '2026-05-18',DATE '2026-05-25',DATE '2026-06-01') and territory_id <> 'PACIFIC'",
+    "result": 7.477908512837361,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e16",
+    "tool": "get_metric",
+    "params": {
+     "territory": "PACIFIC"
+    },
+    "query": "select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-06-08') and territory_id in ('PACIFIC')) / 1.0",
+    "result": 464.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e17",
+    "tool": "get_metric",
+    "params": {
+     "territory": "PACIFIC"
+    },
+    "query": "select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-05-11',DATE '2026-05-18',DATE '2026-05-25',DATE '2026-06-01') and territory_id in ('PACIFIC')) / 4.0",
+    "result": 674.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e18",
+    "tool": "get_metric",
+    "params": {
+     "territory": "PACIFIC"
+    },
+    "query": "select 100.0 * ((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-06-08') and territory_id in ('PACIFIC')) / 1.0) / nullif((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-05-11',DATE '2026-05-18',DATE '2026-05-25',DATE '2026-06-01') and territory_id in ('PACIFIC')) / 4.0), 0) - 1)",
+    "result": -31.15727002967359,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e19",
+    "tool": "get_metric",
+    "params": {
+     "scope": "other territories"
+    },
+    "query": "select 100.0 * ((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-06-08') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','SOUTHEAST','SOUTH_CENTRAL')) / 1.0) / nullif((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-05-11',DATE '2026-05-18',DATE '2026-05-25',DATE '2026-06-01') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','SOUTHEAST','SOUTH_CENTRAL')) / 4.0), 0) - 1)",
+    "result": -8.197607623166858,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e20",
+    "tool": "compare_competitors",
+    "params": {},
+    "query": "select datediff('week', DATE '2026-03-02', week_start) from raw.calendar where week_start = DATE '2026-06-08'",
+    "result": 14.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e21",
+    "tool": "compare_competitors",
+    "params": {
+     "product": "BXE"
+    },
+    "query": "select 100.0 * sum(trx) filter (where product_id = 'BXE') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-06-08')",
+    "result": 12.531267651093358,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e22",
+    "tool": "compare_competitors",
+    "params": {
+     "product": "BXA"
+    },
+    "query": "select 100.0 * sum(trx) filter (where product_id = 'BXA') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-06-08')",
+    "result": 31.146615024610668,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e23",
+    "tool": "compare_competitors",
+    "params": {
+     "product": "BXA",
+     "weeks": "before launch"
+    },
+    "query": "select 100.0 * sum(trx) filter (where product_id = 'BXA') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-02-02',DATE '2026-02-09',DATE '2026-02-16',DATE '2026-02-23')",
+    "result": 35.40138186480519,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e24",
+    "tool": "detect_changes",
+    "params": {
+     "scope": "territories with no material change"
+    },
+    "query": "select count(distinct territory_id) from reporting.v_reportable_rx where week_start in (DATE '2026-06-08') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','SOUTHEAST','SOUTH_CENTRAL')",
+    "result": 7.0,
+    "data_version": "06bcba77fbe1"
+   }
+  ],
+  "abstained": false
+ },
+ "Week of 2026-07-13 in Mid-Atlantic: Generate the weekly brand-performance briefing.": {
+  "answer": "Brief for week of 2026-07-13. Data version 06bcba77fbe1. Product: BXA. Territory questions use only cuts that pass the feed gate.\nData health: 8 of 8 territories pass the feed gate for 2026-07-13. No cut is withheld.\nRestated: Mid-Atlantic BXA TRx for the week of 2026-04-06 was 692 when first reported and is now 742 (restated 2026-07-13; reason: synthetic late claims adjustment). Quote the new value with this note.\nKPIs: BXA TRx averaged 3,618 a week across 7 of 8 territories (like for like), up 3.3% against the weeks before.\nWeek over week, summed over reportable cuts: BXA TRx is 4,240 against 3,665 the week before (up 15.7%).\nOn the 7 territories that report both weeks, BXA TRx went from 3,665 to 3,618 (down 1.3%).\nStory one: Pacific. BXA TRx averaged 737 a week against 507 before (up 45.3%), while the other territories were down 3.8%.\nChecked, in this order:\n- Data artifact: ruled out. Every Pacific cut in these weeks passes the feed gate.\n- Access: ruled out. No BXA access change in the Pacific plans in these months.\n- Promotion: ruled out. Aggregated rep calls held at 50 a week against 52 before.\n- Supply: ruled out. BXA inventory fill averaged 1.00.\n- Competitor launch: ruled out as a local cause. Before the change Metacora held 11.2% of the basket here against 10.8% elsewhere.\nConfidence: Low. Unresolved, investigate next. No driver is named. Next: split Pacific by plan and specialty, and ask sales leadership for local context.\nStory two: Mid-Atlantic. BXA TRx averaged 636 a week against 680 before (down 6.5%), while the other territories were up 5.7%.\nChecked, in this order:\n- Data artifact: ruled out. Every Mid-Atlantic cut in these weeks passes the feed gate.\n- Access: ruled out. No BXA access change in the Mid-Atlantic plans in these months.\n- Promotion: ruled out. Aggregated rep calls held at 54 a week against 52 before.\n- Supply: ruled out. BXA inventory fill averaged 0.97.\n- Competitor launch: ruled out as a local cause. Before the change Metacora held 11.2% of the basket here against 10.8% elsewhere.\nConfidence: Low. Unresolved, investigate next. No driver is named. Next: split Mid-Atlantic by plan and specialty, and ask sales leadership for local context.\nStory three: competitor Metacora (launched 2026-03-02). This is a continuing story, week 19 since launch, still growing. Metacora held 13.2% of the four-brand basket and BXA held 32.6%, against 35.4% for BXA in the four weeks before launch. Confidence: Medium. The share loss is measured; its effect on volume is not separated from other drivers. Next: involve marketing and sales.\nConsidered and dropped: 5 territories moved within their normal range.",
+  "claims": [
+   {
+    "value": "8",
+    "evidence_id": "e1"
+   },
+   {
+    "value": "8",
+    "evidence_id": "e2"
+   },
+   {
+    "value": "692",
+    "evidence_id": "e3"
+   },
+   {
+    "value": "742",
+    "evidence_id": "e4"
+   },
+   {
+    "value": "7",
+    "evidence_id": "e5"
+   },
+   {
+    "value": "3,618",
+    "evidence_id": "e6"
+   },
+   {
+    "value": "8",
+    "evidence_id": "e7"
+   },
+   {
+    "value": "3.3%",
+    "evidence_id": "e8"
+   },
+   {
+    "value": "4,240",
+    "evidence_id": "e9"
+   },
+   {
+    "value": "3,665",
+    "evidence_id": "e10"
+   },
+   {
+    "value": "15.7%",
+    "evidence_id": "e11"
+   },
+   {
+    "value": "7",
+    "evidence_id": "e12"
+   },
+   {
+    "value": "3,665",
+    "evidence_id": "e13"
+   },
+   {
+    "value": "3,618",
+    "evidence_id": "e14"
+   },
+   {
+    "value": "1.3%",
+    "evidence_id": "e15"
+   },
+   {
+    "value": "50",
+    "evidence_id": "e16"
+   },
+   {
+    "value": "52",
+    "evidence_id": "e17"
+   },
+   {
+    "value": "1.00",
+    "evidence_id": "e18"
+   },
+   {
+    "value": "11.2%",
+    "evidence_id": "e19"
+   },
+   {
+    "value": "10.8%",
+    "evidence_id": "e20"
+   },
+   {
+    "value": "737",
+    "evidence_id": "e21"
+   },
+   {
+    "value": "507",
+    "evidence_id": "e22"
+   },
+   {
+    "value": "45.3%",
+    "evidence_id": "e23"
+   },
+   {
+    "value": "3.8%",
+    "evidence_id": "e24"
+   },
+   {
+    "value": "54",
+    "evidence_id": "e25"
+   },
+   {
+    "value": "52",
+    "evidence_id": "e26"
+   },
+   {
+    "value": "0.97",
+    "evidence_id": "e27"
+   },
+   {
+    "value": "11.2%",
+    "evidence_id": "e28"
+   },
+   {
+    "value": "10.8%",
+    "evidence_id": "e29"
+   },
+   {
+    "value": "636",
+    "evidence_id": "e30"
+   },
+   {
+    "value": "680",
+    "evidence_id": "e31"
+   },
+   {
+    "value": "6.5%",
+    "evidence_id": "e32"
+   },
+   {
+    "value": "5.7%",
+    "evidence_id": "e33"
+   },
+   {
+    "value": "19",
+    "evidence_id": "e34"
+   },
+   {
+    "value": "13.2%",
+    "evidence_id": "e35"
+   },
+   {
+    "value": "32.6%",
+    "evidence_id": "e36"
+   },
+   {
+    "value": "35.4%",
+    "evidence_id": "e37"
+   },
+   {
+    "value": "5",
+    "evidence_id": "e38"
+   }
+  ],
+  "evidence": [
+   {
+    "id": "e1",
+    "tool": "validate_feed",
+    "params": {
+     "week": "2026-07-13"
+    },
+    "query": "select count(*) from reporting.v_feed_health where week_start = DATE '2026-07-13' and health_status = 'PASS'",
+    "result": 8.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e2",
+    "tool": "validate_feed",
+    "params": {
+     "week": "2026-07-13"
+    },
+    "query": "select count(*) from reporting.v_feed_health where week_start = DATE '2026-07-13'",
+    "result": 8.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e3",
+    "tool": "get_restatement",
+    "params": {
+     "week": "2026-04-06",
+     "territory": "MID_ATLANTIC"
+    },
+    "query": "select sum(trx_prior) from raw.restatement_log where product_id = 'BXA' and week_start = DATE '2026-04-06' and territory_id = 'MID_ATLANTIC'",
+    "result": 692.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e4",
+    "tool": "get_restatement",
+    "params": {
+     "week": "2026-04-06",
+     "territory": "MID_ATLANTIC"
+    },
+    "query": "select sum(trx_revised) from raw.restatement_log where product_id = 'BXA' and week_start = DATE '2026-04-06' and territory_id = 'MID_ATLANTIC'",
+    "result": 742.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e5",
+    "tool": "get_metric",
+    "params": {},
+    "query": "select count(distinct territory_id) from reporting.v_reportable_rx where week_start in (DATE '2026-07-13') and territory_id in ('MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')",
+    "result": 7.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e6",
+    "tool": "get_metric",
+    "params": {
+     "scope": "like-for-like national"
+    },
+    "query": "select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-07-13') and territory_id in ('MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 1.0",
+    "result": 3618.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e7",
+    "tool": "get_metric",
+    "params": {},
+    "query": "select count(*) from raw.dim_territory",
+    "result": 8.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e8",
+    "tool": "get_metric",
+    "params": {
+     "scope": "like-for-like national"
+    },
+    "query": "select 100.0 * ((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-07-13') and territory_id in ('MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 1.0) / nullif((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06') and territory_id in ('MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 4.0), 0) - 1)",
+    "result": 3.3123929183323852,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e9",
+    "tool": "get_metric",
+    "params": {
+     "week": "2026-07-13"
+    },
+    "query": "select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-07-13')",
+    "result": 4240.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e10",
+    "tool": "get_metric",
+    "params": {
+     "week": "2026-07-06"
+    },
+    "query": "select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-07-06')",
+    "result": 3665.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e11",
+    "tool": "get_metric",
+    "params": {
+     "scope": "week over week, reportable cuts"
+    },
+    "query": "select 100.0 * ((select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-07-13')) / nullif((select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-07-06')), 0) - 1)",
+    "result": 15.688949522510232,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e12",
+    "tool": "get_metric",
+    "params": {
+     "scope": "territories reporting both weeks"
+    },
+    "query": "select count(distinct territory_id) from reporting.v_reportable_rx where week_start = DATE '2026-07-13' and territory_id in ('MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')",
+    "result": 7.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e13",
+    "tool": "get_metric",
+    "params": {
+     "week": "2026-07-06",
+     "scope": "like for like"
+    },
+    "query": "select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-07-06') and territory_id in ('MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')",
+    "result": 3665.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e14",
+    "tool": "get_metric",
+    "params": {
+     "week": "2026-07-13",
+     "scope": "like for like"
+    },
+    "query": "select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-07-13') and territory_id in ('MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')",
+    "result": 3618.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e15",
+    "tool": "get_metric",
+    "params": {
+     "scope": "week over week, like for like"
+    },
+    "query": "select 100.0 * ((select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-07-13') and territory_id in ('MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / nullif((select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-07-06') and territory_id in ('MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')), 0) - 1)",
+    "result": -1.282401091405183,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e16",
+    "tool": "lookup_promo",
+    "params": {
+     "territory": "PACIFIC"
+    },
+    "query": "select 1.0 * avg(rep_calls_aggregated) from raw.promo_activity where product_id = 'BXA' and territory_id = 'PACIFIC' and week_start in (DATE '2026-07-13')",
+    "result": 50.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e17",
+    "tool": "lookup_promo",
+    "params": {
+     "territory": "PACIFIC"
+    },
+    "query": "select 1.0 * avg(rep_calls_aggregated) from raw.promo_activity where product_id = 'BXA' and territory_id = 'PACIFIC' and week_start in (DATE '2026-04-13',DATE '2026-04-20',DATE '2026-04-27',DATE '2026-05-04',DATE '2026-05-11',DATE '2026-05-18',DATE '2026-05-25',DATE '2026-06-01',DATE '2026-06-08',DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06')",
+    "result": 52.23076923076923,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e18",
+    "tool": "lookup_inventory",
+    "params": {
+     "territory": "PACIFIC"
+    },
+    "query": "select 1.0 * avg(inventory_fill_rate) from raw.inventory_weekly where product_id = 'BXA' and territory_id = 'PACIFIC' and week_start in (DATE '2026-07-13')",
+    "result": 1.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e19",
+    "tool": "compare_competitors",
+    "params": {
+     "territory": "PACIFIC",
+     "weeks": "before the change"
+    },
+    "query": "select 100.0 * sum(trx) filter (where product_id = 'BXE') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-04-13',DATE '2026-04-20',DATE '2026-04-27',DATE '2026-05-04',DATE '2026-05-11',DATE '2026-05-18',DATE '2026-05-25',DATE '2026-06-01',DATE '2026-06-08',DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06') and territory_id in ('PACIFIC')",
+    "result": 11.237079026342114,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e20",
+    "tool": "compare_competitors",
+    "params": {
+     "scope": "other territories",
+     "weeks": "before the change"
+    },
+    "query": "select 100.0 * sum(trx) filter (where product_id = 'BXE') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-04-13',DATE '2026-04-20',DATE '2026-04-27',DATE '2026-05-04',DATE '2026-05-11',DATE '2026-05-18',DATE '2026-05-25',DATE '2026-06-01',DATE '2026-06-08',DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06') and territory_id <> 'PACIFIC'",
+    "result": 10.751600708636154,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e21",
+    "tool": "get_metric",
+    "params": {
+     "territory": "PACIFIC"
+    },
+    "query": "select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-07-13') and territory_id in ('PACIFIC')) / 1.0",
+    "result": 737.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e22",
+    "tool": "get_metric",
+    "params": {
+     "territory": "PACIFIC"
+    },
+    "query": "select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06') and territory_id in ('PACIFIC')) / 4.0",
+    "result": 507.25,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e23",
+    "tool": "get_metric",
+    "params": {
+     "territory": "PACIFIC"
+    },
+    "query": "select 100.0 * ((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-07-13') and territory_id in ('PACIFIC')) / 1.0) / nullif((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06') and territory_id in ('PACIFIC')) / 4.0), 0) - 1)",
+    "result": 45.293247905372105,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e24",
+    "tool": "get_metric",
+    "params": {
+     "scope": "other territories"
+    },
+    "query": "select 100.0 * ((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-07-13') and territory_id in ('MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','SOUTHEAST','SOUTH_CENTRAL')) / 1.0) / nullif((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06') and territory_id in ('MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','SOUTHEAST','SOUTH_CENTRAL')) / 4.0), 0) - 1)",
+    "result": -3.7983137156690883,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e25",
+    "tool": "lookup_promo",
+    "params": {
+     "territory": "MID_ATLANTIC"
+    },
+    "query": "select 1.0 * avg(rep_calls_aggregated) from raw.promo_activity where product_id = 'BXA' and territory_id = 'MID_ATLANTIC' and week_start in (DATE '2026-07-13')",
+    "result": 54.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e26",
+    "tool": "lookup_promo",
+    "params": {
+     "territory": "MID_ATLANTIC"
+    },
+    "query": "select 1.0 * avg(rep_calls_aggregated) from raw.promo_activity where product_id = 'BXA' and territory_id = 'MID_ATLANTIC' and week_start in (DATE '2026-04-13',DATE '2026-04-20',DATE '2026-04-27',DATE '2026-05-04',DATE '2026-05-11',DATE '2026-05-18',DATE '2026-05-25',DATE '2026-06-01',DATE '2026-06-08',DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06')",
+    "result": 51.53846153846154,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e27",
+    "tool": "lookup_inventory",
+    "params": {
+     "territory": "MID_ATLANTIC"
+    },
+    "query": "select 1.0 * avg(inventory_fill_rate) from raw.inventory_weekly where product_id = 'BXA' and territory_id = 'MID_ATLANTIC' and week_start in (DATE '2026-07-13')",
+    "result": 0.9688,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e28",
+    "tool": "compare_competitors",
+    "params": {
+     "territory": "MID_ATLANTIC",
+     "weeks": "before the change"
+    },
+    "query": "select 100.0 * sum(trx) filter (where product_id = 'BXE') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-04-13',DATE '2026-04-20',DATE '2026-04-27',DATE '2026-05-04',DATE '2026-05-11',DATE '2026-05-18',DATE '2026-05-25',DATE '2026-06-01',DATE '2026-06-08',DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06') and territory_id in ('MID_ATLANTIC')",
+    "result": 11.155511155511155,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e29",
+    "tool": "compare_competitors",
+    "params": {
+     "scope": "other territories",
+     "weeks": "before the change"
+    },
+    "query": "select 100.0 * sum(trx) filter (where product_id = 'BXE') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-04-13',DATE '2026-04-20',DATE '2026-04-27',DATE '2026-05-04',DATE '2026-05-11',DATE '2026-05-18',DATE '2026-05-25',DATE '2026-06-01',DATE '2026-06-08',DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06') and territory_id <> 'MID_ATLANTIC'",
+    "result": 10.766858753435935,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e30",
+    "tool": "get_metric",
+    "params": {
+     "territory": "MID_ATLANTIC"
+    },
+    "query": "select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-07-13') and territory_id in ('MID_ATLANTIC')) / 1.0",
+    "result": 636.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e31",
+    "tool": "get_metric",
+    "params": {
+     "territory": "MID_ATLANTIC"
+    },
+    "query": "select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06') and territory_id in ('MID_ATLANTIC')) / 4.0",
+    "result": 680.25,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e32",
+    "tool": "get_metric",
+    "params": {
+     "territory": "MID_ATLANTIC"
+    },
+    "query": "select 100.0 * ((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-07-13') and territory_id in ('MID_ATLANTIC')) / 1.0) / nullif((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06') and territory_id in ('MID_ATLANTIC')) / 4.0), 0) - 1)",
+    "result": -6.504961411245869,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e33",
+    "tool": "get_metric",
+    "params": {
+     "scope": "other territories"
+    },
+    "query": "select 100.0 * ((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-07-13') and territory_id in ('MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 1.0) / nullif((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06') and territory_id in ('MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 4.0), 0) - 1)",
+    "result": 5.679099849384239,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e34",
+    "tool": "compare_competitors",
+    "params": {},
+    "query": "select datediff('week', DATE '2026-03-02', week_start) from raw.calendar where week_start = DATE '2026-07-13'",
+    "result": 19.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e35",
+    "tool": "compare_competitors",
+    "params": {
+     "product": "BXE"
+    },
+    "query": "select 100.0 * sum(trx) filter (where product_id = 'BXE') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-07-13')",
+    "result": 13.214368125528805,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e36",
+    "tool": "compare_competitors",
+    "params": {
+     "product": "BXA"
+    },
+    "query": "select 100.0 * sum(trx) filter (where product_id = 'BXA') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-07-13')",
+    "result": 32.61287593262057,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e37",
+    "tool": "compare_competitors",
+    "params": {
+     "product": "BXA",
+     "weeks": "before launch"
+    },
+    "query": "select 100.0 * sum(trx) filter (where product_id = 'BXA') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-02-02',DATE '2026-02-09',DATE '2026-02-16',DATE '2026-02-23')",
+    "result": 35.40138186480519,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e38",
+    "tool": "detect_changes",
+    "params": {
+     "scope": "territories with no material change"
+    },
+    "query": "select count(distinct territory_id) from reporting.v_reportable_rx where week_start in (DATE '2026-07-13') and territory_id in ('MOUNTAIN','NEW_ENGLAND','NORTHWEST','SOUTHEAST','SOUTH_CENTRAL')",
+    "result": 5.0,
+    "data_version": "06bcba77fbe1"
+   }
+  ],
+  "abstained": true
+ },
+ "Week of 2026-05-04 in New England: Generate the weekly brand-performance briefing.": {
+  "answer": "Brief for week of 2026-05-04. Data version 06bcba77fbe1. Product: BXA. Territory questions use only cuts that pass the feed gate.\nData health: 7 of 8 territories pass the feed gate for 2026-05-04. Withheld cuts are left out of every figure below and never read as zero demand:\n- New England, week of 2026-05-04: not reportable (missing keys, row counts that do not reconcile, low panel coverage, late delivery, incomplete source); 84 rows against 128 expected, 44 missing keys, panel coverage 0.656, 10.29 days after week end.\nKPIs: BXA TRx averaged 3,362 a week across 6 of 8 territories (like for like), down 5.2% against the weeks before.\nWeek over week, summed over reportable cuts: BXA TRx is 4,084 against 4,590 the week before (down 11.0%).\nOn the 7 territories that report both weeks, BXA TRx went from 4,193 to 4,084 (down 2.6%).\nNew England has withheld cuts in these weeks, so no like-for-like story is given for it.\nStory one: competitor Metacora (launched 2026-03-02). This is a continuing story, week 9 since launch, still growing. Metacora held 9.5% of the four-brand basket and BXA held 33.0%, against 35.4% for BXA in the four weeks before launch. Confidence: Medium. The share loss is measured; its effect on volume is not separated from other drivers. Next: involve marketing and sales.\nConsidered and dropped: 6 territories moved within their normal range.",
+  "claims": [
+   {
+    "value": "7",
+    "evidence_id": "e1"
+   },
+   {
+    "value": "8",
+    "evidence_id": "e2"
+   },
+   {
+    "value": "84",
+    "evidence_id": "e3"
+   },
+   {
+    "value": "128",
+    "evidence_id": "e4"
+   },
+   {
+    "value": "44",
+    "evidence_id": "e5"
+   },
+   {
+    "value": "0.656",
+    "evidence_id": "e6"
+   },
+   {
+    "value": "10.29",
+    "evidence_id": "e7"
+   },
+   {
+    "value": "6",
+    "evidence_id": "e8"
+   },
+   {
+    "value": "3,362",
+    "evidence_id": "e9"
+   },
+   {
+    "value": "8",
+    "evidence_id": "e10"
+   },
+   {
+    "value": "5.2%",
+    "evidence_id": "e11"
+   },
+   {
+    "value": "4,084",
+    "evidence_id": "e12"
+   },
+   {
+    "value": "4,590",
+    "evidence_id": "e13"
+   },
+   {
+    "value": "11.0%",
+    "evidence_id": "e14"
+   },
+   {
+    "value": "7",
+    "evidence_id": "e15"
+   },
+   {
+    "value": "4,193",
+    "evidence_id": "e16"
+   },
+   {
+    "value": "4,084",
+    "evidence_id": "e17"
+   },
+   {
+    "value": "2.6%",
+    "evidence_id": "e18"
+   },
+   {
+    "value": "9",
+    "evidence_id": "e19"
+   },
+   {
+    "value": "9.5%",
+    "evidence_id": "e20"
+   },
+   {
+    "value": "33.0%",
+    "evidence_id": "e21"
+   },
+   {
+    "value": "35.4%",
+    "evidence_id": "e22"
+   },
+   {
+    "value": "6",
+    "evidence_id": "e23"
+   }
+  ],
+  "evidence": [
+   {
+    "id": "e1",
+    "tool": "validate_feed",
+    "params": {
+     "week": "2026-05-04"
+    },
+    "query": "select count(*) from reporting.v_feed_health where week_start = DATE '2026-05-04' and health_status = 'PASS'",
+    "result": 7.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e2",
+    "tool": "validate_feed",
+    "params": {
+     "week": "2026-05-04"
+    },
+    "query": "select count(*) from reporting.v_feed_health where week_start = DATE '2026-05-04'",
+    "result": 8.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e3",
+    "tool": "validate_feed",
+    "params": {
+     "week": "2026-05-04",
+     "territory": "NEW_ENGLAND"
+    },
+    "query": "select observed_rows from reporting.v_feed_health where week_start = DATE '2026-05-04' and territory_id = 'NEW_ENGLAND'",
+    "result": 84.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e4",
+    "tool": "validate_feed",
+    "params": {
+     "week": "2026-05-04",
+     "territory": "NEW_ENGLAND"
+    },
+    "query": "select expected_key_count from reporting.v_feed_health where week_start = DATE '2026-05-04' and territory_id = 'NEW_ENGLAND'",
+    "result": 128.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e5",
+    "tool": "validate_feed",
+    "params": {
+     "week": "2026-05-04",
+     "territory": "NEW_ENGLAND"
+    },
+    "query": "select missing_key_count from reporting.v_feed_health where week_start = DATE '2026-05-04' and territory_id = 'NEW_ENGLAND'",
+    "result": 44.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e6",
+    "tool": "validate_feed",
+    "params": {
+     "week": "2026-05-04",
+     "territory": "NEW_ENGLAND"
+    },
+    "query": "select panel_coverage_ratio from reporting.v_feed_health where week_start = DATE '2026-05-04' and territory_id = 'NEW_ENGLAND'",
+    "result": 0.6562,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e7",
+    "tool": "validate_feed",
+    "params": {
+     "week": "2026-05-04",
+     "territory": "NEW_ENGLAND"
+    },
+    "query": "select actual_lag_days from reporting.v_feed_health where week_start = DATE '2026-05-04' and territory_id = 'NEW_ENGLAND'",
+    "result": 10.29,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e8",
+    "tool": "get_metric",
+    "params": {},
+    "query": "select count(distinct territory_id) from reporting.v_reportable_rx where week_start in (DATE '2026-05-04') and territory_id in ('GREAT_LAKES','MOUNTAIN','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')",
+    "result": 6.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e9",
+    "tool": "get_metric",
+    "params": {
+     "scope": "like-for-like national"
+    },
+    "query": "select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-05-04') and territory_id in ('GREAT_LAKES','MOUNTAIN','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 1.0",
+    "result": 3362.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e10",
+    "tool": "get_metric",
+    "params": {},
+    "query": "select count(*) from raw.dim_territory",
+    "result": 8.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e11",
+    "tool": "get_metric",
+    "params": {
+     "scope": "like-for-like national"
+    },
+    "query": "select 100.0 * ((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-05-04') and territory_id in ('GREAT_LAKES','MOUNTAIN','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 1.0) / nullif((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-04-06',DATE '2026-04-13',DATE '2026-04-20',DATE '2026-04-27') and territory_id in ('GREAT_LAKES','MOUNTAIN','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 4.0), 0) - 1)",
+    "result": -5.162200282087448,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e12",
+    "tool": "get_metric",
+    "params": {
+     "week": "2026-05-04"
+    },
+    "query": "select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-05-04')",
+    "result": 4084.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e13",
+    "tool": "get_metric",
+    "params": {
+     "week": "2026-04-27"
+    },
+    "query": "select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-04-27')",
+    "result": 4590.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e14",
+    "tool": "get_metric",
+    "params": {
+     "scope": "week over week, reportable cuts"
+    },
+    "query": "select 100.0 * ((select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-05-04')) / nullif((select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-04-27')), 0) - 1)",
+    "result": -11.023965141612202,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e15",
+    "tool": "get_metric",
+    "params": {
+     "scope": "territories reporting both weeks"
+    },
+    "query": "select count(distinct territory_id) from reporting.v_reportable_rx where week_start = DATE '2026-05-04' and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')",
+    "result": 7.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e16",
+    "tool": "get_metric",
+    "params": {
+     "week": "2026-04-27",
+     "scope": "like for like"
+    },
+    "query": "select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-04-27') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')",
+    "result": 4193.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e17",
+    "tool": "get_metric",
+    "params": {
+     "week": "2026-05-04",
+     "scope": "like for like"
+    },
+    "query": "select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-05-04') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')",
+    "result": 4084.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e18",
+    "tool": "get_metric",
+    "params": {
+     "scope": "week over week, like for like"
+    },
+    "query": "select 100.0 * ((select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-05-04') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / nullif((select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-04-27') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')), 0) - 1)",
+    "result": -2.5995707130932466,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e19",
+    "tool": "compare_competitors",
+    "params": {},
+    "query": "select datediff('week', DATE '2026-03-02', week_start) from raw.calendar where week_start = DATE '2026-05-04'",
+    "result": 9.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e20",
+    "tool": "compare_competitors",
+    "params": {
+     "product": "BXE"
+    },
+    "query": "select 100.0 * sum(trx) filter (where product_id = 'BXE') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-05-04')",
+    "result": 9.459131700218288,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e21",
+    "tool": "compare_competitors",
+    "params": {
+     "product": "BXA"
+    },
+    "query": "select 100.0 * sum(trx) filter (where product_id = 'BXA') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-05-04')",
+    "result": 33.01802894332606,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e22",
+    "tool": "compare_competitors",
+    "params": {
+     "product": "BXA",
+     "weeks": "before launch"
+    },
+    "query": "select 100.0 * sum(trx) filter (where product_id = 'BXA') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-02-02',DATE '2026-02-09',DATE '2026-02-16',DATE '2026-02-23')",
+    "result": 35.40138186480519,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e23",
+    "tool": "detect_changes",
+    "params": {
+     "scope": "territories with no material change"
+    },
+    "query": "select count(distinct territory_id) from reporting.v_reportable_rx where week_start in (DATE '2026-05-04') and territory_id in ('GREAT_LAKES','MOUNTAIN','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')",
+    "result": 6.0,
+    "data_version": "06bcba77fbe1"
+   }
+  ],
+  "abstained": false
+ },
+ "Week of 2026-04-06: Generate the weekly brand-performance briefing.": {
+  "answer": "Brief for week of 2026-04-06. Data version 06bcba77fbe1. Product: BXA. Territory questions use only cuts that pass the feed gate.\nData health: 7 of 8 territories pass the feed gate for 2026-04-06. Withheld cuts are left out of every figure below and never read as zero demand:\n- Mid-Atlantic, week of 2026-04-06: not reportable (restatement review).\nRestated: Mid-Atlantic BXA TRx for the week of 2026-04-06 was 692 when first reported and is now 742 (restated 2026-07-13; reason: synthetic late claims adjustment). Quote the new value with this note.\nKPIs: BXA TRx averaged 3,860 a week across 7 of 8 territories (like for like), down 4.7% against the weeks before.\nThe headline total of reportable cuts is down 19.5%, but that move comes mostly from withheld cuts, so it is a data artifact, not a business change.\nWeek over week, summed over reportable cuts: BXA TRx is 3,860 against 4,729 the week before (down 18.4%).\nOn the 7 territories that report both weeks, BXA TRx went from 4,005 to 3,860 (down 3.6%).\nStory one: competitor Metacora (launched 2026-03-02). This is a continuing story, week 5 since launch, still growing. Metacora held 6.4% of the four-brand basket and BXA held 33.7%, against 35.4% for BXA in the four weeks before launch. Confidence: Medium. The share loss is measured; its effect on volume is not separated from other drivers. Next: involve marketing and sales.\nConsidered and dropped: 7 territories moved within their normal range.",
+  "claims": [
+   {
+    "value": "7",
+    "evidence_id": "e1"
+   },
+   {
+    "value": "8",
+    "evidence_id": "e2"
+   },
+   {
+    "value": "692",
+    "evidence_id": "e3"
+   },
+   {
+    "value": "742",
+    "evidence_id": "e4"
+   },
+   {
+    "value": "7",
+    "evidence_id": "e5"
+   },
+   {
+    "value": "3,860",
+    "evidence_id": "e6"
+   },
+   {
+    "value": "8",
+    "evidence_id": "e7"
+   },
+   {
+    "value": "4.7%",
+    "evidence_id": "e8"
+   },
+   {
+    "value": "19.5%",
+    "evidence_id": "e9"
+   },
+   {
+    "value": "3,860",
+    "evidence_id": "e10"
+   },
+   {
+    "value": "4,729",
+    "evidence_id": "e11"
+   },
+   {
+    "value": "18.4%",
+    "evidence_id": "e12"
+   },
+   {
+    "value": "7",
+    "evidence_id": "e13"
+   },
+   {
+    "value": "4,005",
+    "evidence_id": "e14"
+   },
+   {
+    "value": "3,860",
+    "evidence_id": "e15"
+   },
+   {
+    "value": "3.6%",
+    "evidence_id": "e16"
+   },
+   {
+    "value": "5",
+    "evidence_id": "e17"
+   },
+   {
+    "value": "6.4%",
+    "evidence_id": "e18"
+   },
+   {
+    "value": "33.7%",
+    "evidence_id": "e19"
+   },
+   {
+    "value": "35.4%",
+    "evidence_id": "e20"
+   },
+   {
+    "value": "7",
+    "evidence_id": "e21"
+   }
+  ],
+  "evidence": [
+   {
+    "id": "e1",
+    "tool": "validate_feed",
+    "params": {
+     "week": "2026-04-06"
+    },
+    "query": "select count(*) from reporting.v_feed_health where week_start = DATE '2026-04-06' and health_status = 'PASS'",
+    "result": 7.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e2",
+    "tool": "validate_feed",
+    "params": {
+     "week": "2026-04-06"
+    },
+    "query": "select count(*) from reporting.v_feed_health where week_start = DATE '2026-04-06'",
+    "result": 8.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e3",
+    "tool": "get_restatement",
+    "params": {
+     "week": "2026-04-06",
+     "territory": "MID_ATLANTIC"
+    },
+    "query": "select sum(trx_prior) from raw.restatement_log where product_id = 'BXA' and week_start = DATE '2026-04-06' and territory_id = 'MID_ATLANTIC'",
+    "result": 692.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e4",
+    "tool": "get_restatement",
+    "params": {
+     "week": "2026-04-06",
+     "territory": "MID_ATLANTIC"
+    },
+    "query": "select sum(trx_revised) from raw.restatement_log where product_id = 'BXA' and week_start = DATE '2026-04-06' and territory_id = 'MID_ATLANTIC'",
+    "result": 742.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e5",
+    "tool": "get_metric",
+    "params": {},
+    "query": "select count(distinct territory_id) from reporting.v_reportable_rx where week_start in (DATE '2026-04-06') and territory_id in ('GREAT_LAKES','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')",
+    "result": 7.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e6",
+    "tool": "get_metric",
+    "params": {
+     "scope": "like-for-like national"
+    },
+    "query": "select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-04-06') and territory_id in ('GREAT_LAKES','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 1.0",
+    "result": 3860.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e7",
+    "tool": "get_metric",
+    "params": {},
+    "query": "select count(*) from raw.dim_territory",
+    "result": 8.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e8",
+    "tool": "get_metric",
+    "params": {
+     "scope": "like-for-like national"
+    },
+    "query": "select 100.0 * ((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-04-06') and territory_id in ('GREAT_LAKES','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 1.0) / nullif((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-03-09',DATE '2026-03-16',DATE '2026-03-23',DATE '2026-03-30') and territory_id in ('GREAT_LAKES','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 4.0), 0) - 1)",
+    "result": -4.685474412000746,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e9",
+    "tool": "get_metric",
+    "params": {
+     "scope": "headline total of reportable cuts"
+    },
+    "query": "select 100.0 * ((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-04-06')) / 1.0) / nullif((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-03-09',DATE '2026-03-16',DATE '2026-03-23',DATE '2026-03-30')) / 4.0), 0) - 1)",
+    "result": -19.503675512225637,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e10",
+    "tool": "get_metric",
+    "params": {
+     "week": "2026-04-06"
+    },
+    "query": "select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-04-06')",
+    "result": 3860.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e11",
+    "tool": "get_metric",
+    "params": {
+     "week": "2026-03-30"
+    },
+    "query": "select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-03-30')",
+    "result": 4729.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e12",
+    "tool": "get_metric",
+    "params": {
+     "scope": "week over week, reportable cuts"
+    },
+    "query": "select 100.0 * ((select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-04-06')) / nullif((select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-03-30')), 0) - 1)",
+    "result": -18.37597800803552,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e13",
+    "tool": "get_metric",
+    "params": {
+     "scope": "territories reporting both weeks"
+    },
+    "query": "select count(distinct territory_id) from reporting.v_reportable_rx where week_start = DATE '2026-04-06' and territory_id in ('GREAT_LAKES','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')",
+    "result": 7.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e14",
+    "tool": "get_metric",
+    "params": {
+     "week": "2026-03-30",
+     "scope": "like for like"
+    },
+    "query": "select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-03-30') and territory_id in ('GREAT_LAKES','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')",
+    "result": 4005.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e15",
+    "tool": "get_metric",
+    "params": {
+     "week": "2026-04-06",
+     "scope": "like for like"
+    },
+    "query": "select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-04-06') and territory_id in ('GREAT_LAKES','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')",
+    "result": 3860.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e16",
+    "tool": "get_metric",
+    "params": {
+     "scope": "week over week, like for like"
+    },
+    "query": "select 100.0 * ((select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-04-06') and territory_id in ('GREAT_LAKES','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / nullif((select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-03-30') and territory_id in ('GREAT_LAKES','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')), 0) - 1)",
+    "result": -3.6204744069912587,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e17",
+    "tool": "compare_competitors",
+    "params": {},
+    "query": "select datediff('week', DATE '2026-03-02', week_start) from raw.calendar where week_start = DATE '2026-04-06'",
+    "result": 5.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e18",
+    "tool": "compare_competitors",
+    "params": {
+     "product": "BXE"
+    },
+    "query": "select 100.0 * sum(trx) filter (where product_id = 'BXE') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-04-06')",
+    "result": 6.41249345663933,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e19",
+    "tool": "compare_competitors",
+    "params": {
+     "product": "BXA"
+    },
+    "query": "select 100.0 * sum(trx) filter (where product_id = 'BXA') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-04-06')",
+    "result": 33.676496248473214,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e20",
+    "tool": "compare_competitors",
+    "params": {
+     "product": "BXA",
+     "weeks": "before launch"
+    },
+    "query": "select 100.0 * sum(trx) filter (where product_id = 'BXA') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-02-02',DATE '2026-02-09',DATE '2026-02-16',DATE '2026-02-23')",
+    "result": 35.40138186480519,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e21",
+    "tool": "detect_changes",
+    "params": {
+     "scope": "territories with no material change"
+    },
+    "query": "select count(distinct territory_id) from reporting.v_reportable_rx where week_start in (DATE '2026-04-06') and territory_id in ('GREAT_LAKES','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')",
+    "result": 7.0,
+    "data_version": "06bcba77fbe1"
+   }
+  ],
+  "abstained": false
+ },
+ "Week of 2025-04-21: Generate the weekly brand-performance briefing.": {
+  "answer": "Brief for week of 2025-04-21. Data version 06bcba77fbe1. Product: BXA. Territory questions use only cuts that pass the feed gate.\nData health: 8 of 8 territories pass the feed gate for 2025-04-21. No cut is withheld.\nKPIs: BXA TRx averaged 4,822 a week across 8 of 8 territories (like for like), flat 0.2% against the weeks before.\nWeek over week, summed over reportable cuts: BXA TRx is 4,822 against 4,749 the week before (up 1.5%).\nRoutine week. No material change was found, and territory swings stayed in their normal range.",
+  "claims": [
+   {
+    "value": "8",
+    "evidence_id": "e1"
+   },
+   {
+    "value": "8",
+    "evidence_id": "e2"
+   },
+   {
+    "value": "8",
+    "evidence_id": "e3"
+   },
+   {
+    "value": "4,822",
+    "evidence_id": "e4"
+   },
+   {
+    "value": "8",
+    "evidence_id": "e5"
+   },
+   {
+    "value": "0.2%",
+    "evidence_id": "e6"
+   },
+   {
+    "value": "4,822",
+    "evidence_id": "e7"
+   },
+   {
+    "value": "4,749",
+    "evidence_id": "e8"
+   },
+   {
+    "value": "1.5%",
+    "evidence_id": "e9"
+   }
+  ],
+  "evidence": [
+   {
+    "id": "e1",
+    "tool": "validate_feed",
+    "params": {
+     "week": "2025-04-21"
+    },
+    "query": "select count(*) from reporting.v_feed_health where week_start = DATE '2025-04-21' and health_status = 'PASS'",
+    "result": 8.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e2",
+    "tool": "validate_feed",
+    "params": {
+     "week": "2025-04-21"
+    },
+    "query": "select count(*) from reporting.v_feed_health where week_start = DATE '2025-04-21'",
+    "result": 8.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e3",
+    "tool": "get_metric",
+    "params": {},
+    "query": "select count(distinct territory_id) from reporting.v_reportable_rx where week_start in (DATE '2025-04-21') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')",
+    "result": 8.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e4",
+    "tool": "get_metric",
+    "params": {
+     "scope": "like-for-like national"
+    },
+    "query": "select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2025-04-21') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 1.0",
+    "result": 4822.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e5",
+    "tool": "get_metric",
+    "params": {},
+    "query": "select count(*) from raw.dim_territory",
+    "result": 8.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e6",
+    "tool": "get_metric",
+    "params": {
+     "scope": "like-for-like national"
+    },
+    "query": "select 100.0 * ((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2025-04-21') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 1.0) / nullif((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2025-03-24',DATE '2025-03-31',DATE '2025-04-07',DATE '2025-04-14') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 4.0), 0) - 1)",
+    "result": -0.16563146997929934,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e7",
+    "tool": "get_metric",
+    "params": {
+     "week": "2025-04-21"
+    },
+    "query": "select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2025-04-21')",
+    "result": 4822.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e8",
+    "tool": "get_metric",
+    "params": {
+     "week": "2025-04-14"
+    },
+    "query": "select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2025-04-14')",
+    "result": 4749.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e9",
+    "tool": "get_metric",
+    "params": {
+     "scope": "week over week, reportable cuts"
+    },
+    "query": "select 100.0 * ((select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2025-04-21')) / nullif((select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2025-04-14')), 0) - 1)",
+    "result": 1.5371657190987653,
+    "data_version": "06bcba77fbe1"
+   }
+  ],
+  "abstained": false
+ },
+ "Week of 2025-12-29: Generate the weekly brand-performance briefing.": {
+  "answer": "Brief for week of 2025-12-29. Data version 06bcba77fbe1. Product: BXA. Territory questions use only cuts that pass the feed gate.\nData health: 8 of 8 territories pass the feed gate for 2025-12-29. No cut is withheld.\nKPIs: BXA TRx averaged 4,188 a week across 8 of 8 territories (like for like), down 19.0% against the weeks before.\nWeek over week, summed over reportable cuts: BXA TRx is 4,188 against 4,309 the week before (down 2.8%).\nCalendar effect: the week of 2025-12-29 is new year week with 4 business days, so a lower volume is expected.\nThe same weeks a year earlier were down 18.2%. This is a calendar effect, not a business event.\nNo story is opened for a calendar week. Expect a rebound in the next regular week.",
+  "claims": [
+   {
+    "value": "8",
+    "evidence_id": "e1"
+   },
+   {
+    "value": "8",
+    "evidence_id": "e2"
+   },
+   {
+    "value": "8",
+    "evidence_id": "e3"
+   },
+   {
+    "value": "4,188",
+    "evidence_id": "e4"
+   },
+   {
+    "value": "8",
+    "evidence_id": "e5"
+   },
+   {
+    "value": "19.0%",
+    "evidence_id": "e6"
+   },
+   {
+    "value": "4,188",
+    "evidence_id": "e7"
+   },
+   {
+    "value": "4,309",
+    "evidence_id": "e8"
+   },
+   {
+    "value": "2.8%",
+    "evidence_id": "e9"
+   },
+   {
+    "value": "4",
+    "evidence_id": "e10"
+   },
+   {
+    "value": "18.2%",
+    "evidence_id": "e11"
+   }
+  ],
+  "evidence": [
+   {
+    "id": "e1",
+    "tool": "validate_feed",
+    "params": {
+     "week": "2025-12-29"
+    },
+    "query": "select count(*) from reporting.v_feed_health where week_start = DATE '2025-12-29' and health_status = 'PASS'",
+    "result": 8.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e2",
+    "tool": "validate_feed",
+    "params": {
+     "week": "2025-12-29"
+    },
+    "query": "select count(*) from reporting.v_feed_health where week_start = DATE '2025-12-29'",
+    "result": 8.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e3",
+    "tool": "get_metric",
+    "params": {},
+    "query": "select count(distinct territory_id) from reporting.v_reportable_rx where week_start in (DATE '2025-12-29') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')",
+    "result": 8.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e4",
+    "tool": "get_metric",
+    "params": {
+     "scope": "like-for-like national"
+    },
+    "query": "select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2025-12-29') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 1.0",
+    "result": 4188.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e5",
+    "tool": "get_metric",
+    "params": {},
+    "query": "select count(*) from raw.dim_territory",
+    "result": 8.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e6",
+    "tool": "get_metric",
+    "params": {
+     "scope": "like-for-like national"
+    },
+    "query": "select 100.0 * ((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2025-12-29') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 1.0) / nullif((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2025-12-01',DATE '2025-12-08',DATE '2025-12-15',DATE '2025-12-22') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 4.0), 0) - 1)",
+    "result": -19.01377810007252,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e7",
+    "tool": "get_metric",
+    "params": {
+     "week": "2025-12-29"
+    },
+    "query": "select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2025-12-29')",
+    "result": 4188.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e8",
+    "tool": "get_metric",
+    "params": {
+     "week": "2025-12-22"
+    },
+    "query": "select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2025-12-22')",
+    "result": 4309.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e9",
+    "tool": "get_metric",
+    "params": {
+     "scope": "week over week, reportable cuts"
+    },
+    "query": "select 100.0 * ((select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2025-12-29')) / nullif((select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2025-12-22')), 0) - 1)",
+    "result": -2.8080761197493587,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e10",
+    "tool": "lookup_calendar",
+    "params": {
+     "week": "2025-12-29"
+    },
+    "query": "select business_days from raw.calendar where week_start = DATE '2025-12-29'",
+    "result": 4.0,
+    "data_version": "06bcba77fbe1"
+   },
+   {
+    "id": "e11",
+    "tool": "get_metric",
+    "params": {
+     "scope": "same weeks last year"
+    },
+    "query": "select 100.0 * ((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2024-12-30') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 1.0) / nullif((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2024-12-02',DATE '2024-12-09',DATE '2024-12-16',DATE '2024-12-23') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 4.0), 0) - 1)",
+    "result": -18.168842839773745,
+    "data_version": "06bcba77fbe1"
+   }
+  ],
+  "abstained": false
+ }
+}

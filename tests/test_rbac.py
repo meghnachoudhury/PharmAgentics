@@ -216,3 +216,44 @@ def test_real_new_england_week_keeps_the_withheld_cut_for_leaders():
     assert leaks(body) == []
     assert "7 of 8 territories" in body["summary"] and "not reportable" in body["summary"]
     assert set(body["summary"].splitlines()) <= set(brief["answer"].splitlines())
+
+
+# --- brief-002 Phase A: triage plan review and stage flow (real engine) -----------------------------
+
+TRIAGE_Q = {**VALID, "territory_id": "MID_ATLANTIC", "week_start": "2026-07-13"}
+
+
+@pytest.mark.skipif(not service.DB.is_file(), reason="Build local/pharmagentics.duckdb first")
+def test_triage_is_analyst_only_and_decisions_are_checked():
+    assert TestClient(app).post("/api/briefing/triage", json=TRIAGE_Q).status_code == 401
+    for user in ("dev-director", "dev-forecast-analyst", "dev-forecast-manager"):
+        assert signed_in(user).post("/api/briefing/triage", json=TRIAGE_Q).status_code == 403
+    analyst = signed_in("dev-analyst")
+    plan = analyst.post("/api/briefing/triage", json=TRIAGE_Q).json()
+    assert plan["state"] == "TRIAGE_REVIEW" and [c["id"] for c in plan["stories"]][:2] == ["territory:PACIFIC", "territory:MID_ATLANTIC"]
+    stale = {**TRIAGE_Q, "triage": {"plan_id": "t-000000000000", "stories": []}}
+    assert analyst.post("/api/briefing/query", json=stale).status_code == 409
+    bad = {**TRIAGE_Q, "triage": {"plan_id": plan["plan_id"], "stories": ["territory:GREAT_LAKES"]}}
+    response = analyst.post("/api/briefing/query", json=bad)
+    assert response.status_code == 400 and "territory:GREAT_LAKES" in response.json()["detail"]
+
+
+@pytest.mark.skipif(not service.DB.is_file(), reason="Build local/pharmagentics.duckdb first")
+def test_flow_and_triage_record_reach_the_analyst_only():
+    analyst, director = signed_in("dev-analyst"), signed_in("dev-director")
+    plan = analyst.post("/api/briefing/triage", json=TRIAGE_Q).json()
+    decision = {"plan_id": plan["plan_id"], "stories": ["territory:PACIFIC", "competitor:BXE"]}
+    brief = analyst.post("/api/briefing/query", json={**TRIAGE_Q, "triage": decision}).json()
+    assert brief["triage"]["default"] is False and "Left out of this brief by the analyst: Mid-Atlantic." in brief["answer"]
+    assert brief["flow"][-1]["states"] == ["IN_REVIEW"]
+    approved = analyst.post(f"/api/briefing/{brief['brief_id']}/review", json={"decision": "approved"}).json()
+    assert approved["flow"][-1]["states"] == ["IN_REVIEW", "PUBLISHED"]
+    seen = director.get(f"/api/briefing/{brief['brief_id']}").json()
+    assert "flow" not in seen and "triage" not in seen and leaks(seen) == []
+    rejected = analyst.post(f"/api/briefing/{brief['brief_id']}/review", json={"decision": "rejected", "reason": "test"}).json()
+    assert rejected["flow"][-1]["states"] == ["IN_REVIEW", "RETURNED"]
+    # The default plan is the same brief as running without triage (same brief_id, same text)
+    default = {"plan_id": plan["plan_id"], "stories": [c["id"] for c in plan["stories"] if c["proposed"] == "investigate"]}
+    a = analyst.post("/api/briefing/query", json={**TRIAGE_Q, "triage": default}).json()
+    b = analyst.post("/api/briefing/query", json=TRIAGE_Q).json()
+    assert a["brief_id"] == b["brief_id"] and a["answer"] == b["answer"] and a["brief_id"] != brief["brief_id"]

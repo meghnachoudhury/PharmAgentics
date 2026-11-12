@@ -2,12 +2,23 @@
 
 **Spec ID**: `brief-002-triage-investigation` (Briefing lane; owners: Michael, Meghna)
 **Feature Branch**: `speckit-briefing`
-**Created**: 2026-10-16 | **Updated**: 2026-10-23
-**Status**: Draft v2. Not started.
+**Created**: 2026-10-16 | **Updated**: 2026-11-11
+**Status**: Draft v3. Phase A (code triage, plan review, stage flow in the app) planned 2026-11-11; Phase B (build 3 manager) after it.
 **Replaces**: `006-triage-investigation` (Oct 16)
 **Input**: System Architecture §4a, §4c, S5; Briefing Architecture §5.4, §9, §10.1, decisions 4, 5, 9, 18, 20; Evaluation Pack EV-2.2, EV-4.1 to EV-4.5, EV-5.1, EV-5.2, EV-5.4, EV-7.2; Personas P2, P4; User stories P1-Q5, P2-Q1, P2-Q2, P2-Q3, P2-Q4, P3-Q3, P3-Q4, P4-Q1, P4-Q2, P4-Q4, P4-Q5
 
 This is the only Briefing stage with an agentic loop: a Magentic manager keeps a task ledger and a progress ledger and delegates to two specialists, Data Forensics and the Driver Investigator. The decision to run the brief at all is code-driven. The Forecast lane's loop (4b) is separate and owned by Alvin and Sienna.
+
+The Briefing team has three agents: the manager and the two specialists. The narrative writer (stage 5, brief-003) and the revision pass (stage 6, brief-004) are constrained LLM steps, not agents.
+
+## Clarifications
+
+### Session 2026-11-11
+
+- Q: Plan review default (Briefing A10, FR-019)? → A: **Always on in UAT** (Michael). The Monday-run default stays with Dr. Admasu.
+- Q: The triage junction (A1, FR-005) for the scripted engine? → A: With the manager off, code makes every triage call and P1 reviews every plan (A10). The junction for the agent (build 3) stays open.
+- Q: What does P1 review? → A: A triage plan with one card per candidate story, answering the first four questions of the course's five-question triage ([data-plan-triage.md](../../docs/planning/data-plan-triage.md)): Decision (why it is a candidate, and what action is proposed), Population (cuts that pass the gate), Granularity (the grain of the change: territory, plan), Time (weeks and baseline). P1 can drop a story or change the order; each call records its layer (code or human).
+- Q: Delivery order? → A: **Phase A** first: code triage, plan review and the stage flow, on the scripted engine, so that they run live in the hosted app (core-007). **Phase B** after: build 3 (the manager takes the code triage; the writer reads only the evidence pack; the Nov 6 trace fixes: scope gate, tool notes carried, token discipline), scored in MLflow.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -109,6 +120,39 @@ A reviewer replays the manager's ledgers from the trace and sees why each tool w
 
 1. **Given** a closed story, **When** its trace is opened, **Then** each ledger update is a span with a snapshot.
 
+---
+
+### User Story 7 - The analyst sees how the brief was made (Priority: P1)
+
+Next to every brief, the analyst sees the seven stages, each with its run state and who did it: code, an agent (by name: manager, Data Forensics, Driver Investigator), an LLM step, or a person. For the scripted engine, stage 4 reads "fixed order of checks, manager off". Leaders do not see this (core-007 FR-003).
+
+**Why this priority**: Briefing B-II says every component is declared deterministic, agentic or human; the analyst cannot trust or review a flow they cannot see. It also answers "is it really a script?" (Briefing §9).
+
+**Independent Test**: Run week 2026-06-08 on the scripted engine and on an agent snapshot; compare the stage lists.
+
+**Acceptance Scenarios**:
+
+1. **Given** a scripted brief, **When** the analyst opens it, **Then** the seven stages show their states (for example VALIDATION_WARNING, TRIAGE_REVIEW then INVESTIGATING, VERIFIED, IN_REVIEW) and stage 4 is labelled code, manager off.
+2. **Given** an agent snapshot, **When** the analyst opens it, **Then** stage 4 names each agent that acted and the tools it called.
+3. **Given** a leadership view, **When** it is returned, **Then** it carries no stage list.
+
+---
+
+### User Story 8 - P1 reviews the triage plan before investigation (Priority: P1)
+
+After stages 1 to 3, the run stops in TRIAGE_REVIEW and shows P1 the triage plan: the candidate stories, ranked by impact, each with its card (FR-022), and the candidates code dropped, with reasons. P1 approves it as is, drops a story, or changes the order. Only then does stage 4 investigate, in P1's order.
+
+**Why this priority**: The user decision of 2026-10-16 and A10 (always on in UAT). It puts the human triage step in the flow instead of after it.
+
+**Independent Test**: Week 2026-07-13: approve the plan; then drop the Mid-Atlantic story and rerun; compare the briefs.
+
+**Acceptance Scenarios**:
+
+1. **Given** week 2026-06-08, **When** triage runs, **Then** the plan proposes Pacific and the continuing Metacora story, in that order, and lists the territories dropped as within their normal range.
+2. **Given** a plan P1 approves unchanged, **When** stage 4 runs, **Then** the brief equals the scripted baseline's brief for the same question.
+3. **Given** P1 drops a story, **When** stage 4 runs, **Then** the brief does not investigate it, says that P1 left it out of this brief, and the triage record shows the call as human.
+4. **Given** a week with withheld cuts (New England, 2026-05-04), **When** triage runs, **Then** the plan shows that code dropped them and why, and P1 cannot add them back.
+
 ### Edge Cases
 
 - Zero candidates: stage 4 is skipped; the run goes to the narrative as ROUTINE.
@@ -141,9 +185,12 @@ A reviewer replays the manager's ledgers from the trace and sees why each tool w
 - **FR-016**: The ledger MUST refuse a test with parameters already run for the same story.
 - **FR-017**: The stage MUST enforce the Briefing caps from the semantic layer. A story that hits a cap MUST close as "unresolved, investigate next" with its evidence kept.
 - **FR-018**: Episodic memory MUST be a query over prior runs' stories and brief claims, not a separate store, and MUST supply continuity: weeks running and direction (user story P3-Q4: Metacora in its 31st week, worse than at launch, flat for 8 weeks).
-- **FR-019**: Plan review by P1 MUST be switchable: always on for demos, by exception in the Monday run. [NEEDS CLARIFICATION: confirm the default with Dr. Admasu (Briefing A10)]
+- **FR-019**: Plan review by P1 MUST be switchable: always on for demos and UAT (Michael, 2026-11-11), by exception in the Monday run. The Monday-run default is confirmed with Dr. Admasu (Briefing A10).
 - **FR-020**: Hypothesis tests MUST be code. The agent chooses which test and its parameters, never the math.
 - **FR-021**: A scripted baseline MUST exist: the same tools, narrative and verifier, with the manager replaced by a fixed order of checks. It is the manager-off ablation.
+- **FR-022**: The triage plan MUST show one card per candidate story with its Decision (why it is a candidate; proposed action), Population (cuts that pass the gate), Granularity (grain of the change) and Time (weeks and baseline), and list dropped candidates with reasons. Every number on a card MUST be a claim filled by code.
+- **FR-023**: P1 MUST be able to approve the plan, drop a proposed story, or reorder stories; P1 MUST NOT add a candidate code dropped for a withheld cut. A plan approved unchanged MUST give the same brief as the scripted baseline.
+- **FR-024**: Every analyst-view brief MUST carry its stage flow: for each of the seven stages, the run states reached and who acted (code, a named agent, an LLM step, a person). The leadership view MUST NOT carry it.
 
 ### Key Entities
 

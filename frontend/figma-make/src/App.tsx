@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useState, type ReactNode } from "react"
 import { BrandMark, Icon } from "./agent/primitives"
 import {
-  getContext, getBriefing, getMe, listPublished, markInsight, openBrief, reviewBrief, NotSignedIn,
+  getContext, getBriefing, getMe, getTriage, listPublished, markInsight, openBrief, reviewBrief, NotSignedIn,
   type BriefingResult, type Claim, type Evidence, type LaneRole, type LeadershipBrief, type Me, type PublishedBrief, type ReleaseContext,
+  type Stage, type TriageDecision, type TriagePlan, type TriageRecord,
 } from "./agent/briefingApi"
 
 // The backend implements a scripted WEEKLY BRIEF with role-based views (core-007). The server
@@ -157,6 +158,68 @@ function ReviewPanel({result, onChange}: {result: BriefingResult, onChange: (r: 
   </section>
 }
 
+// brief-002 US8: the code triage plan, reviewed by the analyst before stage 4 runs.
+const QUESTIONS = [["decision","Decision"],["population","Population"],["granularity","Granularity"],["time","Time"]] as const
+
+function TriageReview({plan, busy, onApprove}: {plan: TriagePlan, busy: boolean, onApprove: (d: TriageDecision) => void}) {
+  const proposed = plan.stories.filter(c=>c.proposed==="investigate").map(c=>c.id)
+  const [order,setOrder] = useState<string[]>(proposed)
+  const [kept,setKept] = useState<Set<string>>(new Set(proposed))
+  useEffect(()=>{setOrder(proposed);setKept(new Set(proposed))},[plan.plan_id])  // eslint-disable-line react-hooks/exhaustive-deps
+  const byId = new Map(plan.stories.map(c=>[c.id,c]))
+  const move = (id: string, by: -1 | 1) => setOrder(o => { const i=o.indexOf(id), j=i+by; if(j<0||j>=o.length) return o; const n=[...o]; [n[i],n[j]]=[n[j],n[i]]; return n })
+  const toggle = (id: string) => setKept(k => { const n=new Set(k); if(n.has(id)) n.delete(id); else n.add(id); return n })
+  const decision: TriageDecision = {plan_id: plan.plan_id, stories: order.filter(id=>kept.has(id))}
+  const changed = decision.stories.join() !== proposed.join()
+  const over = plan.stories.filter(c=>c.proposed==="over_cap")
+  return <div className="space-y-5 pa-rise">
+    <div className="rounded-2xl bg-sheet px-6 py-5 ring-1 ring-rule">
+      <div className="flex flex-wrap items-center gap-2"><span className={`${chip} bg-humanbg text-human`}>Triage review · your decision</span><span className={`${chip} bg-paper text-muted ring-1 ring-rule`}>Proposed by code</span></div>
+      <h2 className="mt-3 text-lg font-semibold">What should this brief investigate?</h2>
+      <p className="mt-1 text-sm text-muted">Code screened every territory and proposes the stories below, ranked by impact. Keep, drop or reorder them; investigation runs only on what you approve, in your order.</p>
+      <details className="mt-4 rounded-xl bg-paper p-4 text-sm"><summary className="cursor-pointer font-medium">What stages 1 to 3 found (data health, restatements, KPIs)</summary><pre className="mt-3 whitespace-pre-wrap break-words font-sans text-[13px] leading-relaxed text-ink">{plan.context}</pre></details>
+    </div>
+    {plan.state!=="TRIAGE_REVIEW" ? <div className="rounded-2xl bg-sheet px-6 py-5 text-sm ring-1 ring-rule">{plan.state==="CALENDAR" ? "Calendar week: lower volume is expected, so code opens no story." : "Routine week: code found no material change, so there is no story to triage."}</div> :
+    <ol className="space-y-3">{order.map((id, i)=>{ const c=byId.get(id)!; const on=kept.has(id); return <li key={id} className={`rounded-2xl bg-white p-5 ring-1 transition ${on?"ring-rule shadow-sm":"opacity-60 ring-rule"}`}>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="min-w-0"><div className="text-[11px] uppercase tracking-widest text-muted">{on ? `Story ${decision.stories.indexOf(id)+1}` : "Left out"} · code rank {c.rank}</div><h3 className="mt-1 text-base font-semibold">{c.title}</h3></div>
+        <div className="flex shrink-0 items-center gap-1">
+          <button aria-label={`Move ${c.title} up`} disabled={i===0} onClick={()=>move(id,-1)} className="rounded-lg px-2 py-1 text-sm ring-1 ring-rule disabled:opacity-30">↑</button>
+          <button aria-label={`Move ${c.title} down`} disabled={i===order.length-1} onClick={()=>move(id,1)} className="rounded-lg px-2 py-1 text-sm ring-1 ring-rule disabled:opacity-30">↓</button>
+          <label className="ml-2 flex items-center gap-2 text-sm"><input type="checkbox" checked={on} onChange={()=>toggle(id)}/>Investigate</label>
+        </div>
+      </div>
+      <p className="mt-3 text-sm leading-relaxed">{c.what_moved}</p>
+      <dl className="mt-3 grid gap-x-4 gap-y-2 text-[13px] sm:grid-cols-[110px_1fr]">{QUESTIONS.map(([k,label])=><div key={k} className="contents"><dt className="font-medium text-muted">{label}</dt><dd className="leading-relaxed">{c[k]}</dd></div>)}</dl>
+    </li>})}</ol>}
+    {(over.length>0 || plan.dropped.length>0) && <div className="rounded-2xl bg-sheet/70 px-6 py-5 text-sm ring-1 ring-rule">
+      <h3 className="font-semibold">Dropped by code</h3><p className="mt-1 text-xs text-muted">These follow the rules; they cannot be added back to this brief.</p>
+      <ul className="mt-3 space-y-1.5">{over.map(c=><li key={c.id}><span className="font-medium">{c.title}</span> <span className="text-muted">· over the story cap of this brief</span></li>)}{plan.dropped.map(d=><li key={d.territory}><span className="font-medium">{d.territory}</span> <span className="text-muted">· {d.reason}</span></li>)}</ul>
+    </div>}
+    <div className="flex flex-wrap items-center gap-3">
+      <button disabled={busy} onClick={()=>onApprove(decision)} className="rounded-xl bg-navy px-5 py-3 text-sm font-semibold text-white hover:bg-agentdeep disabled:bg-rule disabled:text-muted">{plan.state!=="TRIAGE_REVIEW" ? "Write the brief" : changed ? "Approve my changes and investigate" : "Approve plan and investigate"}</button>
+      {changed && <span className="text-xs text-muted">Your changes are recorded as your calls in the brief's triage record.</span>}
+    </div>
+  </div>
+}
+
+// brief-002 US7: who did each of the seven stages (Briefing Architecture §6 states, §9 modes).
+const ACTOR = {code:["Code","bg-paper text-ink ring-1 ring-rule"], agent:["Agent","bg-agentbg text-agentdeep"], llm:["LLM step","bg-amberbg text-amber"], human:["Person","bg-humanbg text-human"]} as const
+
+function FlowPanel({flow, triage}: {flow: Stage[], triage?: TriageRecord | null}) {
+  return <details className="rounded-2xl bg-sheet px-6 py-5 ring-1 ring-rule">
+    <summary className="cursor-pointer text-sm font-semibold">How this brief was made</summary>
+    <ol className="mt-4 space-y-3">{flow.map(s=><li key={s.stage} className="grid gap-1 sm:grid-cols-[28px_1fr]">
+      <span className="font-mono text-xs text-muted">{s.stage}</span>
+      <div><div className="flex flex-wrap items-center gap-2"><span className="text-sm font-medium">{s.name}</span>{s.states.map(st=><span key={st} className="rounded bg-paper px-1.5 py-0.5 font-mono text-[10px] text-muted ring-1 ring-rule">{st}</span>)}</div>
+        <div className="mt-1 flex flex-wrap gap-1.5">{s.actors.length ? s.actors.map((a,i)=><span key={i} className={`${chip} ${ACTOR[a.kind][1]}`}>{ACTOR[a.kind][0]}: {a.name}</span>) : <span className="text-xs text-muted">Skipped</span>}</div>
+        <p className="mt-1 text-xs text-muted">{s.note}</p></div>
+    </li>)}</ol>
+    {triage && <div className="mt-5 border-t border-rule pt-4"><h4 className="text-xs font-semibold uppercase tracking-wider text-muted">Triage record</h4>
+      <ul className="mt-2 space-y-1 text-xs">{triage.calls.map((c,i)=><li key={i} className="flex flex-wrap items-center gap-2"><span className={`${chip} ${c.layer==="human"?ACTOR.human[1]:ACTOR.code[1]}`}>{c.layer==="human"?"You":"Code"}</span><span className="font-medium">{c.title}</span><span className="text-muted">{({investigated:"investigated as proposed",moved:"moved by you",dropped:"left out by you",over_cap:"over the story cap",quiet:"within its normal range",withheld:"withheld at the feed gate"} as Record<string,string>)[c.outcome] ?? c.outcome}{c.position?` · story ${c.position}`:""}</span></li>)}</ul></div>}
+  </details>
+}
+
 function AnalystBrief({result, onChange}: {result: BriefingResult, onChange: (r: BriefingResult) => void}) {
   const [evidenceId,setEvidenceId] = useState<string | null>(null)
   const [mode,setMode] = useState<"analyst" | "leadership">("analyst")
@@ -186,6 +249,7 @@ function AnalystBrief({result, onChange}: {result: BriefingResult, onChange: (r:
       </section>
       <ReviewPanel result={result} onChange={onChange}/>
     </article>}
+    {mode==="analyst" && result.flow && <FlowPanel flow={result.flow} triage={result.triage}/>}
     <InsightButton briefId={result.brief_id} view={mode}/>
     {evidenceId && <EvidenceDrawer result={result} selectedId={evidenceId} onClose={()=>setEvidenceId(null)}/>}
   </>
@@ -201,8 +265,9 @@ function AnalystApp({me, role}: {me: Me, role: LaneRole}) {
   const [pending,setPending] = useState(false)
   const [result,setResult] = useState<BriefingResult | null>(null)
   const [runError,setRunError] = useState<string | null>(null)
-  const [view,setView] = useState<"home" | "result" | "approved">("home")
+  const [view,setView] = useState<"home" | "triage" | "result" | "approved">("home")
   const [requestScope,setRequestScope] = useState<{brand:string,territory:string,week:string} | null>(null)
+  const [plan,setPlan] = useState<TriagePlan | null>(null)
 
   const refresh = async () => {
     setLoadingContext(true); setContextError(null)
@@ -221,9 +286,17 @@ function AnalystApp({me, role}: {me: Me, role: LaneRole}) {
     event?.preventDefault()
     if(pending || !context || !context.product_ids.includes(brand) || !context.territory_ids.includes(territory) || !context.available_weeks.includes(week)) return
     const selected={brand,territory,week}
-    setPending(true);setRunError(null);setResult(null);setRequestScope(selected);setView("result")
+    // Plan review is always on in UAT (brief-002 FR-019): stages 1 to 3 and the code triage first.
+    setPending(true);setRunError(null);setResult(null);setPlan(null);setRequestScope(selected);setView("triage")
+    try { setPlan(await getTriage(query(selected))) } catch(e) {setRunError(message(e))}
+    finally {setPending(false)}
+  }
+  const query = (s: {brand:string,territory:string,week:string}) => ({intent:"weekly_brief" as const,brand_id:s.brand,territory_id:s.territory,week_start:s.week,question:"Generate the weekly brand-performance briefing."})
+  const approvePlan = async (decision: TriageDecision) => {
+    if(!requestScope) return
+    setPending(true);setRunError(null);setResult(null);setView("result")
     try {
-      const response=await getBriefing({intent:"weekly_brief",brand_id:brand,territory_id:territory,week_start:week,question:"Generate the weekly brand-performance briefing."})
+      const response=await getBriefing({...query(requestScope)}, decision)
       setResult(response)
     } catch(e) {setRunError(message(e))}
     finally {setPending(false)}
@@ -259,14 +332,15 @@ function AnalystApp({me, role}: {me: Me, role: LaneRole}) {
           <button type="submit" disabled={!selectable} className="flex w-full items-center justify-center gap-2 rounded-xl bg-navy px-4 py-3.5 text-sm font-semibold text-white transition hover:bg-agentdeep disabled:cursor-not-allowed disabled:bg-rule disabled:text-muted"><Icon name="send"/>Generate weekly briefing</button>
         </form>
       </div>
-      <div className="mt-6 rounded-xl border border-rule bg-sheet/65 p-4 text-sm text-muted"><p className="font-medium text-ink">Implemented functionality</p><p className="mt-1 leading-relaxed">This is the deterministic Briefing baseline. It performs the same defined weekly workflow for each request. You review each briefing; only briefings you approve reach the Brand Director, as an executive summary without evidence. Free-form agentic question answering, Forecast explanations and charts are not implemented here.</p></div>
+      <div className="mt-6 rounded-xl border border-rule bg-sheet/65 p-4 text-sm text-muted"><p className="font-medium text-ink">Implemented functionality</p><p className="mt-1 leading-relaxed">This is the deterministic Briefing baseline (the manager-off version of the agent). Code checks the data and screens every territory, then you review its triage plan: keep, drop or reorder the stories before they are investigated. You then review the brief; only briefings you approve reach the Brand Director, as an executive summary without evidence. Each brief shows how it was made, stage by stage. The agent team (manager, Data Forensics, Driver Investigator) runs locally and is not in this app yet; free-form questions, Forecast explanations and charts are not implemented here.</p></div>
     </div> : view==="approved" ? <div className="mx-auto max-w-3xl space-y-5 px-5 py-7"><h2 className="text-lg font-semibold">Approved briefings</h2><p className="text-sm text-muted">What the Brand Director can open, on the current data release.</p><PublishedList onOpen={id=>void openApproved(id)}/></div>
     : <div className="mx-auto max-w-3xl space-y-5 px-5 py-7">
       <button className="flex items-center gap-2 text-sm text-agentdeep hover:underline" onClick={()=>setView("home")}><Icon name="back"/>Change scope</button>
       {requestScope && <div className="flex justify-end"><div className="max-w-[90%] rounded-2xl rounded-br-md bg-navy px-5 py-3 text-sm leading-relaxed text-white">Generate the weekly briefing for {requestScope.brand}, {labelTerritory(requestScope.territory)}, week of {labelWeek(requestScope.week)}.</div></div>}
-      {pending && <div role="status" className="rounded-2xl bg-sheet px-5 py-4 text-sm text-muted ring-1 ring-rule">Running the scripted Briefing pipeline against DuckDB…</div>}
-      {runError && <div role="alert" className="rounded-2xl bg-amberbg px-5 py-4 text-sm text-amber"><strong>Briefing could not be generated.</strong><p className="mt-2">{runError}</p><p className="mt-2">No mock result was substituted.</p></div>}
-      {result && <AnalystBrief result={result} onChange={setResult}/>}
+      {pending && <div role="status" className="rounded-2xl bg-sheet px-5 py-4 text-sm text-muted ring-1 ring-rule">{view==="triage" ? "Checking the data and screening every territory (stages 1 to 3, code triage)…" : "Investigating the stories you approved (scripted checks against DuckDB)…"}</div>}
+      {runError && <div role="alert" className="rounded-2xl bg-amberbg px-5 py-4 text-sm text-amber"><strong>{view==="triage" ? "The triage plan could not be built." : "Briefing could not be generated."}</strong><p className="mt-2">{runError}</p><p className="mt-2">No mock result was substituted.</p>{view==="result" && plan && <button className="mt-2 underline" onClick={()=>{setRunError(null);setView("triage")}}>Back to the triage plan</button>}</div>}
+      {view==="triage" && plan && !pending && <TriageReview plan={plan} busy={pending} onApprove={d=>void approvePlan(d)}/>}
+      {view==="result" && result && <AnalystBrief result={result} onChange={setResult}/>}
     </div>}
   </Shell>
 }

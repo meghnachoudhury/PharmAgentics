@@ -43,8 +43,15 @@ def leadership(record: dict) -> dict:
     return out
 
 
+REVIEW_STATE = {"pending": "IN_REVIEW", "approved": "PUBLISHED", "rejected": "RETURNED"}  # Briefing §6, stage 7
+
+
 def analyst(record: dict) -> dict:
     out = dict(record["result"])
     out.update(brief_id=record["brief_id"], view="analyst", review_status=record["review_status"],
                reviewed_at=record.get("reviewed_at"), review_reason=record.get("review_reason"))
+    if out.get("flow"):
+        flow = [dict(s) for s in out["flow"]]
+        flow[-1]["states"] = ["IN_REVIEW"] if record["review_status"] == "pending" else ["IN_REVIEW", REVIEW_STATE[record["review_status"]]]
+        out["flow"] = flow
     return out

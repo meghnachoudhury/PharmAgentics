@@ -13,6 +13,14 @@ Territory = Literal[
 ]
 
 
+class TriageDecision(BaseModel):
+    """P1's decision on a triage plan (brief-002 FR-023): the stories to investigate, in order."""
+    model_config = ConfigDict(extra="forbid")
+
+    plan_id: str = Field(pattern=r"^t-[0-9a-f]{12}$")
+    stories: list[str] = Field(default_factory=list, max_length=10)
+
+
 class BriefingQuery(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -21,6 +29,7 @@ class BriefingQuery(BaseModel):
     territory_id: Territory = "PACIFIC"
     week_start: date
     question: str = Field(default="What changed this week?", min_length=3, max_length=300)
+    triage: TriageDecision | None = None  # brief-002: absent = the code plan, unchanged behavior
 
     @field_validator("week_start")
     @classmethod
@@ -59,6 +68,9 @@ class BriefingResult(BaseModel):
     evidence: list[Evidence] = Field(default_factory=list)
     data_version: str | None = None
     abstained: bool = False
+    # brief-002 Phase A, analyst view only (never in the leadership allow-list):
+    triage: dict[str, Any] | None = None  # TriageRecord: who made each triage call
+    flow: list[dict[str, Any]] | None = None  # StageFlow: the seven stages, states and actors
 
 
 class ReleaseContext(BaseModel):

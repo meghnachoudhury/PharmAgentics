@@ -80,6 +80,9 @@ def brief_id(result: dict) -> str:
     """Same engine, data version, week, territory and question give the same brief, so a rerun
     keeps its review state instead of creating a duplicate."""
     key = "|".join(str(result.get(k)) for k in ("system", "data_version", "week_start", "territory_id", "question"))
+    triage = result.get("triage") or {}
+    if triage and not triage.get("default", True):  # P1 changed the plan: a different brief (brief-002 R6)
+        key += "|triage:" + ",".join(triage.get("order", []))
     return "b-" + hashlib.sha256(key.encode()).hexdigest()[:12]
 
 
@@ -93,6 +96,10 @@ def save_brief(result: dict, by: str) -> dict:
     bid = brief_id(result)
     existing = get_brief(bid)
     if existing and existing["result"].get("answer") == result.get("answer"):
+        missing = {k: result[k] for k in ("triage", "flow") if result.get(k) and not existing["result"].get(k)}
+        if missing:  # a brief stored before brief-002 Phase A gains its flow; the review state is kept
+            existing["result"].update(missing)
+            backend().write(_brief_key(bid), _dump(existing))
         return existing
     record = {"brief_id": bid, "created_at": now(), "created_by": by, "result": result,
               "review_status": "pending", "reviewed_by": None, "reviewed_at": None, "review_reason": None}
