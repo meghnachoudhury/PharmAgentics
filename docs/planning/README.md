@@ -26,6 +26,7 @@ The user stories anchor every acceptance scenario. They restate the persona ques
 | Not copied | [Oct 16 - Personas & Eval Design (PDF)](https://drive.google.com/file/d/1X0RyEAHfEfzDER1KByMYugp_TLBDJRCD/view) | Sienna | Oct 16 | Forecast lane: CA, BM, FM; FE-01 to FE-31; TC-01 to TC-12. Owned by the Forecast team; specs cite it by ID only |
 | Not copied | [PharmAgentics_System_Architecture.png](https://drive.google.com/file/d/1o8kUFD1bsyn6ItvASjqqXnPuC_hGuiSs/view) | Michael | Oct 22 | System diagram |
 | [PharmAgentics_Data_Research_Brief.pptx](PharmAgentics_Data_Research_Brief.pptx) | — | Meghna | Oct 16 | Data world research; sampling model |
+| [data-plan-triage.md](data-plan-triage.md) | Course slide, SoT drop 2026-11-11 (`Five-question triage (data plan).png`) | Michael | Nov 11 | Five-question data-plan triage (decision, population, granularity, time, cost and rights); course reference, outside the precedence order |
 
 The Oct 16 `Architecture.docx`, `Personas.docx`, `Evaluation Pack.docx` and `pharmagentics_architecture.png` were removed on 2026-10-23 because the files above supersede them. They remain in git history.
 
