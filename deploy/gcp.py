@@ -112,7 +112,9 @@ def render_realm(env: dict[str, str], app_url: str) -> str:
 
 
 def _norm(text: str) -> str:
-    return "\n".join(line.rstrip() for line in text.strip().splitlines())
+    """Compare settings files by their lines only: no trailing spaces, no blank lines. (gcloud on Windows hands a
+    secret back with doubled line endings, which read as a blank line after every line.)"""
+    return "\n".join(line.rstrip() for line in text.splitlines() if line.strip())
 
 
 def shared_env(c: Ctx) -> str | None:

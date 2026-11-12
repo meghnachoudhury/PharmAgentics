@@ -19,6 +19,8 @@ KEYS = {
     "UAT_PASSWORD_DIRECTOR": lambda: secrets.token_urlsafe(12),
     "UAT_PASSWORD_FORECAST_ANALYST": lambda: secrets.token_urlsafe(12),
     "UAT_PASSWORD_FORECAST_MANAGER": lambda: secrets.token_urlsafe(12),
+    "UAT_PASSWORD_MENTOR_ANALYST": lambda: secrets.token_urlsafe(12),  # the mentor, edit: Commercial Analyst (P1) + CA
+    "UAT_PASSWORD_MENTOR_LEADER": lambda: secrets.token_urlsafe(12),   # the mentor, leadership: Brand Director (P3) + BM
 }
 
 

@@ -106,6 +106,26 @@
       "emailVerified": true,
       "credentials": [{"type": "password", "value": "${UAT_PASSWORD_FORECAST_MANAGER}", "temporary": false}],
       "realmRoles": ["forecast-manager"]
+    },
+    {
+      "username": "mentor-analyst",
+      "enabled": true,
+      "firstName": "Mentor",
+      "lastName": "Analyst (P1 and CA)",
+      "email": "mentor-analyst@pharmagentics.test",
+      "emailVerified": true,
+      "credentials": [{"type": "password", "value": "${UAT_PASSWORD_MENTOR_ANALYST}", "temporary": false}],
+      "realmRoles": ["briefing-analyst", "forecast-analyst"]
+    },
+    {
+      "username": "mentor-leader",
+      "enabled": true,
+      "firstName": "Mentor",
+      "lastName": "Leader (P3 and BM)",
+      "email": "mentor-leader@pharmagentics.test",
+      "emailVerified": true,
+      "credentials": [{"type": "password", "value": "${UAT_PASSWORD_MENTOR_LEADER}", "temporary": false}],
+      "realmRoles": ["briefing-director", "forecast-manager"]
     }
   ]
 }

@@ -14,7 +14,8 @@ gcp = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(gcp)
 
 ENV = {"PHARMAGENTICS_OIDC_CLIENT_SECRET": "s3cret", "UAT_PASSWORD_ANALYST": "a", "UAT_PASSWORD_DIRECTOR": "d",
-       "UAT_PASSWORD_FORECAST_ANALYST": "fa", "UAT_PASSWORD_FORECAST_MANAGER": "fm"}
+       "UAT_PASSWORD_FORECAST_ANALYST": "fa", "UAT_PASSWORD_FORECAST_MANAGER": "fm",
+       "UAT_PASSWORD_MENTOR_ANALYST": "ma", "UAT_PASSWORD_MENTOR_LEADER": "ml"}
 
 
 def test_realm_in_repo_holds_no_secret_values():
