@@ -7,12 +7,20 @@ Every gcloud call passes --project, so the global gcloud config is never changed
   uv run python deploy/gcp.py app      --project ID                        # manual app deploy (CI does this on main)
   uv run python deploy/gcp.py status   --project ID
   uv run python deploy/gcp.py rollback --project ID [--service app|keycloak]
+  uv run python deploy/gcp.py team     --project ID [--member EMAIL ...] [--remove EMAIL ...]   # owner only
+  uv run python deploy/gcp.py env-pull --project ID [--force]               # shared deploy/.env.uat -> local
+  uv run python deploy/gcp.py env-push --project ID                         # local deploy/.env.uat -> shared
 
 What it creates (us-central1): an Artifact Registry repo that keeps 2 images per name; a
-Cloud Storage bucket for approvals and UAT events; three secrets (session secret, OIDC client
-secret, rendered realm); three service accounts (app runtime, Keycloak runtime, GitHub
+Cloud Storage bucket for approvals and UAT events; five secrets (session secret, OIDC client
+secret, rendered realm, worker token, the team's shared .env.uat); three service accounts (app runtime, Keycloak runtime, GitHub
 deployer); Workload Identity Federation for GitHub Actions on main; two Cloud Run services
 scaled to zero; a $1 budget alert. Secrets come from deploy/.env.uat (deploy/make_env.py).
+
+Team operation (FR-029, FR-030): `team` gives each teammate's Google account a deployer role set
+(deploy, roll back, status, logs, the shared env file; no billing, no granting access), and the
+whole deploy/.env.uat is kept in Secret Manager as pa-env-uat so teammates can pull it.
+Teammates pass --account with their own Google account, or omit it to use their active one.
 """
 from __future__ import annotations
 
@@ -37,6 +45,11 @@ SECRETS = {"session": "pa-session-secret", "client": "pa-oidc-client-secret", "r
 APIS = ["run.googleapis.com", "artifactregistry.googleapis.com", "secretmanager.googleapis.com",
         "iam.googleapis.com", "iamcredentials.googleapis.com", "sts.googleapis.com",
         "cloudresourcemanager.googleapis.com", "billingbudgets.googleapis.com", "storage.googleapis.com"]
+ENV_SECRET = "pa-env-uat"  # the whole deploy/.env.uat, shared with the team (FR-030)
+# FR-029: what a teammate needs for keycloak, app, rollback, status, logs and env-pull/env-push.
+# Not included: billing, budgets, project deletion, or setting the project's IAM policy (granting access).
+TEAM_PROJECT_ROLES = ("roles/viewer", "roles/run.admin", "roles/artifactregistry.writer",
+                      "roles/secretmanager.secretVersionManager", "roles/secretmanager.secretAccessor")
 GCLOUD = shutil.which("gcloud") or "gcloud"
 
 
@@ -96,6 +109,17 @@ def render_realm(env: dict[str, str], app_url: str) -> str:
     return text
 
 
+def _norm(text: str) -> str:
+    return "\n".join(line.rstrip() for line in text.strip().splitlines())
+
+
+def shared_env(c: Ctx) -> str | None:
+    """The team's copy of deploy/.env.uat in Secret Manager, or None if it was never pushed."""
+    if not c.ok("secrets", "describe", ENV_SECRET):
+        return None
+    return c.gc("secrets", "versions", "access", "latest", f"--secret={ENV_SECRET}", quiet_fail=True)
+
+
 def put_secret(c: Ctx, name: str, value: str) -> None:
     """Add a version and destroy older ones, so at most one version per secret is active (free tier: 6)."""
     if not c.ok("secrets", "describe", name):
@@ -153,6 +177,7 @@ def setup(c: Ctx, billing: str | None, github_repo: str) -> None:
     put_secret(c, SECRETS["client"], env["PHARMAGENTICS_OIDC_CLIENT_SECRET"])
     put_secret(c, SECRETS["realm"], render_realm(env, c.url(APP)))
     put_secret(c, SECRETS["worker"], env["PHARMAGENTICS_WORKER_TOKEN"])
+    put_secret(c, ENV_SECRET, ENV_FILE.read_text(encoding="utf-8"))  # FR-030; no service account reads it
     for key, secret in (("app", "session"), ("app", "client"), ("kc", "realm"), ("app", "worker")):
         c.gc("secrets", "add-iam-policy-binding", SECRETS[secret], f"--member=serviceAccount:{c.sa(key)}",
              "--role=roles/secretmanager.secretAccessor")
@@ -203,11 +228,18 @@ def github_vars(c: Ctx) -> dict[str, str]:
 
 
 def keycloak(c: Ctx) -> None:
+    env = read_env()
+    shared = shared_env(c)
+    if shared is None:
+        print(f"  NOTE: no shared copy of {ENV_FILE.name} yet; run env-push so teammates can deploy too.")
+    elif _norm(shared) != _norm(ENV_FILE.read_text(encoding="utf-8")):
+        sys.exit(f"Your {ENV_FILE.name} differs from the team's shared copy (FR-030). Run env-pull to take "
+                 "the shared one, or env-push if your change (e.g. a new UAT password) should become it.")
     image = f"{c.registry}/keycloak:{git_sha()}"
     c.gc("auth", "configure-docker", f"{c.region}-docker.pkg.dev", quiet_fail=True)
     docker("build", "-t", image, str(HERE / "keycloak"))
     docker("push", image)
-    put_secret(c, SECRETS["realm"], render_realm(read_env(), c.url(APP)))
+    put_secret(c, SECRETS["realm"], render_realm(env, c.url(APP)))
     c.gc("run", "deploy", KC, f"--image={image}", f"--region={c.region}", f"--service-account={c.sa('kc')}",
          "--allow-unauthenticated", "--port=8080", "--cpu=1", "--memory=1Gi", "--min-instances=0",
          "--max-instances=1",  # one instance: Keycloak keeps sessions in memory (no database)
@@ -265,9 +297,58 @@ def rollback(c: Ctx, service: str) -> None:
     print(f"{svc}: all traffic on {revs[1]} (was {revs[0]}). Undo with: update-traffic --to-latest")
 
 
+def _member(m: str) -> str:
+    return m if ":" in m else f"user:{m}"
+
+
+def team(c: Ctx, add: list[str], remove: list[str]) -> None:
+    """Grant or revoke the FR-029 deployer role set. Needs the project owner."""
+    for raw in add + remove:
+        m, granting = _member(raw), raw in add
+        verb = "add-iam-policy-binding" if granting else "remove-iam-policy-binding"
+        print(f"{'Granting' if granting else 'Revoking'} deployer access: {m}")
+        for role in TEAM_PROJECT_ROLES:
+            c.gc("projects", verb, c.project, f"--member={m}", f"--role={role}", "--condition=None", check=granting)
+        for key in ("app", "kc"):  # deploy Cloud Run services that run as these accounts
+            c.gc("iam", "service-accounts", verb, c.sa(key), f"--member={m}",
+                 "--role=roles/iam.serviceAccountUser", check=granting)
+        c.gc("storage", "buckets", verb, f"gs://{c.bucket}", f"--member={m}",
+             "--role=roles/storage.objectViewer", check=granting)  # UAT events for the MLflow import (FR-026)
+    members = c.gc("projects", "get-iam-policy", c.project, "--flatten=bindings[].members",
+                   "--filter=bindings.role=roles/run.admin", "--format=value(bindings.members)", quiet_fail=True)
+    print("\nTeam with deployer access:", ", ".join(sorted(members.split())) or "(none)")
+    if add:
+        print("Each teammate: install gcloud and Docker, run `gcloud auth login`, then\n"
+              f"  uv run python deploy/gcp.py env-pull --project {c.project} --account <their Google account>")
+
+
+def env_push(c: Ctx) -> None:
+    read_env()  # exits if the file is missing
+    text = ENV_FILE.read_text(encoding="utf-8")
+    shared = shared_env(c)
+    if shared is not None and _norm(shared) == _norm(text):
+        print(f"Shared copy already matches {ENV_FILE.name}.")
+        return
+    put_secret(c, ENV_SECRET, text)
+    print(f"Shared {ENV_FILE.name} updated ({ENV_SECRET}). Teammates: env-pull. "
+          "Redeploy Keycloak (gcp.py keycloak) for password changes to take effect.")
+
+
+def env_pull(c: Ctx, force: bool) -> None:
+    shared = shared_env(c)
+    if shared is None:
+        sys.exit("No shared copy yet (the owner runs env-push), or you have no access (the owner runs gcp.py team).")
+    if ENV_FILE.is_file() and _norm(ENV_FILE.read_text(encoding="utf-8")) != _norm(shared) and not force:
+        sys.exit(f"Your {ENV_FILE.name} differs from the shared copy. Pass --force to replace it, "
+                 "or env-push if yours should become the shared one.")
+    ENV_FILE.write_text(_norm(shared) + "\n", encoding="utf-8")
+    print(f"{ENV_FILE} written from the shared copy. Sign-in passwords: the UAT_PASSWORD_* lines.")
+
+
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("command", choices=["setup", "keycloak", "app", "status", "rollback", "github-vars"])
+    p.add_argument("command", choices=["setup", "keycloak", "app", "status", "rollback", "github-vars",
+                                       "team", "env-push", "env-pull"])
     p.add_argument("--project", required=True)
     p.add_argument("--account", help="gcloud account to use (e.g. mwc2150@columbia.edu); the active account is not changed")
     p.add_argument("--region", default="us-central1")
@@ -275,6 +356,9 @@ def main() -> None:
     p.add_argument("--github-repo", default="mwc2150/PharmAgentics")
     p.add_argument("--image", help="app: deploy this pushed image instead of building")
     p.add_argument("--service", choices=["app", "keycloak"], default="app")
+    p.add_argument("--member", action="append", default=[], help="team: Google account to grant (repeatable)")
+    p.add_argument("--remove", action="append", default=[], help="team: Google account to revoke (repeatable)")
+    p.add_argument("--force", action="store_true", help="env-pull: replace a local file that differs")
     a = p.parse_args()
     if a.account:
         # Applies to every gcloud call and to Docker's gcloud credential helper, for this process only.
@@ -290,6 +374,12 @@ def main() -> None:
         status(c)
     elif a.command == "rollback":
         rollback(c, a.service)
+    elif a.command == "team":
+        team(c, a.member, a.remove)
+    elif a.command == "env-push":
+        env_push(c)
+    elif a.command == "env-pull":
+        env_pull(c, a.force)
     else:
         for k, v in github_vars(c).items():
             print(f"{k}={v}")

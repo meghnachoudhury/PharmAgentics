@@ -33,13 +33,36 @@ uv run python deploy/gcp.py app      --project <new-project-id>
 uv run python deploy/gcp.py status   --project <new-project-id>
 ```
 
-`setup` creates, in `us-central1`: the project (if new) and its billing link; an Artifact Registry repository that keeps the two newest images per name; a Cloud Storage bucket for approvals and UAT events; three secrets (session secret, OIDC client secret, rendered realm), each with one active version; three service accounts (app runtime, Keycloak runtime, GitHub deployer); Workload Identity Federation for GitHub Actions on `main` only; and a $1 budget with alerts at 1%, 50% and 100%. It prints four `gh variable set` lines: set them to turn on automatic deploys.
+`setup` creates, in `us-central1`: the project (if new) and its billing link; an Artifact Registry repository that keeps the two newest images per name; a Cloud Storage bucket for approvals and UAT events; five secrets (session secret, OIDC client secret, rendered realm, worker token, and the shared `.env.uat` for the team), each with one active version (free tier: 6); three service accounts (app runtime, Keycloak runtime, GitHub deployer); Workload Identity Federation for GitHub Actions on `main` only; and a $1 budget with alerts at 1%, 50% and 100%. It prints four `gh variable set` lines: set them to turn on automatic deploys.
 
 **Automatic deploys.** After the `DuckDB data foundation` checks pass on a push to `main` (tests, golden set, API, image build and content check), [`deploy-uat.yml`](../.github/workflows/deploy-uat.yml) builds the app image, checks again that it holds no `eval/`, `SoT/`, `.env` or ground-truth file, pushes it and deploys it. Only the image changes. Keycloak is never deployed from CI.
 
 **Rollback.** `uv run python deploy/gcp.py rollback --project <id>` puts all traffic on the previous revision (no rebuild). `--service keycloak` does the same for Keycloak.
 
-**Adding a UAT participant.** Add a user to the realm file with `"value": "${UAT_PASSWORD_<NAME>}"` and one realm role, add `UAT_PASSWORD_<NAME>=...` to `deploy/.env.uat`, then run `deploy/gcp.py keycloak`. The deploy refuses a placeholder with no value. Never commit a password.
+**Adding a UAT participant.** Add a user to the realm file with `"value": "${UAT_PASSWORD_<NAME>}"` and one realm role, add `UAT_PASSWORD_<NAME>=...` to `deploy/.env.uat`, then run `deploy/gcp.py env-push` and `deploy/gcp.py keycloak`. The deploy refuses a placeholder with no value. Never commit a password.
+
+## Team access (FR-029, FR-030)
+
+Any teammate can deploy, roll back and read the UAT passwords with their own Google account. No key file is handed out, and `deploy/.env.uat` is never committed: the whole file is kept in Secret Manager as `pa-env-uat`, readable by everyone on the team. That is a deliberate choice (2026-11-11): the team can run the deployment without the owner, and every teammate can see every UAT password and secret.
+
+Owner, once per teammate (Columbia or Gmail accounts both work; the org allows any domain):
+
+```powershell
+uv run python deploy/gcp.py env-push --project pharmagentics --account mwc2150@columbia.edu   # first time only
+uv run python deploy/gcp.py team --project pharmagentics --account mwc2150@columbia.edu --member <teammate email> [--member ...]
+uv run python deploy/gcp.py team --project pharmagentics --account mwc2150@columbia.edu --remove <email>   # revoke
+uv run python deploy/gcp.py team --project pharmagentics --account mwc2150@columbia.edu                   # list
+```
+
+A teammate gets: Viewer (status, logs, billing-free reads), Cloud Run Admin, Artifact Registry Writer, Secret Manager Secret Version Manager and Secret Accessor, Service Account User on the app and Keycloak runtime accounts, and read access to the UAT state bucket. Not billing, budgets, deleting the project, or granting access to anyone else; `setup` and `team` stay with the owner.
+
+Teammate, once: install the [gcloud CLI](https://cloud.google.com/sdk/docs/install) and Docker, run `gcloud auth login`, then
+
+```powershell
+uv run python deploy/gcp.py env-pull --project pharmagentics --account <your Google account>
+```
+
+After that, every command in this README works for them with `--account <their account>`. If they change a password or add a participant, they run `env-push` before `keycloak`. `keycloak` refuses to deploy from a local `.env.uat` that differs from the shared copy, so a stale file cannot overwrite someone else's passwords; `env-pull --force` takes the shared copy.
 
 ## Live agent runs on your PC (core-007 FR-028)
 
@@ -62,7 +85,7 @@ Everything is sized for the free tiers (core-007 SC-003: under $1 a month). Both
 | :- | :- | :- |
 | Cloud Run | Keycloak 1 vCPU / 1 GiB, app 1 vCPU / 512 MiB, billed per request | 180,000 vCPU-s and 360,000 GiB-s a month |
 | Artifact Registry | 2 images per name (about 1 GB in all) | 0.5 GB; the rest is about $0.05 a month |
-| Secret Manager | 3 active versions | 6 versions, 10,000 accesses |
+| Secret Manager | 5 active versions | 6 versions, 10,000 accesses |
 | Cloud Storage | a few hundred small JSON files | 5 GB, 5,000 Class A and 50,000 Class B operations |
 | GitHub Actions | build and push | the repository's Actions minutes |
 

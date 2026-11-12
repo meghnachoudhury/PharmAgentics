@@ -30,10 +30,11 @@
 ## Phase 4: Ship
 
 - [x] B017 Full test suite; docker compose with a local worker end to end (sign in, agent triage, approve, brief)
-- [ ] B018 Deploy to Cloud Run; run the worker against the cloud app; end-to-end check; commit
+- [x] B018 Deploy to Cloud Run; run the worker against the cloud app; end-to-end check; commit
 
 ## Notes
 
 - Eval: `e994d094d9b3` (first) and `08364597fd95` (after the plan fixes): every gated check equals the scripted baseline `ba76420932c3` (`eval gate` passes); 0 run errors, 0 caps, about 50 s a case; golden-number recall 0.375 against 0.388 (report only). Investigated cases 10 to 12 of 24; flagged plans 13 to 8.
 - Local end to end (B017): worker on Ollama, real Keycloak sign-in; triage job 15 s, brief job 81 s; leadership view clean.
 - Known limits of the 4B model: the manager drops the Metacora story too readily (flagged for P1); the writer can misdescribe what a claim compares ("against the week before" for a four-week baseline). Code checks catch wrong numbers, not wrong wording; the judge (report only) and P1 review cover that.
+- Cloud (B018, 2026-11-11): worker on the owner's PC against Cloud Run; triage job 18 s, brief job 89 s; traceability check passed; leadership view clean; test brief and jobs deleted from the bucket.

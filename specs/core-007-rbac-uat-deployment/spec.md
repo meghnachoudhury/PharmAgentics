@@ -36,6 +36,11 @@ P2 (Insights Manager), P4 (Marketer) and FM (Forecasting Manager) get no role.
 
 - Q: Can UAT users run the agent live, on the owner's local models? → A: Yes, through a **local worker** (Michael). The app queues an agent job; a worker on the owner's PC polls the app (outbound only, with a worker token), runs the agent on Ollama, and posts the result back. Ollama is never exposed. When no worker has polled recently, the UI says the agent host is offline and the job waits. This widens open item 2: committed snapshots stay possible, and live jobs are added. The app itself still never calls a model (FR-016).
 
+### Session 2026-11-11c
+
+- Q: Who may deploy and operate the Google Cloud project? → A: Every team member, not only the project owner (Michael). Each teammate's own Google account gets a deployer role set on the project: deploy the app and Keycloak, roll back, read status and logs. Creating the project, billing, budgets and granting access stay with the owner.
+- Q: May teammates see the UAT passwords and secrets in `deploy/.env.uat`? → A: Yes (Michael), knowingly trading secrecy for a team that can operate the deployment without him. The file is shared through Secret Manager, readable by every teammate granted access, and still never committed (FR-013 unchanged).
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Each role sees only its own view, enforced by the server (Priority: P1)
@@ -225,6 +230,11 @@ The Forecast lane's roles are defined now so that the Forecast view can plug in 
 - **FR-022**: A merge to `main` MUST start the checks (tests, golden-set validation, the no-model baselines and the snapshot traceability check), and MUST deploy a new version only if all of them pass.
 - **FR-023**: An owner MUST be able to put the previous version back in service without rebuilding.
 - **FR-024**: The pipeline MUST authenticate to Google Cloud without a long-lived key.
+
+**Team operation**
+
+- **FR-029**: The owner MUST be able to grant and revoke, per teammate Google account, a deployer role set that lets the teammate deploy the app and Keycloak, roll back, and read status, logs and the shared environment file (FR-030), with no long-lived key. The role set MUST NOT include billing, budgets, project deletion or granting access to others.
+- **FR-030**: The deployment's environment file (UAT passwords, session, client and worker secrets) MUST be shared in the project's secret store, never in the repository. A teammate with the FR-029 role set MUST be able to pull it into their own `deploy/.env.uat` with one command and push a changed one back. A Keycloak deploy MUST refuse to run from a local file that differs from the shared copy, so one teammate's stale file never overwrites another's passwords.
 
 **UAT tracking**
 
