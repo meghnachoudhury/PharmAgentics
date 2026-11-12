@@ -120,6 +120,29 @@ class Registry:
     def render(self, text: str) -> str:
         return re.sub(r"\{c(\d+)\}", lambda m: self.claims[int(m.group(1)) - 1]["value"], text)
 
+    def render_cited(self, text: str) -> tuple[str, list[dict]]:
+        """`render`, plus where each claim value sits in the rendered text (inline citations in the UI)."""
+        return cite(text, self.claims)
+
+
+def cite(template: str, claims: list[dict], index: dict[int, int] | None = None) -> tuple[str, list[dict]]:
+    """Fill `{cN}` tokens and return the text with spans `{start, end, claim}`; `claim` indexes `claims`, or
+    `index` maps token numbers to positions in another claim list. Same text as `Registry.render`."""
+    out, spans, pos = [], [], 0
+    for m in re.finditer(r"\{c(\d+)\}", template):
+        n = int(m.group(1))
+        out.append(template[pos:m.start()])
+        start = sum(len(s) for s in out)
+        if 0 < n <= len(claims):
+            value = claims[n - 1]["value"]
+            out.append(value)
+            spans.append({"start": start, "end": start + len(value), "claim": index[n] if index else n - 1})
+        else:
+            out.append(m.group(0))
+        pos = m.end()
+    out.append(template[pos:])
+    return "".join(out), spans
+
 
 
 def digits_outside_tokens(template: str) -> list[str]:

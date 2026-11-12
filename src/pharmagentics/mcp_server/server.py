@@ -12,6 +12,7 @@ Verdicts and confidence are computed by code; the model chooses which tools to c
 from __future__ import annotations
 
 import json
+import os
 import re
 
 from mcp.server.mcpserver import MCPServer
@@ -23,7 +24,8 @@ from pharmagentics.tools import stages
 from pharmagentics.tools.checks import (DRIVERS, OWNER, Check, check_access, check_competitor, check_data,
                                         check_promotion, check_supply, confidence, context_baseline)
 
-ADMIN_TOOLS = ("open_run", "export_run")
+ADMIN_TOOLS = ("open_run", "export_run", "brief_sections", "story_section", "competitor_section", "dropped_line")
+_ORD = {1: "one", 2: "two", 3: "three", 4: "four", 5: "five", 6: "six"}
 AGENT_TOOLS = {
     # Briefing Data Forensics: is the data wrong, and what is the like-for-like change?
     "data_forensics": ("feed_health", "restatements", "national_kpis", "check_data"),
@@ -38,9 +40,12 @@ _TOKEN = re.compile(r"\{c(\d+)\}")
 class RunSession:
     """State for one run: the Registry (pinned data version, evidence, claims), the period, driver verdicts."""
 
-    def __init__(self, db=DEFAULT_DB, legend: bool = False):
+    def __init__(self, db=DEFAULT_DB, legend: bool = False, no_repeat: bool | None = None):
         self.db = db
         self.legend = legend
+        # Build 3's no-repeat ledger (brief-002 FR-016): off unless asked, so builds 1 and 2 are unchanged.
+        self.no_repeat = os.environ.get("PHARMAGENTICS_MCP_NO_REPEAT") == "1" if no_repeat is None else no_repeat
+        self.seen: dict[tuple[str, str], str] = {}
         self.reg: Registry | None = None
         self.p: stages.Period | None = None
         self.checks: dict[str, dict[str, Check]] = {}
@@ -52,7 +57,7 @@ class RunSession:
         self.close()
         self.reg = Registry(self.db)
         self.p = stages.resolve(self.reg, question)
-        self.checks, self.stories, self.calls = {}, {}, []
+        self.checks, self.stories, self.calls, self.seen = {}, {}, [], {}
         if not self.p.requested:
             return stages.outside_release(self.p)
         lines = [f"Period: {stages.describe(self.p)}, compared with the {len(self.p.baseline)} weeks before "
@@ -140,7 +145,19 @@ class RunSession:
         t = self._territory(territory)
         if t is None:
             return self._bad_territory(territory)
-        return self._record(t, check_data(self.reg, t, self.p.weeks, self.p.baseline))
+        if (again := self._repeat("check_data", t)):
+            return again
+        return self._remember("check_data", t, self._record(t, check_data(self.reg, t, self.p.weeks, self.p.baseline)))
+
+    def _repeat(self, tool: str, t: str) -> str | None:
+        if self.no_repeat and (tool, t) in self.seen:
+            return (f"Already tested: {tool} for {q.name(t)} ran in this run. Do not repeat it; test a driver not "
+                    f"tested yet, or close the story with story_confidence. The earlier result:\n{self.seen[(tool, t)]}")
+        return None
+
+    def _remember(self, tool: str, t: str, text: str) -> str:
+        self.seen[(tool, t)] = text
+        return text
 
     # Driver Investigator -----------------------------------------------------------------------
     def screen_territories(self) -> str:
@@ -174,8 +191,43 @@ class RunSession:
             return self._bad_territory(territory)
         if (msg := self._withheld(t)):
             return msg
+        if (again := self._repeat(name, t)):
+            return again
         B = context_baseline(self.p.weeks, self.p.baseline) if reference else self.p.baseline
-        return self._record(t, fn(self.reg, t, self.p.weeks, B))
+        return self._remember(name, t, self._record(t, fn(self.reg, t, self.p.weeks, B)))
+
+    # Admin: the brief's code-built sections (build 3, brief-002 FR-026) --------------------------
+    def brief_sections(self) -> dict:
+        """Stages 1 to 3 as the scripted brief states them, in token templates, from this run's Registry."""
+        reg, p = self._reg(), self.p
+        withheld_focus = (f"{q.name(p.focus)} has withheld cuts in these weeks, so no like-for-like story is given for it."
+                          if p.focus in p.terrs and p.focus not in p.ok else None)
+        return {"header": [f"Brief for {stages.describe(p)}. Data version {reg.data_version}. Product: BXA. "
+                           "Territory questions use only cuts that pass the feed gate."] + ([p.note] if p.note else []),
+                "data_health": [stages.data_health(reg, p)] + stages.restatements(reg, p),
+                "kpis": ([p.calendar_note] if p.calendar_note else []) + stages.kpis(reg, p),
+                "calendar": bool(p.calendar), "withheld_focus": withheld_focus}
+
+    def story_section(self, territory: str, n: int) -> str:
+        """One story as the agents left it: head, the checks they ran in the order run, the closing confidence."""
+        t = self._territory(territory)
+        if t is None:
+            raise ToolError(self._bad_territory(territory))
+        head = f"Story {_ORD.get(n, str(n))}: {stages.territory_change(self._reg(), self.p, t)}"
+        done = list(self.checks.get(t, {}).values())
+        lines = [head] + (["Checked, in this order:"] + [f"- {c.text}" for c in done] if done else ["No driver was tested before the cap."])
+        lines.append(self._status(t, closing=True))
+        return "\n".join(lines)
+
+    def competitor_section(self, lead: str) -> str:
+        return stages.competitor_status(self._reg(), self.p, lead=lead) or ""
+
+    def dropped_line(self) -> str:
+        reg, p = self._reg(), self.p
+        if p.calendar:
+            return ""
+        _found, quiet = stages.screen(reg, p)
+        return f"Considered and dropped: {stages.dropped_count(reg, p, quiet)} territories moved within their normal range." if quiet else ""
 
     def _record(self, t: str, check: Check) -> str:
         self.checks.setdefault(t, {})[check.driver] = check
@@ -251,6 +303,26 @@ def build_server(db=DEFAULT_DB, legend: bool = False) -> MCPServer:
     async def export_run() -> str:
         """Admin: the run's claims, evidence items and verdicts as JSON. Callers only, not agents."""
         return json.dumps(s.export_run(), default=str)
+
+    @server.tool(**text)
+    async def brief_sections() -> str:
+        """Admin: the brief's code-built sections (header, data health, restatements, KPIs) as JSON. Callers only."""
+        return json.dumps(s.brief_sections())
+
+    @server.tool(**text)
+    async def story_section(territory: str, n: int) -> str:
+        """Admin: one story as the agents left it (head, checks run, confidence). Callers only."""
+        return s.story_section(territory, n)
+
+    @server.tool(**text)
+    async def competitor_section(lead: str) -> str:
+        """Admin: the Metacora story line, by code. Callers only."""
+        return s.competitor_section(lead)
+
+    @server.tool(**text)
+    async def dropped_line() -> str:
+        """Admin: the 'considered and dropped' line, by code. Callers only."""
+        return s.dropped_line()
 
     @server.tool(**text)
     async def feed_health() -> str:

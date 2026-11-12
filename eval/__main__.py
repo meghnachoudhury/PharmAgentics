@@ -17,7 +17,7 @@ def main(argv=None) -> int:
 
     run = sub.add_parser("run", help="score a system on the golden set and log it to MLflow")
     run.add_argument("--system", required=True, choices=["reference", "naive_llm", "briefing_scripted", "forecast_scripted",
-                                                          "briefing_lowcode"])
+                                                          "briefing_lowcode", "briefing_agent"])
     run.add_argument("--lane", default="all", choices=["all", "briefing", "forecast"])
     run.add_argument("--reruns", type=int, default=1)
     run.add_argument("--stories", help="comma-separated story IDs, e.g. P1-Q2,CA-Q1")

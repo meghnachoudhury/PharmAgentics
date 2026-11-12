@@ -19,3 +19,4 @@ Never put the answer key, the generator, the true pre-artifact data or held-out 
 | Drop | Files | What changed | Follow-up |
 | :- | :- | :- | :- |
 | 2026-10-29 | 7: Proposal; Briefing personas and evaluation pack; Forecast personas and eval design (Sienna); System Architecture; user stories; system diagram | First drop. The `docs/planning/` copies matched; one diagram caption added to the System Architecture copy. The Proposal and the Forecast eval design stay uncopied (cited by ID). | None |
+| 2026-11-11 | 8: the seven above, unchanged, plus `Five-question triage (data plan).png` (course slide, added by Michael) | New file only; `check.py` passed. Copied as [`docs/planning/data-plan-triage.md`](../docs/planning/data-plan-triage.md): the slide, how it differs from the stage-4 triage, and the Briefing lane's data plan | Open item DP-1 (projected or observed Rx feed). No spec or golden case changes |

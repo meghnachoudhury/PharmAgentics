@@ -1,0 +1,47 @@
+# Local UAT stack (core-007): Keycloak + the PharmAgentics app, as on Cloud Run.
+#   uv run python deploy/make_env.py      # once: random secrets into deploy/.env.uat (git-ignored)
+#   docker compose up --build
+#   open http://localhost:8080 and sign in as uat-analyst or uat-director
+# Keycloak keeps no database: the realm, roles and accounts are reimported at every start.
+name: pharmagentics
+
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.4
+    command: ["start-dev", "--import-realm"]
+    env_file: deploy/.env.uat
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      # The browser reaches Keycloak at localhost:8081; the app reaches it at keycloak:8080.
+      KC_HOSTNAME: http://localhost:8081
+      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
+      KC_HEALTH_ENABLED: "true"
+      PHARMAGENTICS_APP_URL: http://localhost:8080
+    volumes:
+      - ./deploy/keycloak/realm-pharmagentics.json:/opt/keycloak/data/import/realm-pharmagentics.json:ro
+    ports: ["8081:8080"]
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/127.0.0.1/9000 && printf 'GET /health/ready HTTP/1.0\\r\\n\\r\\n' >&3 && grep -q UP <&3"]
+      interval: 5s
+      timeout: 5s
+      retries: 40
+
+  app:
+    build: .
+    image: pharmagentics:uat
+    env_file: deploy/.env.uat
+    environment:
+      PHARMAGENTICS_AUTH: oidc
+      PHARMAGENTICS_OIDC_ISSUER: http://localhost:8081/realms/pharmagentics
+      PHARMAGENTICS_OIDC_METADATA_URL: http://keycloak:8080/realms/pharmagentics/.well-known/openid-configuration
+      PHARMAGENTICS_OIDC_CLIENT_ID: pharmagentics-app
+      PHARMAGENTICS_STATE_DIR: /state
+    volumes:
+      - app-state:/state
+    ports: ["8080:8080"]
+    depends_on:
+      keycloak:
+        condition: service_healthy
+
+volumes:
+  app-state:

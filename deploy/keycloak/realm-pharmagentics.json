@@ -1,0 +1,111 @@
+{
+  "realm": "pharmagentics",
+  "displayName": "PharmAgentics UAT",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "resetPasswordAllowed": false,
+  "rememberMe": false,
+  "editUsernameAllowed": false,
+  "loginWithEmailAllowed": false,
+  "duplicateEmailsAllowed": false,
+  "bruteForceProtected": true,
+  "ssoSessionIdleTimeout": 28800,
+  "ssoSessionMaxLifespan": 28800,
+  "requiredActions": [
+    {"alias": "UPDATE_PASSWORD", "name": "Update Password", "providerId": "UPDATE_PASSWORD", "enabled": false, "defaultAction": false, "priority": 10, "config": {}},
+    {"alias": "VERIFY_PROFILE", "name": "Verify Profile", "providerId": "VERIFY_PROFILE", "enabled": false, "defaultAction": false, "priority": 90, "config": {}}
+  ],
+  "roles": {
+    "realm": [
+      {"name": "briefing-analyst", "description": "P1 Commercial Analyst: analyst view, runs and approves briefings (core-007)"},
+      {"name": "briefing-director", "description": "P3 Brand Director: leadership view of approved briefings only (core-007)"},
+      {"name": "forecast-analyst", "description": "CA Commercial Analytics Analyst: reserved; Alvin and Sienna confirm (core-007)"},
+      {"name": "forecast-manager", "description": "BM Brand Manager: reserved; Alvin and Sienna confirm (core-007)"}
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "pharmagentics-app",
+      "name": "PharmAgentics web app",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "${PHARMAGENTICS_OIDC_CLIENT_SECRET}",
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "serviceAccountsEnabled": false,
+      "frontchannelLogout": true,
+      "rootUrl": "${PHARMAGENTICS_APP_URL}",
+      "baseUrl": "/",
+      "redirectUris": ["${PHARMAGENTICS_APP_URL}/auth/callback"],
+      "webOrigins": ["${PHARMAGENTICS_APP_URL}"],
+      "attributes": {
+        "pkce.code.challenge.method": "S256",
+        "post.logout.redirect.uris": "${PHARMAGENTICS_APP_URL}/*"
+      },
+      "defaultClientScopes": ["profile", "basic"],
+      "optionalClientScopes": [],
+      "protocolMappers": [
+        {
+          "name": "realm roles in ID token",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "claim.name": "roles",
+            "jsonType.label": "String",
+            "multivalued": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        }
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "uat-analyst",
+      "enabled": true,
+      "firstName": "UAT",
+      "lastName": "Commercial Analyst",
+      "email": "uat-analyst@pharmagentics.test",
+      "emailVerified": true,
+      "credentials": [{"type": "password", "value": "${UAT_PASSWORD_ANALYST}", "temporary": false}],
+      "realmRoles": ["briefing-analyst"]
+    },
+    {
+      "username": "uat-director",
+      "enabled": true,
+      "firstName": "UAT",
+      "lastName": "Brand Director",
+      "email": "uat-director@pharmagentics.test",
+      "emailVerified": true,
+      "credentials": [{"type": "password", "value": "${UAT_PASSWORD_DIRECTOR}", "temporary": false}],
+      "realmRoles": ["briefing-director"]
+    },
+    {
+      "username": "uat-forecast-analyst",
+      "enabled": true,
+      "firstName": "UAT",
+      "lastName": "Commercial Analytics Analyst",
+      "email": "uat-forecast-analyst@pharmagentics.test",
+      "emailVerified": true,
+      "credentials": [{"type": "password", "value": "${UAT_PASSWORD_FORECAST_ANALYST}", "temporary": false}],
+      "realmRoles": ["forecast-analyst"]
+    },
+    {
+      "username": "uat-forecast-manager",
+      "enabled": true,
+      "firstName": "UAT",
+      "lastName": "Brand Manager",
+      "email": "uat-forecast-manager@pharmagentics.test",
+      "emailVerified": true,
+      "credentials": [{"type": "password", "value": "${UAT_PASSWORD_FORECAST_MANAGER}", "temporary": false}],
+      "realmRoles": ["forecast-manager"]
+    }
+  ]
+}

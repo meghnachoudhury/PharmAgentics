@@ -11,6 +11,7 @@ dependencies = [
 
 [dependency-groups]
 dev = [
+    "httpx>=0.28.1",
     "pypdf>=6.21.4",
     "pytest>=8",
 ]
@@ -32,10 +33,20 @@ eval = [
     "pyyaml>=6",
     "ragas>=0.4.3,<0.5",
 ]
+# The browser-facing Briefing API (src/pharmagentics/api) and the UAT container image.
+api = [
+    "authlib>=1.3",
+    "fastapi>=0.115",
+    "google-cloud-storage>=2.18",
+    "httpx>=0.28.1",
+    "itsdangerous>=2.2",
+    "python-multipart>=0.0.9",
+    "uvicorn>=0.30",
+]
 
 [tool.uv]
 # `uv sync` installs every group, so each machine gets the same environment from uv.lock.
-default-groups = ["dev", "agent", "eval"]
+default-groups = ["dev", "agent", "eval", "api"]
 required-version = ">=0.12"
 constraint-dependencies = [
     # ragas 0.4.3 imports langchain_community.chat_models.vertexai, which langchain-community 0.4 removed.

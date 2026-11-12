@@ -1,0 +1,16 @@
+# Allow-list: the image gets only what the scripted Briefing app needs (core-007 FR-018).
+# eval/, SoT/, .env, local/ and every other path stay out by default.
+*
+!pyproject.toml
+!uv.lock
+!.python-version
+!README.md
+!src/
+!sql/
+!data/agent_visible/
+!agents/brand-briefing/
+!deploy/agent/entrypoint.sh
+!frontend/figma-make/
+**/__pycache__
+**/node_modules
+**/dist

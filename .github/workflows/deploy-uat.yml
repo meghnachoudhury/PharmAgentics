@@ -1,0 +1,54 @@
+name: Deploy UAT app
+
+# core-007 US5: a merge to main deploys the app to Cloud Run, but only after the
+# "DuckDB data foundation" checks (tests, golden set, API, image content) pass on that commit.
+# Keycloak and its realm are deployed by hand (deploy/gcp.py keycloak), never from CI.
+# Needs repository variables GCP_PROJECT, GCP_REGION, GCP_WIF_PROVIDER, GCP_DEPLOYER_SA
+# (printed by deploy/gcp.py setup). Until they are set, this workflow does nothing.
+
+on:
+  workflow_run:
+    workflows: ["DuckDB data foundation"]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-uat
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy:
+    if: >-
+      vars.GCP_PROJECT != '' && (github.event_name == 'workflow_dispatch' ||
+      (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push'))
+    runs-on: ubuntu-latest
+    env:
+      IMAGE: ${{ vars.GCP_REGION }}-docker.pkg.dev/${{ vars.GCP_PROJECT }}/pharmagentics/app
+      SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.SHA }}
+      - uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.GCP_WIF_PROVIDER }}
+          service_account: ${{ vars.GCP_DEPLOYER_SA }}
+      - uses: google-github-actions/setup-gcloud@v2
+      - run: gcloud auth configure-docker ${{ vars.GCP_REGION }}-docker.pkg.dev --quiet
+      - run: docker build --build-arg PHARMAGENTICS_VERSION=${SHA::12} -t $IMAGE:${SHA::12} .
+      - name: Content check (no eval, SoT, .env or ground truth in the image)
+        run: >
+          docker run --rm --entrypoint sh $IMAGE:${SHA::12} -c
+          "test ! -e /app/eval && test ! -e /app/.env && test ! -e /app/SoT &&
+          ! find / -xdev \( -name 'answer_key*' -o -name '*counterfactual*' -o -name 'heldout_params*'
+          -o -name '*true_before_feed_artifacts*' \) 2>/dev/null | grep -q ."
+      - run: docker push $IMAGE:${SHA::12}
+      # Only the image changes; env vars, secrets and limits stay as deploy/gcp.py set them.
+      - run: >
+          gcloud run deploy pharmagentics-app --image=$IMAGE:${SHA::12}
+          --region=${{ vars.GCP_REGION }} --project=${{ vars.GCP_PROJECT }} --quiet

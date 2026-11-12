@@ -20,6 +20,8 @@ A multi-agent AI platform that helps pharma commercial teams see what moved a br
 
 Both sit on the shared data layer and orchestration in `src/pharmagentics/`.
 
+**Team:** how to use, host, run and deploy the web app is in [TEAM.md](TEAM.md).
+
 ## Setup
 
 Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then run
