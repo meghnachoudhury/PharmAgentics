@@ -12,6 +12,10 @@ How to use, host, run and deploy the PharmAgentics web app. For the design behin
 | `uat-director` | Brand Director (P3) | Executive summaries of approved briefs only; no evidence |
 | `uat-forecast-analyst` | Commercial Analytics Analyst (CA) | Forecast section (coming soon) |
 | `uat-forecast-manager` | Brand Manager (BM) | Forecast section (coming soon) |
+| `mentor-analyst` | Commercial Analyst (P1) and Commercial Analytics Analyst (CA) | For the mentor, with edit rights: runs briefs, reviews the triage plan, approves or rejects, sees every number's source. Also previews the leadership view |
+| `mentor-leader` | Brand Director (P3) and Brand Manager (BM) | For the mentor, to try the leadership personas: executive summaries of approved briefs only, no evidence |
+
+The mentor needs two logins because one login cannot hold two roles in the same lane (the server gives the more restricted view): the Analyst and the Director are both Brand performance roles. Each mentor login also holds the matching Forecast role, so all four personas can be tried.
 
 Passwords are the `UAT_PASSWORD_*` lines in `deploy/.env.uat` (see setup below). Never commit that file or paste passwords into chat, issues or slides.
 
@@ -44,7 +48,7 @@ After that, every command in this guide works with `--account <your Google accou
 The web app never runs a model. When someone picks **Agent team**, the request goes into a queue and a *worker* takes it. There are two kinds:
 
 1. **A teammate's machine** (fast, free): anyone can run the worker next to Ollama on their own GPU (below). Any number can host at once; each takes one request at a time, and the app shows who is online. A teammate's machine always goes first.
-2. **The cloud CPU host** (slow, always available): if the queue has work and nobody is hosting, the app starts a Cloud Run job (`pharmagentics-agent`) that runs the same qwen3 model on CPU inside our own project. It works through the queue and shuts itself down when idle. A first request takes about a minute to start and then runs several times slower than a GPU. It has a monthly budget set to stay inside Google Cloud's free tier; when the budget is used up, the UI says so and requests wait for a teammate's machine. No prompt leaves the project.
+2. **The cloud CPU host** (slow, always available): if the queue has work and nobody is hosting, the app starts a Cloud Run job (`pharmagentics-agent`) that runs the same qwen3 model on CPU inside our own project. It works through the queue and shuts itself down when idle. Measured on Cloud Run (8 CPU cores, no GPU): about a minute and a half to start, under a minute for the triage plan, and about 14 minutes for a full brief. Your own GPU does the same brief in about a minute and a half. It has a monthly budget set to stay inside Google Cloud's free tier; when the budget is used up, the UI says so and requests wait for a teammate's machine. No prompt leaves the project.
 
 So nobody has to keep a PC on for the app to work; hosting just makes it faster.
 

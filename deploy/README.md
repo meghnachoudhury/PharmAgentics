@@ -87,6 +87,7 @@ uv run python deploy/gcp.py agent --project pharmagentics --account <you>   # bu
 
 - **Size:** 8 vCPU, 8 GiB, one task, no retries, one hour at most.
 - **Budget:** the app counts the job's seconds (and a fixed overhead per start) per month in the state bucket (`cloud/usage-YYYY-MM.json`) and starts nothing past `PHARMAGENTICS_CLOUD_MAX_SECONDS` (default 18,000 s: 8 vCPUs for 5 hours, 80% of the free tier's 180,000 vCPU-seconds). Set `PHARMAGENTICS_CLOUD_ETA_MINUTES` in `deploy/.env.uat` to show an estimate in the UI.
+- **Measured (2026-11-12):** cold start 96 s, triage 30 s, a full brief 828 s (24 claims, 31 citations), all on the cloud CPU. A queue-to-brief run costs about 1,150 job-seconds, so the default budget covers about 15 of them a month.
 - **Slow by design:** the agent's wall-clock caps are stretched 6x (`PHARMAGENTICS_AGENT_WALL_SCALE`) so slow is not mistaken for stuck. A teammate's GPU always goes first.
 - **Permissions:** the app's service account may only *start* this job (`roles/run.invoker` on it); the job's own service account may only read the worker token.
 - **Storage:** the image is about 3 GB (the model). Artifact Registry keeps two versions and shares the unchanged layers.

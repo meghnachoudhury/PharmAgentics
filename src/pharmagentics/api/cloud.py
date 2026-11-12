@@ -25,6 +25,8 @@ COOLDOWN = 240           # seconds after a start before another is considered (a
 FAILED_COOLDOWN = 60     # after a failed start
 START_OVERHEAD = 300     # job-seconds charged per start for the cold start and the idle wait before it exits
 DEFAULT_MAX_SECONDS = 18_000   # 8 vCPUs x 18,000 s = 144,000 vCPU-seconds, 80% of the free tier
+# Measured on Cloud Run, 2026-11-12: cold start 96 s, triage 30 s, a full brief 828 s (about 14 minutes).
+DEFAULT_ETA_MINUTES = 15       # for a brief, cold start included
 _lock = threading.Lock()
 _state = {"last_start": 0.0, "error": None}
 
@@ -79,7 +81,8 @@ def status() -> dict:
     last = _state["last_start"]
     return {"enabled": configured(), "seconds_left": round(seconds_left()) if configured() else 0,
             "starting": bool(last) and time.time() - last < COOLDOWN, "error": _state["error"],
-            "eta_minutes": int(_env("PHARMAGENTICS_CLOUD_ETA_MINUTES", "0")) or None, "cpu": True}
+            "eta_minutes": int(_env("PHARMAGENTICS_CLOUD_ETA_MINUTES", str(DEFAULT_ETA_MINUTES)) or 0) or None,
+            "cpu": True}
 
 
 def _post(url: str) -> None:
