@@ -2,7 +2,7 @@
 description: "Tasks for brief-002 Phase A: triage plan review and stage flow"
 ---
 
-# Tasks: Triage, Manager and Specialists — Phase A
+# Tasks: Triage, Manager and Specialists â€” Phase A
 
 **Input**: [plan.md](plan.md), [spec.md](spec.md) (User Stories 7 and 8), [research.md](research.md), [data-model.md](data-model.md), [contracts/api.md](contracts/api.md), [quickstart.md](quickstart.md)
 
@@ -21,7 +21,7 @@ description: "Tasks for brief-002 Phase A: triage plan review and stage flow"
 
 **Checkpoint**: `uv run pytest tests/test_triage.py -q` passes; `answer()` is byte-identical.
 
-## Phase 3: User Story 8 — P1 reviews the triage plan before investigation (P1)
+## Phase 3: User Story 8 â€” P1 reviews the triage plan before investigation (P1)
 
 **Goal**: After stages 1 to 3 the analyst sees the triage plan and approves, drops or reorders stories; stage 4 runs on that decision.
 
@@ -39,7 +39,7 @@ description: "Tasks for brief-002 Phase A: triage plan review and stage flow"
 ### Implementation for US8
 
 - [x] T010 [US8] Create agents/brand-briefing/briefing_baseline/triage.py: `build_plan(reg, front)` returns the TriagePlan dict per data-model.md: card IDs `territory:<TERRITORY_ID>`, `plan:<plan_id>` or `competitor:BXE`; the first `MAX_STORIES` territory or plan candidates `proposed: investigate`, the rest `over_cap`; `what_moved` from `stages.territory_change` (territory), a plan-level claim (plan), or a Metacora share claim (competitor); `decision`, `population` (territory names, no counts), `granularity`, `time` (dates only) per research.md R3; the focus territory's decision says the question names it; `dropped` lists quiet territories ("within their normal range") and withheld ones (reasons from `p.status`), layer `code`; `plan_id = "t-" + sha256(question | data_version | proposed IDs)[:12]`; state `TRIAGE_REVIEW`, `ROUTINE` (no cards) or `CALENDAR` (calendar mode)
-- [x] T011 [US8] In agents/brand-briefing/briefing_baseline/pipeline.py add `triage(question, db)` (front plus `build_plan`, with the plan's claims and evidence, rendered) and `run_with_plan(question, decision, db)`: recompute the plan, raise `StalePlan` on a `plan_id` mismatch, raise `ValueError` for an ID not proposed for investigation, run `_investigate` in the decision's order, add the "Left out of this brief by the analyst: …" line when stories were dropped, and return `{envelope, triage_record, flow}` with `triage_record.default` true when the decision equals the proposal
+- [x] T011 [US8] In agents/brand-briefing/briefing_baseline/pipeline.py add `triage(question, db)` (front plus `build_plan`, with the plan's claims and evidence, rendered) and `run_with_plan(question, decision, db)`: recompute the plan, raise `StalePlan` on a `plan_id` mismatch, raise `ValueError` for an ID not proposed for investigation, run `_investigate` in the decision's order, add the "Left out of this brief by the analyst: â€¦" line when stories were dropped, and return `{envelope, triage_record, flow}` with `triage_record.default` true when the decision equals the proposal
 - [x] T012 [US8] In src/pharmagentics/api/schemas.py add `StoryCard`, `TriagePlan`, `TriageDecision` (`plan_id: str`, `stories: list[str]`, extra forbidden) and optional `BriefingQuery.triage: TriageDecision | None = None`
 - [x] T013 [US8] In src/pharmagentics/api/service.py add `run_triage(query)` and pass `query.triage` to the pipeline in `run_briefing` (no decision: today's path); map `StalePlan` to a new `service.StalePlan` and the bad-ID `ValueError` to `OutsideRelease`-style 400
 - [x] T014 [US8] In src/pharmagentics/api/app.py add `POST /api/briefing/triage` (analyst action `run`, `Cache-Control: no-store`, UAT event `triaged` with latency, `plan_id` and card count) and return 409 for a stale plan in `POST /api/briefing/query`; store `triage` and `flow` inside the brief's `result`
@@ -49,7 +49,7 @@ description: "Tasks for brief-002 Phase A: triage plan review and stage flow"
 
 **Checkpoint**: US8 tests pass; in the browser the analyst reviews a plan and gets the matching brief.
 
-## Phase 4: User Story 7 — The analyst sees how the brief was made (P1)
+## Phase 4: User Story 7 â€” The analyst sees how the brief was made (P1)
 
 **Goal**: Every analyst-view brief carries its seven-stage flow with run states and actors; leaders never get it.
 
@@ -62,8 +62,8 @@ description: "Tasks for brief-002 Phase A: triage plan review and stage flow"
 
 ### Implementation for US7
 
-- [x] T020 [US7] In agents/brand-briefing/briefing_baseline/triage.py add `stage_flow(front, plan, decision, verified)` returning the StageFlow list per data-model.md (`actors` items `{kind: code | agent | llm | human, name}`, Briefing §6 state names), with stage 7 `IN_REVIEW`
-- [x] T021 [US7] In src/pharmagentics/api/views.py set stage 7 states from the review (`pending` → `IN_REVIEW`, `approved` → `PUBLISHED`, `rejected` → `RETURNED`) in `analyst()`; keep `LEADERSHIP_FIELDS` unchanged (it already excludes `flow` and `triage`)
+- [x] T020 [US7] In agents/brand-briefing/briefing_baseline/triage.py add `stage_flow(front, plan, decision, verified)` returning the StageFlow list per data-model.md (`actors` items `{kind: code | agent | llm | human, name}`, Briefing Â§6 state names), with stage 7 `IN_REVIEW`
+- [x] T021 [US7] In src/pharmagentics/api/views.py set stage 7 states from the review (`pending` â†’ `IN_REVIEW`, `approved` â†’ `PUBLISHED`, `rejected` â†’ `RETURNED`) in `analyst()`; keep `LEADERSHIP_FIELDS` unchanged (it already excludes `flow` and `triage`)
 - [x] T022 [US7] In frontend/figma-make/src/App.tsx add a collapsible "How this brief was made" panel to the analyst brief: seven rows with stage name, actor chips (Code, Agent, LLM, Person, each with its name) and states; also show the triage record (which calls were code and which were yours)
 
 **Checkpoint**: US7 tests pass; the panel shows in the analyst view and never in the leadership view.
@@ -72,14 +72,14 @@ description: "Tasks for brief-002 Phase A: triage plan review and stage flow"
 
 - [x] T023 Run the full suite `uv run pytest -q` and the scripted eval run; `uv run python -m eval gate <new-run-id> c58f99fc6e09` must pass (B-VII)
 - [x] T024 Rebuild and recheck locally: `docker compose up --build`; run quickstart.md section 3 in the browser flow via the scripted end-to-end script
-- [ ] T025 Deploy the app to Cloud Run: `uv run python deploy/gcp.py app --project pharmagentics --account mwc2150@columbia.edu`; rerun the end-to-end script against the cloud URL
+- [x] T025 Deploy the app to Cloud Run: `uv run python deploy/gcp.py app --project pharmagentics --account mwc2150@columbia.edu`; rerun the end-to-end script against the cloud URL
 - [x] T026 [P] Update the spec index row for brief-002 in specs/README.md (Phase A done) and the "Implemented functionality" text in frontend/figma-make/src/App.tsx
 
 ## Dependencies
 
 - Phase 2 blocks everything. Inside it, T003's fixture is written before T002 changes the pipeline, and its test runs after.
 - US8 (T004 to T017) before US7 (T018 to T022): the flow reports the triage state and is returned by `run_with_plan`.
-- T012 → T013 → T014 → T016 → T017 (contract, service, route, client, screen).
+- T012 â†’ T013 â†’ T014 â†’ T016 â†’ T017 (contract, service, route, client, screen).
 - Polish after both stories.
 
 ## Parallel opportunities
