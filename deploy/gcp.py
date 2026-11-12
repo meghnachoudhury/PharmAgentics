@@ -32,7 +32,8 @@ REALM = HERE / "keycloak" / "realm-pharmagentics.json"
 REPO = "pharmagentics"
 APP, KC = "pharmagentics-app", "pharmagentics-keycloak"
 SA = {"app": "pa-app", "kc": "pa-keycloak", "deployer": "pa-deployer"}
-SECRETS = {"session": "pa-session-secret", "client": "pa-oidc-client-secret", "realm": "pa-keycloak-realm"}
+SECRETS = {"session": "pa-session-secret", "client": "pa-oidc-client-secret", "realm": "pa-keycloak-realm",
+           "worker": "pa-worker-token"}
 APIS = ["run.googleapis.com", "artifactregistry.googleapis.com", "secretmanager.googleapis.com",
         "iam.googleapis.com", "iamcredentials.googleapis.com", "sts.googleapis.com",
         "cloudresourcemanager.googleapis.com", "billingbudgets.googleapis.com", "storage.googleapis.com"]
@@ -151,7 +152,8 @@ def setup(c: Ctx, billing: str | None, github_repo: str) -> None:
     put_secret(c, SECRETS["session"], env["PHARMAGENTICS_SESSION_SECRET"])
     put_secret(c, SECRETS["client"], env["PHARMAGENTICS_OIDC_CLIENT_SECRET"])
     put_secret(c, SECRETS["realm"], render_realm(env, c.url(APP)))
-    for key, secret in (("app", "session"), ("app", "client"), ("kc", "realm")):
+    put_secret(c, SECRETS["worker"], env["PHARMAGENTICS_WORKER_TOKEN"])
+    for key, secret in (("app", "session"), ("app", "client"), ("kc", "realm"), ("app", "worker")):
         c.gc("secrets", "add-iam-policy-binding", SECRETS[secret], f"--member=serviceAccount:{c.sa(key)}",
              "--role=roles/secretmanager.secretAccessor")
     c.gc("storage", "buckets", "add-iam-policy-binding", f"gs://{c.bucket}",
@@ -224,12 +226,14 @@ def app(c: Ctx, image: str | None = None) -> None:
         docker("push", image)
     c.gc("run", "deploy", APP, f"--image={image}", f"--region={c.region}", f"--service-account={c.sa('app')}",
          "--allow-unauthenticated", "--port=8080", "--cpu=1", "--memory=512Mi", "--min-instances=0",
-         "--max-instances=2", "--cpu-boost", "--timeout=120", "--concurrency=40",
+         "--max-instances=1",  # the agent job queue's index lives in memory (core-007 FR-028)
+         "--cpu-boost", "--timeout=120", "--concurrency=40",
          "--set-env-vars=" + ",".join([
              "PHARMAGENTICS_AUTH=oidc", f"PHARMAGENTICS_OIDC_ISSUER={c.url(KC)}/realms/pharmagentics",
              "PHARMAGENTICS_OIDC_CLIENT_ID=pharmagentics-app", f"PHARMAGENTICS_STATE_BUCKET={c.bucket}"]),
          f"--set-secrets=PHARMAGENTICS_SESSION_SECRET={SECRETS['session']}:latest,"
-         f"PHARMAGENTICS_OIDC_CLIENT_SECRET={SECRETS['client']}:latest")
+         f"PHARMAGENTICS_OIDC_CLIENT_SECRET={SECRETS['client']}:latest,"
+         f"PHARMAGENTICS_WORKER_TOKEN={SECRETS['worker']}:latest")
     print(f"\nApp: {c.url(APP)}")
 
 

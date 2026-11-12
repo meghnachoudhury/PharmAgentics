@@ -57,7 +57,7 @@ class BriefingResult(BaseModel):
     """What the engine returns. The API adds brief_id, view and the review state (views.analyst)."""
     status: Literal["draft_requires_review"] = "draft_requires_review"
     review_status: Literal["not_submitted"] = "not_submitted"
-    engine: Literal["scripted"] = "scripted"
+    engine: Literal["scripted", "agent"] = "scripted"  # agent: posted by the owner's local worker (core-007 FR-028)
     system: str
     question: str
     brand_id: Literal["BXA"] = "BXA"
@@ -103,3 +103,27 @@ class InsightMark(BaseModel):
 
     brief_id: str = Field(min_length=3, max_length=40)
     view: Literal["analyst", "leadership"]
+
+
+class AgentJobRequest(BaseModel):
+    """An agent job for the owner's local worker (core-007 FR-028; brief-002 Phase B)."""
+    model_config = ConfigDict(extra="forbid")
+
+    kind: Literal["triage", "brief"]
+    query: BriefingQuery
+    triage_job: str | None = Field(default=None, pattern=r"^j-[0-9a-f]{12}$")  # brief: the reviewed plan's job
+    decision: TriageDecision | None = None  # brief: P1's decision on that plan
+
+
+class WorkerPoll(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    model: str | None = Field(default=None, max_length=120)
+
+
+class WorkerResult(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    ok: bool
+    result: dict[str, Any] | None = None
+    error: str | None = Field(default=None, max_length=2000)

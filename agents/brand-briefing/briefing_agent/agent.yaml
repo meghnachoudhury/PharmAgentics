@@ -1,0 +1,34 @@
+# Briefing build 3 (Briefing Architecture §14; brief-002 Phase B).
+# Code triage, then the manager's plan (A1), then P1 (always in UAT, by exception otherwise); a bounded
+# Magentic team per approved story over one MCP session; code builds every number-bearing section; the
+# writer adds only the answer and one sentence per story. This file and prompts/ are the configuration.
+
+model: null            # null: PHARMAGENTICS_AGENT_MODEL, else ollama:qwen3:4b-instruct-2507-q4_K_M
+
+prompts:
+  manager_triage: prompts/manager_triage.md
+  manager: prompts/manager.md
+  story_done: prompts/story_done.md
+  writer: prompts/writer.md
+  revise: prompts/revise.md
+
+caps:                  # per story (Briefing §10.1; values are Evaluation Pack open item 17)
+  max_round_count: 8
+  max_stall_count: 2
+  max_reset_count: 1
+story_wall_seconds: 150   # one story; code closes it at the cap
+run_wall_seconds: 420     # the whole investigation; stories not reached close by code as untested
+
+participants:          # depth two: specialists have MCP tools and no agent tools
+  - name: data_forensics
+    description: >-
+      Checks whether the story's data can be trusted before anyone explains it: check_data on the story's
+      territory, and feed health or restatements when in doubt. Ask it first for every story.
+    instructions: prompts/data_forensics.md
+    tools: data_forensics
+  - name: driver_investigator
+    description: >-
+      Tests why the story's territory moved: access, promotion, supply and competitor checks, each with a
+      verdict by code, in the hypothesis order the plan gives, then closes the story with story_confidence.
+    instructions: prompts/driver_investigator.md
+    tools: driver_investigator

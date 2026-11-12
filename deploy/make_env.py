@@ -13,6 +13,7 @@ KEYS = {
     "PHARMAGENTICS_SESSION_SECRET": lambda: secrets.token_urlsafe(32),
     "PHARMAGENTICS_PSEUDONYM_KEY": lambda: secrets.token_urlsafe(32),
     "PHARMAGENTICS_OIDC_CLIENT_SECRET": lambda: secrets.token_urlsafe(32),
+    "PHARMAGENTICS_WORKER_TOKEN": lambda: secrets.token_urlsafe(32),  # the local agent worker (core-007 FR-028)
     "KC_BOOTSTRAP_ADMIN_PASSWORD": lambda: secrets.token_urlsafe(18),
     "UAT_PASSWORD_ANALYST": lambda: secrets.token_urlsafe(12),
     "UAT_PASSWORD_DIRECTOR": lambda: secrets.token_urlsafe(12),

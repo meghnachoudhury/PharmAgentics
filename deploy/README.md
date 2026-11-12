@@ -41,6 +41,19 @@ uv run python deploy/gcp.py status   --project <new-project-id>
 
 **Adding a UAT participant.** Add a user to the realm file with `"value": "${UAT_PASSWORD_<NAME>}"` and one realm role, add `UAT_PASSWORD_<NAME>=...` to `deploy/.env.uat`, then run `deploy/gcp.py keycloak`. The deploy refuses a placeholder with no value. Never commit a password.
 
+## Live agent runs on your PC (core-007 FR-028)
+
+The app never runs a model. When an analyst picks **Agent team**, the app queues the job; a worker on your PC takes it, runs build 3 (manager, Data Forensics, Driver Investigator) on Ollama, and posts the result. The app admits a brief only if every number in it is a claim with evidence on the app's data version.
+
+```powershell
+# Ollama running with qwen3:4b-instruct-2507-q4_K_M; the release loaded locally (same data version as the app)
+uv run python agents/brand-briefing/run_worker.py --app https://pharmagentics-app-18389319270.us-central1.run.app
+# or, against the local stack:
+uv run python agents/brand-briefing/run_worker.py --app http://localhost:8080
+```
+
+The token comes from `PHARMAGENTICS_WORKER_TOKEN` in `deploy/.env.uat` (also a secret on Cloud Run). The worker polls every 10 s, outbound only; nothing on your PC is reachable from the internet. One job runs at a time. When the worker is stopped, the UI shows "host offline" and requests wait. Do not run evals while hosting: one 6 GB GPU serves one model run at a time.
+
 ## Cost
 
 Everything is sized for the free tiers (core-007 SC-003: under $1 a month). Both services scale to zero and are capped (Keycloak 1 instance, app 2), so idle time costs nothing. A cold start takes about 16 s for Keycloak and 2 s for the app.

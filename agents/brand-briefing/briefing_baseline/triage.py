@@ -44,7 +44,7 @@ def _card(reg, f: Front, s: dict | None, rank: int, proposed: str) -> dict:
         launched = launch_date(reg)
         share = reg.claim("compare_competitors", qy.share(p.weeks, "BXE"), "pct1", product="BXE")
         return {
-            "id": COMPETITOR, "kind": "competitor", "title": "Competitor Metacora (continuing)", "rank": rank,
+            "id": COMPETITOR, "kind": "competitor", "territory": None, "title": "Competitor Metacora (continuing)", "rank": rank,
             "proposed": proposed,
             "what_moved": f"Metacora (launched {launched}) held {share} of the four-brand basket in these weeks.",
             "decision": (f"A continuing story since launch on {launched}; code links it instead of rediscovering it. "
@@ -68,7 +68,7 @@ def _card(reg, f: Front, s: dict | None, rank: int, proposed: str) -> dict:
                "Its change is beyond its own normal range and beyond the other territories' change (code screen).")
         grain = f"Territory: {qy.name(t)}. Plan and specialty splits are not run yet."  # contribution decomposition is Phase B
     return {
-        "id": story_id(s), "kind": s["kind"], "title": qy.name(t) if s["kind"] == "territory" else f"{qy.name(t)}, plan {s['plan']}",
+        "id": story_id(s), "kind": s["kind"], "territory": t, "title": qy.name(t) if s["kind"] == "territory" else f"{qy.name(t)}, plan {s['plan']}",
         "rank": rank, "proposed": proposed, "what_moved": moved,
         "decision": why + " " + (INVESTIGATE_ACTION if proposed == "investigate" else
                                  f"Over the story cap of this brief; code leaves it for the next one."),

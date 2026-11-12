@@ -26,7 +26,7 @@ export type BriefingResult = {
   review_status: ReviewStatus
   reviewed_at: string | null
   review_reason: string | null
-  engine: "scripted"
+  engine: "scripted" | "agent"
   system: string
   question: string
   brand_id: string
@@ -47,6 +47,8 @@ export type StoryCard = {
   title: string
   rank: number
   proposed: "investigate" | "over_cap"
+  territory?: string | null
+  manager?: { keep: boolean; position: number | null; why: string | null; hypotheses: string[] }  // agent plans only
   what_moved: string
   decision: string
   population: string
@@ -57,7 +59,14 @@ export type TriagePlan = {
   plan_id: string
   question: string
   data_version: string
-  state: "TRIAGE_REVIEW" | "ROUTINE" | "CALENDAR"
+  state: "TRIAGE_REVIEW" | "ROUTINE" | "CALENDAR" | "OUT_OF_SCOPE"
+  engine?: "agent"
+  model?: string
+  scope?: string
+  manager_order?: string[]
+  manager_note?: string
+  flagged?: boolean
+  flags?: string[]
   weeks: string[]
   baseline: string[]
   context: string
@@ -70,11 +79,13 @@ export type TriagePlan = {
   week_start: string
 }
 export type TriageDecision = { plan_id: string; stories: string[] }
+export type AgentStatus = { online: boolean; configured: boolean; model: string | null; queued: number; running: number; last_seen_seconds: number | null }
+export type AgentJob = { id: string; kind: "triage" | "brief"; status: "queued" | "running" | "done" | "failed"; error: string | null; result?: unknown }
 export type TriageRecord = {
   plan_id: string
   default: boolean
   order: string[]
-  calls: { story: string; title: string; outcome: string; layer: "code" | "human"; position?: number }[]
+  calls: { story: string; title: string; outcome: string; layer: "code" | "agent" | "human"; position?: number; why?: string | null }[]
 }
 export type Stage = {
   stage: number
@@ -179,7 +190,7 @@ export async function getContext(): Promise<ReleaseContext> {
 }
 function checkAnalyst(v: unknown): BriefingResult {
   expectObject(v)
-  if (v.view !== "analyst" || typeof v.brief_id !== "string" || v.status !== "draft_requires_review" || v.engine !== "scripted" ||
+  if (v.view !== "analyst" || typeof v.brief_id !== "string" || v.status !== "draft_requires_review" || (v.engine !== "scripted" && v.engine !== "agent") ||
       !REVIEW.has(v.review_status as string) || typeof v.answer !== "string" ||
       !Array.isArray(v.claims) || !Array.isArray(v.evidence) || typeof v.abstained !== "boolean") {
     throw new Error("Backend returned a response incompatible with the implemented weekly briefing UI.")
@@ -207,9 +218,11 @@ function checkLeadership(v: unknown): LeadershipBrief {
   return v as unknown as LeadershipBrief
 }
 export async function getTriage(q: BriefingQuery): Promise<TriagePlan> {
-  const v: unknown = await api("/api/briefing/triage", post(q))
+  return checkPlan(await api("/api/briefing/triage", post(q)))
+}
+function checkPlan(v: unknown): TriagePlan {
   expectObject(v)
-  if (typeof v.plan_id !== "string" || !["TRIAGE_REVIEW", "ROUTINE", "CALENDAR"].includes(v.state as string) ||
+  if (typeof v.plan_id !== "string" || !["TRIAGE_REVIEW", "ROUTINE", "CALENDAR", "OUT_OF_SCOPE"].includes(v.state as string) ||
       !Array.isArray(v.stories) || !Array.isArray(v.dropped) || !Array.isArray(v.claims) || !Array.isArray(v.evidence)) {
     throw new Error("Backend returned a triage plan incompatible with this frontend.")
   }
@@ -244,3 +257,23 @@ export async function reviewBrief(id: string, decision: "approved" | "rejected",
 export async function markInsight(id: string, view: "analyst" | "leadership"): Promise<void> {
   await api("/api/uat/insight", post({ brief_id: id, view }))
 }
+
+// Agent jobs (core-007 FR-028): run by the owner's local worker; the app only queues and checks them.
+export async function getAgentStatus(): Promise<AgentStatus> {
+  return await api("/api/agent/status") as AgentStatus
+}
+export async function submitAgentJob(req: { kind: "triage" | "brief"; query: BriefingQuery; triage_job?: string; decision?: TriageDecision }): Promise<AgentJob> {
+  return await api("/api/agent/jobs", post(req)) as AgentJob
+}
+export async function waitAgentJob(id: string, onUpdate: (j: AgentJob) => void): Promise<AgentJob> {
+  const started = Date.now()
+  for (;;) {
+    const job = await api(`/api/agent/jobs/${encodeURIComponent(id)}`) as AgentJob
+    onUpdate(job)
+    if (job.status === "done" || job.status === "failed") return job
+    if (Date.now() - started > 20 * 60 * 1000) throw new Error("The agent job is taking too long; check the agent host.")
+    await new Promise(r => setTimeout(r, 3000))
+  }
+}
+export function agentPlan(job: AgentJob): TriagePlan { return checkPlan(job.result) }
+export function agentBrief(job: AgentJob): BriefingResult { return checkAnalyst(job.result) }

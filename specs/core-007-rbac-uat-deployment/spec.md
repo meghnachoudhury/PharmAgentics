@@ -32,6 +32,10 @@ P2 (Insights Manager), P4 (Marketer) and FM (Forecasting Manager) get no role.
 - Q: How does locally run agent output reach the hosted app? → A: As versioned briefing snapshots that the owner generates locally (low-code build on `qwen3:4b-instruct-2507-q4_K_M`) for a fixed list of weeks and territories, and commits to `main` (core-007 open item 2, closed). Because the low-code build has not yet passed `eval gate` against the scripted baseline (run `0cd14c5f4266`, 2026-11-05), each snapshot must instead pass its own traceability check and is labelled experimental.
 - Q: What may the sign-in service and hosting cost? → A: Nothing beyond Google Cloud usage billing for a basic project; Keycloak is the free open-source edition, and every service stays within the free tiers.
 
+### Session 2026-11-11b
+
+- Q: Can UAT users run the agent live, on the owner's local models? → A: Yes, through a **local worker** (Michael). The app queues an agent job; a worker on the owner's PC polls the app (outbound only, with a worker token), runs the agent on Ollama, and posts the result back. Ollama is never exposed. When no worker has polled recently, the UI says the agent host is offline and the job waits. This widens open item 2: committed snapshots stay possible, and live jobs are added. The app itself still never calls a model (FR-016).
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Each role sees only its own view, enforced by the server (Priority: P1)
@@ -208,7 +212,8 @@ The Forecast lane's roles are defined now so that the Forecast view can plug in 
 
 **Hosting and cost**
 
-- **FR-016**: The hosted app MUST run only the deterministic scripted engine live, plus committed agent snapshots (FR-027). It MUST NOT call a language model.
+- **FR-016**: The hosted app MUST run only the deterministic scripted engine itself, plus committed agent snapshots (FR-027) and agent results posted by the owner's local worker (FR-028). It MUST NOT call a language model.
+- **FR-028**: Agent jobs MUST go through a queue the app keeps: only the analyst role may submit; only a caller with the worker token may take or complete a job; the worker connects outbound only; one job runs at a time; a job not finished within its cap is marked failed. A posted result MUST pass the FR-027 traceability check on the app's data version before anyone sees it, and is labelled "agent output, experimental" with its model. The UI MUST show whether the agent host is online.
 - **FR-017**: The hosted app MUST serve the frontend and the server from the same address.
 - **FR-018**: The hosted app MUST contain no file from the eval package and no ground-truth file (shared Principle III). A check in the pipeline MUST fail if one is present.
 - **FR-019**: The hosted app MUST show that its data is synthetic (shared Principle VI).

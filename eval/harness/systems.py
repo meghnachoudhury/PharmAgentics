@@ -116,5 +116,21 @@ class BriefingLowCode:
         return ollama_runtime(self.model)
 
 
+class BriefingAgent(BriefingLowCode):
+    """Briefing build 3 (agents/brand-briefing/briefing_agent/; brief-002 Phase B): code triage, the manager's
+    plan, a bounded team per story, code-built sections with the writer's answer and story sentences."""
+
+    name = "briefing_agent"
+
+    def __init__(self, cases: list[Case], model: str | None = None):
+        _lane_package("brand-briefing", "briefing_lowcode")  # build 3 reuses build 2's middleware
+        pkg = _lane_package("brand-briefing", "briefing_agent")
+        from pharmagentics.llm import model_spec
+
+        self._answer = pkg.answer
+        self.model = model_spec(model)
+        self.params = {"agent_config_version": pkg.config_version()}
+
+
 SYSTEMS = {"reference": ReferenceSystem, "naive_llm": NaiveLLMSystem, "briefing_scripted": BriefingScripted,
-           "forecast_scripted": ForecastScripted, "briefing_lowcode": BriefingLowCode}
+           "forecast_scripted": ForecastScripted, "briefing_lowcode": BriefingLowCode, "briefing_agent": BriefingAgent}

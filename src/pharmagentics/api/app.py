@@ -13,20 +13,23 @@ Brand Director (P3) gets only the leadership view, only of briefs the analyst ap
 """
 from __future__ import annotations
 
+import hmac
 import logging
 import os
 import secrets
 import time
 from pathlib import Path
 
-from fastapi import Depends, FastAPI, HTTPException, Query, Response
+from fastapi import Depends, FastAPI, Header, HTTPException, Query, Response
 from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
-from . import auth, rbac, service, store, views
-from .schemas import BriefingQuery, InsightMark, ReleaseContext, ReviewRequest
+from . import auth, jobs, rbac, service, store, views
+from .schemas import (AgentJobRequest, BriefingQuery, InsightMark, ReleaseContext, ReviewRequest, WorkerPoll,
+                      WorkerResult)
 
 logger = logging.getLogger(__name__)
 
@@ -190,6 +193,110 @@ async def insight(mark: InsightMark, who=Briefing) -> Response:
     rbac.view_for(role, mark.view)
     store.record_event("insight", **_who(p, role), brief_id=mark.brief_id, view=mark.view)
     return Response(status_code=204)
+
+
+# --- Agent jobs, run by the owner's local worker (core-007 FR-028; brief-002 Phase B) -----------------
+
+def _job_view(job: dict) -> dict:
+    out = {k: job[k] for k in ("id", "kind", "status", "created_at", "started_at", "finished_at", "error")}
+    if job["status"] == "done" and job["kind"] == "triage":
+        out["result"] = job["result"]
+    elif job["status"] == "done" and job["kind"] == "brief":
+        record = store.get_brief(job["result"]["brief_id"])
+        out["result"] = views.analyst(record) if record else None
+    return out
+
+
+@app.get("/api/agent/status")
+def agent_status(response: Response, who=Briefing) -> dict:
+    _no_store(response)
+    return {**jobs.status(), "configured": bool(os.environ.get("PHARMAGENTICS_WORKER_TOKEN"))}
+
+
+@app.post("/api/agent/jobs")
+async def agent_submit(req: AgentJobRequest, response: Response, who=Briefing) -> dict:
+    p, role = who
+    rbac.allow(role, "run")
+    _no_store(response)
+    try:
+        await run_in_threadpool(service._check_scope, req.query)
+    except service.OutsideRelease as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    payload = {"query": req.query.model_dump(mode="json"), "question": service.normalize_question(req.query)}
+    if req.kind == "brief":
+        plan_job = jobs.get(req.triage_job or "")
+        if plan_job is None or plan_job["kind"] != "triage" or plan_job["status"] != "done":
+            raise HTTPException(status_code=400, detail="A brief job needs a finished triage job.")
+        plan = plan_job["result"]
+        if req.decision is None or req.decision.plan_id != plan["plan_id"]:
+            raise HTTPException(status_code=409, detail="The decision is not for that triage plan; review it again.")
+        allowed = {c["id"] for c in plan["stories"] if c["proposed"] == "investigate"}
+        if (bad := [s for s in req.decision.stories if s not in allowed]):
+            raise HTTPException(status_code=400, detail=f"Not a story this plan proposes: {', '.join(bad)}")
+        payload.update(plan=plan, decision=req.decision.model_dump(), triage_job=plan_job["id"])
+    job = jobs.submit(req.kind, payload, by=rbac.pseudonym(p.sub))
+    store.record_event("agent_job", **_who(p, role), job_id=job["id"], job_kind=req.kind)
+    return _job_view(job)
+
+
+@app.get("/api/agent/jobs/{job_id}")
+def agent_job(job_id: str, response: Response, who=Briefing) -> dict:
+    _p, role = who
+    rbac.allow(role, "run")
+    _no_store(response)
+    job = jobs.get(job_id)
+    if job is None:
+        raise HTTPException(status_code=404, detail="No such job.")
+    return _job_view(job)
+
+
+def _worker(authorization: str | None = Header(default=None)) -> None:
+    token = os.environ.get("PHARMAGENTICS_WORKER_TOKEN")
+    if not token:
+        raise HTTPException(status_code=503, detail="Agent jobs are not configured on this server.")
+    given = (authorization or "").removeprefix("Bearer ").strip()
+    if not hmac.compare_digest(given.encode(), token.encode()):
+        raise HTTPException(status_code=401, detail="Worker token required.")
+
+
+@app.post("/api/worker/next", dependencies=[Depends(_worker)])
+def worker_next(poll: WorkerPoll) -> Response:
+    job = jobs.next_job(poll.model)
+    if job is None:
+        return Response(status_code=204)
+    return JSONResponse({"id": job["id"], "kind": job["kind"], "payload": job["payload"]})
+
+
+@app.post("/api/worker/jobs/{job_id}", dependencies=[Depends(_worker)])
+async def worker_result(job_id: str, posted: WorkerResult) -> dict:
+    job = jobs.get(job_id)
+    if job is None or job["status"] != "running":
+        raise HTTPException(status_code=404, detail="No running job with that ID.")
+    if not posted.ok:
+        jobs.complete(job_id, False, None, posted.error)
+        return {"status": "failed"}
+    query = BriefingQuery.model_validate(job["payload"]["query"])
+    try:
+        if job["kind"] == "triage":
+            plan = posted.result or {}
+            if plan.get("state") != "OUT_OF_SCOPE":
+                service._traceable(plan.get("claims", []), plan.get("evidence", []))
+            plan.update(brand_id=query.brand_id, territory_id=query.territory_id, week_start=query.week_start.isoformat())
+            jobs.complete(job_id, True, plan, None)
+        else:
+            result = await run_in_threadpool(service.accept_agent_brief, query, posted.result or {})
+            record = store.save_brief(result.model_dump(mode="json"), by=job["by"])
+            jobs.complete(job_id, True, {"brief_id": record["brief_id"]}, None)
+            store.record_event("requested", user=job["by"], role="briefing-analyst", persona="P1",
+                               brief_id=record["brief_id"], engine="agent", system=result.system,
+                               data_version=result.data_version, week_start=str(result.week_start),
+                               territory_id=result.territory_id, triage_default=(result.triage or {}).get("default"),
+                               agent_seconds=((posted.result or {}).get("envelope") or {}).get("trajectory", {}).get("seconds"))
+    except Exception as exc:  # noqa: BLE001 - an untraceable or malformed result fails the job, visibly
+        logger.warning("Agent result refused: %s", exc)
+        jobs.complete(job_id, False, None, f"The agent's result did not pass the traceability check: {exc}")
+        return {"status": "failed"}
+    return {"status": "done"}
 
 
 # Same-origin UI (core-007 FR-017). Mounted last so every /api and /auth route above wins.

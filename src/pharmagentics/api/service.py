@@ -5,6 +5,7 @@ backend seam; neither human approval nor saved history is implemented here.
 """
 from __future__ import annotations
 
+import re
 import sys
 from datetime import date
 from pathlib import Path
@@ -166,4 +167,33 @@ def run_briefing(request: BriefingQuery) -> BriefingResult:
         answer=raw["answer"], claims=claims, evidence=evidence,
         data_version=_traceable(claims, evidence),
         abstained=bool(raw.get("abstained", False)), **extra,
+    )
+
+
+_DATE = re.compile(r"\d{4}-\d{2}-\d{2}")
+_NUMBER = re.compile(r"(?<![\w.-])\d[\d,.]*%?")
+
+
+def untraced_numbers(answer: str, claims: list[dict], data_version: str | None) -> list[str]:
+    """Numbers in a brief's text that are not one of its claim values (core-007 FR-027). Dates, the data
+    version and identifiers with letters (plan IDs) are not numbers."""
+    text = _DATE.sub(" ", answer.replace(data_version, " ") if data_version else answer)
+    values = {c["value"] for c in claims}
+    return [n for n in (m.group(0).rstrip(".,") for m in _NUMBER.finditer(text)) if n and n not in values]
+
+
+def accept_agent_brief(query: BriefingQuery, posted: dict) -> BriefingResult:
+    """A brief posted by the worker, admitted only if it is traceable on this app's data version (FR-027)."""
+    env = posted.get("envelope") or {}
+    claims, evidence = env.get("claims") or [], env.get("evidence") or []
+    version = _traceable(claims, evidence)
+    if version != current_data_version():
+        raise RuntimeError(f"The agent ran on data version {version}, not this app's {current_data_version()}.")
+    if (bad := untraced_numbers(env.get("answer", ""), claims, version)):
+        raise RuntimeError(f"Numbers with no claim behind them: {', '.join(bad[:5])}.")
+    return BriefingResult(
+        engine="agent", system=str(env.get("system", "briefing_agent")), question=normalize_question(query),
+        brand_id=query.brand_id, territory_id=query.territory_id, week_start=query.week_start,
+        answer=env.get("answer", ""), claims=claims, evidence=evidence, data_version=version,
+        abstained=bool(env.get("abstained", False)), triage=posted.get("triage"), flow=posted.get("flow"),
     )
