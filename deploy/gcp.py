@@ -174,14 +174,20 @@ def setup(c: Ctx, billing: str | None, github_repo: str) -> None:
     c.gc("iam", "service-accounts", "add-iam-policy-binding", c.sa("deployer"), "--role=roles/iam.workloadIdentityUser",
          f"--member=principalSet://iam.googleapis.com/projects/{pn}/locations/global/workloadIdentityPools/github/attribute.repository/{github_repo}")
 
-    budgets = subprocess.run([GCLOUD, "billing", "budgets", "list", f"--billing-account={billing}",
+    # --billing-project: bill the Budgets API call to this project, not the gcloud default project.
+    bp = f"--billing-project={c.project}"
+    budgets = subprocess.run([GCLOUD, "billing", "budgets", "list", f"--billing-account={billing}", bp,
                               "--format=value(displayName)"], capture_output=True, text=True).stdout.split("\n")
     if f"{c.project} UAT" not in budgets:
         print("  $ gcloud billing budgets create ...")
-        subprocess.run([GCLOUD, "billing", "budgets", "create", f"--billing-account={billing}",
-                        f"--display-name={c.project} UAT", "--budget-amount=1USD", f"--filter-projects=projects/{c.project}",
-                        "--threshold-rule=percent=0.01", "--threshold-rule=percent=0.5", "--threshold-rule=percent=1.0",
-                        "--quiet"], check=True)
+        r = subprocess.run([GCLOUD, "billing", "budgets", "create", f"--billing-account={billing}", bp,
+                            f"--display-name={c.project} UAT", "--budget-amount=1USD", f"--filter-projects=projects/{c.project}",
+                            "--threshold-rule=percent=0.01", "--threshold-rule=percent=0.5", "--threshold-rule=percent=1.0",
+                            "--quiet"], capture_output=True, text=True)
+        if r.returncode != 0:
+            first = (r.stderr.strip().splitlines() or ["no error text"])[0]
+            print(f"  WARNING: budget alert not created ({first}). It needs Billing Account Administrator or "
+                  f"Costs Manager on {billing}; or create it in the console: Billing > Budgets & alerts.")
 
     print("\nSetup done. Next: deploy/gcp.py keycloak, then deploy/gcp.py app.")
     print("For automatic deploys from main, set these GitHub repository variables:")
