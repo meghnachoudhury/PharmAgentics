@@ -6,3 +6,7 @@
 specs/** text eol=lf
 *.md text eol=lf
 deploy/agent/entrypoint.sh text eol=lf
+# The data version is a hash of the exact CSV bytes (load_duckdb.file_sha256), line endings included, so every
+# checkout must have the same bytes: LF on every OS. Without this, Windows (core.autocrlf=true) computes a
+# different data version from Linux, CI and the Docker images, and agent briefs are refused on a mismatch.
+data/agent_visible/*.csv text eol=lf

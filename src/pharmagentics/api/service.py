@@ -188,7 +188,9 @@ def accept_agent_brief(query: BriefingQuery, posted: dict) -> BriefingResult:
     claims, evidence = env.get("claims") or [], env.get("evidence") or []
     version = _traceable(claims, evidence)
     if version != current_data_version():
-        raise RuntimeError(f"The agent ran on data version {version}, not this app's {current_data_version()}.")
+        raise RuntimeError(f"The agent ran on data version {version}, not this app's {current_data_version()}. "
+                           "If the data files only differ in line endings (a Windows checkout), see TEAM.md, "
+                           "\"Data version mismatch\".")
     if (bad := untraced_numbers(env.get("answer", ""), claims, version)):
         raise RuntimeError(f"Numbers with no claim behind them: {', '.join(bad[:5])}.")
     return BriefingResult(

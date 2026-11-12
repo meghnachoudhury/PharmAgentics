@@ -105,6 +105,18 @@ The Forecast section in the app is a placeholder for Alvin and Sienna. To wire i
 
 The roles CA (analyst view) and BM (leadership view) already exist.
 
+## Data version mismatch
+
+The data version is a hash of the exact bytes of `data/agent_visible/*.csv`, line endings included. `.gitattributes` makes git check those files out with LF on every OS, so everyone computes the same version. If you cloned before that change on Windows, your CSVs may still have CRLF endings, and your worker's briefs are refused. Fix it once:
+
+```powershell
+Remove-Item data/agent_visible/*.csv          # they are tracked: nothing is lost
+git checkout -- data/agent_visible            # restores them from git with LF endings
+uv run python src/pharmagentics/data/load_duckdb.py
+```
+
+`git ls-files --eol data/agent_visible/*.csv` should show `w/lf` for every file. Mac and Linux checkouts are already right.
+
 ## When something is off
 
 | You see | Do |
@@ -112,6 +124,6 @@ The roles CA (analyst view) and BM (leadership view) already exist.
 | "No host online" on Agent team | Nobody is hosting and the cloud host is off or out of budget this month; start a worker on your machine (above) |
 | An agent request sits at "Starting the cloud CPU host" | A cold start takes about a minute; after that it is slow (CPU). If it never starts, check `gcp.py status` and the job's logs; the app shows the reason under the engine card |
 | An agent job fails with "did not pass the traceability check" | The agent stated a number with no claim; the app refused it as designed. Run it again or use Scripted |
-| "Ran on data version X, not this app's Y" | Your local data differs from the app's; reload the data from the same release |
+| "Ran on data version X, not this app's Y" | Your local data differs from the app's. Reload it from the same release, and see "Data version mismatch" below |
 | `keycloak` says your `.env.uat` differs | `env-pull` (take the team's) or `env-push` (if your change should become the team's) |
 | `401` from the worker | Your worker token is stale: `env-pull` |

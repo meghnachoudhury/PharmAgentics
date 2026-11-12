@@ -26,7 +26,15 @@ def q(week: str, territory: str | None = None) -> str:
 
 
 def comparable(envelope: dict) -> dict:
-    return json.loads(json.dumps({k: envelope[k] for k in ("answer", "claims", "evidence", "abstained")}, default=str))
+    """The envelope's answer, claims, evidence and flag, with this machine's data version replaced by a
+    placeholder: the version is a hash of the data files, so the frozen fixture must not depend on it."""
+    text = json.dumps({k: envelope[k] for k in ("answer", "claims", "evidence", "abstained")}, default=str)
+    return json.loads(_mask_version(text))
+
+
+def _mask_version(text: str) -> str:
+    m = re.search(r"Data version ([0-9a-f]{12})", text) or re.search(r'"data_version": "([0-9a-f]{12})"', text)
+    return text.replace(m.group(1), "<DATA_VERSION>") if m else text
 
 
 # --- T003: the split changes nothing ---------------------------------------------------------------
@@ -35,7 +43,8 @@ def test_answer_unchanged():
     from briefing_baseline.pipeline import answer
 
     for question, expected in json.loads(FIXTURE.read_text(encoding="utf-8")).items():
-        assert comparable(answer(question)) == expected, question
+        masked = json.loads(_mask_version(json.dumps(expected)))  # the fixture was frozen on another data version
+        assert comparable(answer(question)) == masked, question
 
 
 # --- US8: the code triage plan and P1's decision ---------------------------------------------------
