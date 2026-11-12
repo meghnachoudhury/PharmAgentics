@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react"
+import { useEffect, useState, type ReactNode } from "react"
 import { BrandMark, Icon } from "./agent/primitives"
 import {
   getContext, getBriefing, getMe, getTriage, listPublished, markInsight, openBrief, reviewBrief, NotSignedIn,
@@ -71,28 +71,96 @@ function EvidenceDrawer({result, selectedId, onClose}: {result: BriefingResult, 
 
 type NavItem = { key: string; label: string; icon: "briefings" | "evidence" | "layers"; active: boolean; onClick: () => void }
 
-function Shell({me, role, title, subtitle, nav, children}: {me: Me, role?: LaneRole, title: string, subtitle: string, nav: NavItem[], children: ReactNode}) {
+// Accounts look like accounts (core-007): a circular avatar with the user's initials, coloured by role.
+function initials(name: string): string {
+  const w = name.trim().split(/\s+/).filter(Boolean)
+  return ((w[0]?.[0] ?? "?") + (w.length > 1 ? w[w.length-1][0] : "")).toUpperCase()
+}
+function roleTone(me: Me): string {
+  const b = me.lanes.briefing, f = me.lanes.forecast
+  if (b?.views.includes("analyst") || f?.views.includes("analyst")) return "bg-navy text-white"
+  if (b || f) return "bg-human text-white"
+  return "bg-rule text-muted"
+}
+function Avatar({me, size="sm"}: {me: Me, size?: "sm" | "lg"}) {
+  const box = size==="lg" ? "h-12 w-12 text-base" : "h-9 w-9 text-xs"
+  return <span aria-hidden="true" className={`grid shrink-0 place-items-center rounded-full font-semibold tracking-wide ring-2 ring-white ${box} ${roleTone(me)}`}>{initials(me.name || "?")}</span>
+}
+const LANES = [["briefing","Brand performance"],["forecast","Forecast explanation"]] as const
+
+function AccountMenu({me}: {me: Me}) {
+  const [open,setOpen] = useState(false)
+  useEffect(()=>{
+    if(!open) return
+    const esc = (e: KeyboardEvent) => { if(e.key==="Escape") setOpen(false) }
+    document.addEventListener("keydown", esc)
+    return () => document.removeEventListener("keydown", esc)
+  },[open])
+  const primary = me.lanes.briefing ?? me.lanes.forecast
+  return <div className="relative">
+    <button aria-haspopup="menu" aria-expanded={open} aria-label={`Account: ${me.name}`} onClick={()=>setOpen(o=>!o)} className="flex items-center gap-2 rounded-full p-0.5 pr-2 hover:bg-paper">
+      <Avatar me={me}/><span className="hidden text-left sm:block"><span className="block max-w-[160px] truncate text-xs font-medium">{me.name || "Signed in"}</span><span className="block text-[10px] text-muted">{primary ? `${primary.label} · ${primary.persona}` : "No role"}</span></span>
+    </button>
+    {open && <>
+      <button aria-label="Close account menu" className="fixed inset-0 z-40 cursor-default" onClick={()=>setOpen(false)}/>
+      <div role="menu" className="absolute right-0 z-50 mt-2 w-72 rounded-2xl bg-white p-4 shadow-xl ring-1 ring-rule pa-rise">
+        <div className="flex items-center gap-3"><Avatar me={me} size="lg"/><div className="min-w-0"><p className="truncate text-sm font-semibold">{me.name || "Signed in"}</p><p className="text-xs text-muted">{me.auth_mode==="dev" ? "Development sign-in (stand-in identity)" : "Signed in with PharmAgentics single sign-on"}</p></div></div>
+        <div className="mt-4 space-y-2 border-t border-rule pt-3">{LANES.map(([lane,label])=>{ const r = me.lanes[lane]; return <div key={lane} className="text-xs">
+          <p className="font-medium text-ink">{label}</p>
+          <p className="text-muted">{r ? `${r.label} (${r.persona}) · ${r.views.includes("analyst") ? "analyst view" : "leadership view"}${r.available ? "" : " · not live yet"}` : "No access"}</p>
+        </div>})}</div>
+        <a role="menuitem" href="/auth/logout" className="mt-4 block rounded-xl bg-paper px-3 py-2 text-center text-sm font-medium text-ink ring-1 ring-rule hover:bg-sheet">Sign out</a>
+      </div>
+    </>}
+  </div>
+}
+
+// Forecast-Explanation lane scaffold (core-007 User Story 8): the section exists; the engine lands later.
+function ForecastWorkspace({me}: {me: Me}) {
+  const r = me.lanes.forecast
+  return <div className="mx-auto max-w-3xl space-y-5 px-5 py-7 pa-rise">
+    <div className="rounded-2xl bg-sheet px-6 py-5 ring-1 ring-rule">
+      <span className={`${chip} bg-warnbg text-warn`}>Coming soon</span>
+      <h2 className="mt-3 text-lg font-semibold">Forecast explanation</h2>
+      <p className="mt-1 text-sm text-muted">Why actual sales differ from the forecast, by territory and week, with every number traced to the data. The Forecast lane team is building this part of PharmAgentics.</p>
+    </div>
+    <div className="grid gap-3 sm:grid-cols-2">
+      <div className="rounded-2xl bg-white p-5 ring-1 ring-rule"><p className="text-[11px] uppercase tracking-widest text-muted">Analyst view · CA</p><p className="mt-2 text-sm">Forecast against actual, the drivers of the gap with evidence, and what to revise.</p></div>
+      <div className="rounded-2xl bg-white p-5 ring-1 ring-rule"><p className="text-[11px] uppercase tracking-widest text-muted">Leadership view · BM</p><p className="mt-2 text-sm">An executive summary of the gap and dynamic projections, without evidence or traces.</p></div>
+    </div>
+    <div className="rounded-2xl bg-paper px-6 py-4 text-sm text-muted ring-1 ring-rule">{r ? `Your Forecast role is ${r.label} (${r.persona}). It will open the ${r.views.includes("analyst") ? "analyst" : "leadership"} view when the lane goes live.` : "You have no Forecast role. Ask the project owner if you need one."}</div>
+  </div>
+}
+
+function Shell({me, title, subtitle, nav, children, startInForecast=false}: {me: Me, role?: LaneRole, title: string, subtitle: string, nav: NavItem[], children: ReactNode, startInForecast?: boolean}) {
   const [mobileNav,setMobileNav] = useState(false)
+  const [forecast,setForecast] = useState(startInForecast)
+  const row = (active: boolean) => `flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-medium ${active?"bg-paper ring-1 ring-rule":"hover:bg-paper/70"}`
   const side=<aside className="flex h-full w-full flex-col border-r border-rule bg-sheet/80">
-    <div className="flex items-center gap-3 px-5 py-6"><BrandMark/><div><div className="text-[15px] font-semibold tracking-tight">PharmAgentics</div><div className="text-[11px] text-muted">Commercial Intelligence</div></div></div>
-    <nav className="space-y-1 px-3" aria-label="Implemented features">{nav.map(n=><button key={n.key} aria-current={n.active} className={`flex w-full items-center gap-2 rounded-xl px-3 py-3 text-left text-sm font-medium ${n.active?"bg-paper ring-1 ring-rule":"hover:bg-paper/70"}`} onClick={()=>{n.onClick();setMobileNav(false)}}><Icon name={n.icon} className="text-agent"/>{n.label}</button>)}</nav>
-    <div className="mt-auto border-t border-rule px-5 py-5 text-xs text-muted">
-      <p className="font-semibold text-ink">{me.name || "Signed in"}</p>
-      <p className="mt-1">{role ? `${role.label} (${role.persona}) · ${role.views.includes("analyst") ? "analyst view" : "leadership view"}` : "No Briefing role"}</p>
-      {me.auth_mode==="dev" && <p className="mt-2 rounded bg-amberbg px-2 py-1 text-amber">Development sign-in (stand-in identity)</p>}
-      <a className="mt-3 inline-block font-medium text-agentdeep hover:underline" href="/auth/logout">Sign out</a>
-      <p className="mt-4">Synthetic data only. Scripted baseline; a leader sees a brief only after the Commercial Analyst approves it.</p>
+    <div className="flex items-center gap-3 px-5 py-6"><BrandMark/><div className="text-[17px] font-semibold tracking-tight">PharmAgentics</div></div>
+    <nav className="space-y-5 px-3" aria-label="Workspaces">
+      <div><p className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted">Brand performance</p>
+        {nav.length ? <div className="space-y-1">{nav.map(n=><button key={n.key} aria-current={!forecast && n.active} className={row(!forecast && n.active)} onClick={()=>{setForecast(false);n.onClick();setMobileNav(false)}}><Icon name={n.icon} className="text-agent"/>{n.label}</button>)}</div>
+        : <p className="px-3 py-2 text-xs text-muted">No access</p>}
+      </div>
+      <div><p className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted">Forecast explanation</p>
+        <button aria-current={forecast} className={row(forecast)} onClick={()=>{setForecast(true);setMobileNav(false)}}><Icon name="layers" className="text-agent"/>Forecast workbench<span className={`${chip} ml-auto bg-warnbg text-warn`}>Soon</span></button>
+      </div>
+    </nav>
+    <div className="mt-auto border-t border-rule px-5 py-4 text-[11px] leading-relaxed text-muted">
+      {me.auth_mode==="dev" && <p className="mb-2 rounded bg-amberbg px-2 py-1 text-amber">Development sign-in</p>}
+      <p>Synthetic data only. A leader sees a brief only after the Commercial Analyst approves it.</p>
     </div>
   </aside>
   return <div className="flex h-dvh overflow-hidden bg-paper text-ink">
     <div className="hidden w-[260px] shrink-0 md:block">{side}</div>
     {mobileNav && <div className="fixed inset-0 z-30 flex md:hidden"><button aria-label="Close navigation" className="absolute inset-0 bg-ink/30" onClick={()=>setMobileNav(false)}/><div className="relative w-[280px] max-w-[85vw] bg-paper">{side}</div></div>}
     <main className="flex min-w-0 flex-1 flex-col">
-      <header className="flex items-center justify-between gap-3 border-b border-rule bg-sheet/80 px-5 py-3">
-        <div className="flex min-w-0 items-center gap-3"><button className="rounded-lg p-1.5 md:hidden" aria-label="Open navigation" onClick={()=>setMobileNav(true)}><Icon name="menu"/></button><div className="min-w-0"><h1 className="truncate text-sm font-semibold">{title}</h1><p className="truncate text-[11px] text-muted">{subtitle}</p></div></div>
-        <span className={`${chip} shrink-0 rounded-full bg-humanbg text-human`}>Synthetic data</span>
+      <header className="flex items-center justify-between gap-3 border-b border-rule bg-sheet/80 px-5 py-2.5">
+        <div className="flex min-w-0 items-center gap-3"><button className="rounded-lg p-1.5 md:hidden" aria-label="Open navigation" onClick={()=>setMobileNav(true)}><Icon name="menu"/></button><div className="min-w-0"><h1 className="truncate text-sm font-semibold">{forecast ? "Forecast explanation" : title}</h1><p className="truncate text-[11px] text-muted">{forecast ? "Coming soon · Forecast lane" : subtitle}</p></div></div>
+        <div className="flex shrink-0 items-center gap-3"><span className={`${chip} hidden rounded-full bg-humanbg text-human sm:inline`}>Synthetic data</span><AccountMenu me={me}/></div>
       </header>
-      <section className="min-h-0 flex-1 overflow-y-auto">{children}</section>
+      <section className="min-h-0 flex-1 overflow-y-auto"><div hidden={forecast}>{children}</div>{forecast && <ForecastWorkspace me={me}/>}</section>
     </main>
   </div>
 }
@@ -232,6 +300,24 @@ function FlowPanel({flow, triage}: {flow: Stage[], triage?: TriageRecord | null}
   </details>
 }
 
+// Inline citations: every number in the brief is a claim; the server says where each one sits.
+function CitedText({result, onOpen}: {result: BriefingResult, onOpen: (evidenceId: string) => void}) {
+  const spans = [...(result.citations ?? [])].sort((a,b)=>a.start-b.start)
+  if (!spans.length) return <>{result.answer}</>
+  const parts: ReactNode[] = []
+  let pos = 0
+  spans.forEach((sp, i) => {
+    const claim: Claim | undefined = result.claims[sp.claim]
+    if (!claim || sp.start < pos || result.answer.slice(sp.start, sp.end) !== claim.value) return
+    parts.push(result.answer.slice(pos, sp.start))
+    parts.push(<button key={i} type="button" onClick={()=>onOpen(claim.evidence_id)} title={`Source ${claim.evidence_id}: open the query behind ${claim.value}`}
+      className="rounded-sm font-medium underline decoration-agent/40 decoration-dotted underline-offset-4 hover:bg-agentbg focus:bg-agentbg focus:outline-none">{claim.value}<sup className="ml-px font-mono text-[9px] font-normal text-agentdeep">{claim.evidence_id.replace(/^e/, "")}</sup></button>)
+    pos = sp.end
+  })
+  parts.push(result.answer.slice(pos))
+  return <>{parts}</>
+}
+
 function AnalystBrief({result, onChange}: {result: BriefingResult, onChange: (r: BriefingResult) => void}) {
   const [evidenceId,setEvidenceId] = useState<string | null>(null)
   const [mode,setMode] = useState<"analyst" | "leadership">("analyst")
@@ -242,10 +328,6 @@ function AnalystBrief({result, onChange}: {result: BriefingResult, onChange: (r:
     setMode("leadership"); setPreviewError(null)
     try { setPreview(await openBrief(result.brief_id, "leadership")) } catch(e) { setPreviewError(message(e)) }
   }
-  const claimRows=useMemo(()=>{
-    const byId=new Map(result.evidence.map(e=>[e.id,e]))
-    return result.claims.map(cl=>({claim:cl,evidence:byId.get(cl.evidence_id)!}))
-  },[result]) as {claim:Claim,evidence:Evidence}[]
   return <>
     <div role="tablist" aria-label="View" className="inline-flex rounded-xl bg-sheet p-1 ring-1 ring-rule">
       <button role="tab" aria-selected={mode==="analyst"} onClick={()=>setMode("analyst")} className={`rounded-lg px-3 py-1.5 text-xs font-medium ${mode==="analyst"?"bg-navy text-white":"text-muted"}`}>Analyst view</button>
@@ -254,10 +336,11 @@ function AnalystBrief({result, onChange}: {result: BriefingResult, onChange: (r:
     {mode==="leadership" ? (previewError ? <div role="alert" className="rounded-2xl bg-amberbg px-5 py-4 text-sm text-amber">{previewError}</div> : preview ? <SummaryCard brief={preview} preview/> : <p className="text-sm text-muted">Loading the leadership view…</p>) :
     <article className="overflow-hidden rounded-2xl bg-sheet shadow-sm ring-1 ring-rule">
       <div className="border-b border-rule px-6 py-5"><div className="flex flex-wrap items-center gap-2"><span className={`${chip} bg-agentbg text-agentdeep`}>{result.engine==="agent" ? `Agent · ${result.system.split(":").slice(1).join(":") || "local model"} · experimental` : "Scripted baseline · DuckDB"}</span><span className={REVIEW_CHIP[result.review_status][0]}>{REVIEW_CHIP[result.review_status][1]}</span>{result.abstained && <span className={`${chip} bg-amberbg text-amber`}>Unresolved findings</span>}</div><h2 className="mt-3 text-lg font-semibold">Weekly briefing · {labelTerritory(result.territory_id)}</h2><p className="mt-1 text-sm text-muted">{labelWeek(result.week_start)} · {result.brand_id}</p></div>
-      <div className="px-6 py-6"><pre className="whitespace-pre-wrap break-words font-sans text-[14px] leading-[1.85] text-ink">{result.answer}</pre></div>
-      <section className="border-t border-rule bg-paper/60 px-6 py-5"><div className="flex flex-wrap items-center justify-between gap-2"><div><h3 className="text-sm font-semibold">Evidence and numeric claims</h3><p className="mt-1 text-xs text-muted">Source queries and pinned data version supplied by the backend; no inferred chart data.</p></div><span className="rounded bg-sheet px-2 py-1 font-mono text-[11px] text-muted ring-1 ring-rule">{result.data_version??"Version unavailable"}</span></div>
-      {claimRows.length > 0 ? <div className="mt-4 flex flex-wrap gap-2">{claimRows.map(({claim,evidence},idx)=><button className="flex items-center gap-2 rounded-lg bg-sheet px-3 py-2 text-xs ring-1 ring-rule transition hover:ring-agent/40" key={`${claim.evidence_id}-${idx}`} onClick={()=>setEvidenceId(evidence.id)}><span className="font-mono text-ink">{claim.value}</span><span className="text-agentdeep">{claim.evidence_id}</span><Icon name="chevronRight" className="h-3 w-3"/></button>)}</div> : <p className="mt-4 text-xs text-muted">The backend did not return numeric claims for this result.</p>}
-      {result.evidence.length>0 && <button className="mt-4 flex items-center gap-2 text-xs font-medium text-agentdeep underline-offset-4 hover:underline" onClick={()=>setEvidenceId(result.evidence[0].id)}><Icon name="evidence"/>Browse all {result.evidence.length} evidence records</button>}
+      <div className="px-6 py-6"><div className="whitespace-pre-wrap break-words text-[14px] leading-[1.85] text-ink"><CitedText result={result} onOpen={setEvidenceId}/></div>
+        <p className="mt-4 text-[11px] text-muted">Each underlined number is a claim: click it, or its source number, to open the query and record behind it.</p></div>
+      <section className="flex flex-wrap items-center justify-between gap-2 border-t border-rule bg-paper/60 px-6 py-3">
+        {result.evidence.length>0 ? <button className="flex items-center gap-2 text-xs font-medium text-agentdeep underline-offset-4 hover:underline" onClick={()=>setEvidenceId(result.evidence[0].id)}><Icon name="evidence"/>All {result.evidence.length} sources ({result.claims.length} numbers)</button> : <span className="text-xs text-muted">No numeric claims in this brief.</span>}
+        <span className="rounded bg-sheet px-2 py-1 font-mono text-[11px] text-muted ring-1 ring-rule" title="Pinned data version">{result.data_version??"Version unavailable"}</span>
       </section>
       <ReviewPanel result={result} onChange={onChange}/>
     </article>}
@@ -292,7 +375,7 @@ function AnalystApp({me, role}: {me: Me, role: LaneRole}) {
     poll(); const t = setInterval(poll, 15000)
     return ()=>{ live=false; clearInterval(t) }
   },[])
-  const describeJob = (j: AgentJob) => setJobNote(j.status==="queued" ? "Queued for the agent host (the owner's PC)…" : j.status==="running" ? (j.kind==="triage" ? "The manager is reviewing code's plan on the agent host…" : "The agent team is investigating on the agent host (one to four minutes)…") : null)
+  const describeJob = (j: AgentJob) => setJobNote(j.status==="queued" ? "Queued for the next agent host (a teammate's machine)…" : j.status==="running" ? (j.kind==="triage" ? "The manager is reviewing code's plan on the agent host…" : "The agent team is investigating on the agent host (one to four minutes)…") : null)
 
   const refresh = async () => {
     setLoadingContext(true); setContextError(null)
@@ -351,7 +434,7 @@ function AnalystApp({me, role}: {me: Me, role: LaneRole}) {
     {key:"brief",label:"Weekly briefing",icon:"briefings",active:view!=="approved",onClick:()=>setView("home")},
     {key:"approved",label:"Approved briefings",icon:"evidence",active:view==="approved",onClick:()=>setView("approved")},
   ]
-  return <Shell me={me} role={role} title="Weekly Brand-Performance Briefing" subtitle="Analyst view · evidence-backed synthetic commercial analytics" nav={nav}>
+  return <Shell me={me} role={role} title="Brand performance" subtitle="Weekly briefing · analyst view · evidence-backed synthetic commercial analytics" nav={nav}>
     {view==="home" ? <div className="mx-auto flex max-w-3xl flex-col px-5 pb-10 pt-[7vh] md:pt-[10vh]">
       <div className="pa-rise flex flex-col items-center text-center"><BrandMark size="lg"/><h2 className="mt-6 text-[clamp(1.9rem,4vw,2.6rem)] font-semibold tracking-tight">What should we investigate?</h2><p className="mt-3 max-w-xl text-[15px] leading-relaxed text-muted">Generate a weekly brand-performance briefing from the governed DuckDB release, review its evidence, and approve it for the Brand Director.</p></div>
       <div className="mt-9 rounded-3xl bg-white p-5 shadow-lg shadow-ink/5 ring-1 ring-rule sm:p-7">
@@ -373,7 +456,7 @@ function AnalystApp({me, role}: {me: Me, role: LaneRole}) {
           <fieldset className="space-y-2"><legend className="text-xs font-medium text-muted">Engine</legend>
             <div className="grid gap-2 sm:grid-cols-2">
               <label className={`flex cursor-pointer items-start gap-3 rounded-xl p-3 text-sm ring-1 ${engine==="scripted"?"bg-paper ring-ink/20":"ring-rule"}`}><input type="radio" name="engine" checked={engine==="scripted"} onChange={()=>setEngine("scripted")} className="mt-1"/><span><span className="font-medium">Scripted</span><span className="block text-xs text-muted">Instant. Fixed order of checks, manager off.</span></span></label>
-              <label className={`flex cursor-pointer items-start gap-3 rounded-xl p-3 text-sm ring-1 ${engine==="agent"?"bg-paper ring-ink/20":"ring-rule"} ${agent?.configured===false?"opacity-50":""}`}><input type="radio" name="engine" checked={engine==="agent"} disabled={agent?.configured===false} onChange={()=>setEngine("agent")} className="mt-1"/><span><span className="font-medium">Agent team</span> <span className={`${chip} ${agent?.online?"bg-okbg text-ok":"bg-warnbg text-warn"}`}>{agent?.online ? "host online" : "host offline"}</span><span className="block text-xs text-muted">Manager, Data Forensics and Driver Investigator on the owner's PC ({agent?.model ?? "local model"}). Minutes per step; experimental.{!agent?.online ? " Your request waits until the host is back." : ""}</span></span></label>
+              <label className={`flex cursor-pointer items-start gap-3 rounded-xl p-3 text-sm ring-1 ${engine==="agent"?"bg-paper ring-ink/20":"ring-rule"} ${agent?.configured===false?"opacity-50":""}`}><input type="radio" name="engine" checked={engine==="agent"} disabled={agent?.configured===false} onChange={()=>setEngine("agent")} className="mt-1"/><span><span className="font-medium">Agent team</span> <span className={`${chip} ${agent?.online?"bg-okbg text-ok":"bg-warnbg text-warn"}`}>{agent?.online ? `${agent.hosts?.length ?? 1} host${(agent.hosts?.length ?? 1) === 1 ? "" : "s"} online` : "no host online"}</span><span className="block text-xs text-muted">Manager, Data Forensics and Driver Investigator on a teammate's machine ({agent?.model ?? "local model"}{agent?.hosts?.length ? `: ${agent.hosts.map(h=>h.name).join(", ")}` : ""}). Minutes per step; experimental.{!agent?.online ? " Your request waits until a host is running." : ""}</span></span></label>
             </div>
           </fieldset>
           {engine==="agent" && <label className="flex flex-col gap-2 text-xs font-medium text-muted">Your question (optional)
@@ -404,7 +487,7 @@ function LeaderApp({me, role}: {me: Me, role: LaneRole}) {
     try { setBrief(await openBrief(id, "leadership")) } catch(e) { setError(message(e)) } finally { setLoading(false) }
   }
   const nav: NavItem[] = [{key:"approved",label:"Approved briefings",icon:"briefings",active:true,onClick:()=>{setBrief(null);setError(null)}}]
-  return <Shell me={me} role={role} title="Weekly Brand-Performance Briefing" subtitle="Leadership view · executive summaries approved by the Commercial Analyst" nav={nav}>
+  return <Shell me={me} role={role} title="Brand performance" subtitle="Weekly briefing · leadership view · executive summaries approved by the Commercial Analyst" nav={nav}>
     <div className="mx-auto max-w-3xl space-y-5 px-5 py-7">
       {brief || loading || error ? <>
         <button className="flex items-center gap-2 text-sm text-agentdeep hover:underline" onClick={()=>{setBrief(null);setError(null)}}><Icon name="back"/>All approved briefings</button>
@@ -426,10 +509,10 @@ export default function App() {
   if (!me) return <Centered><p className="mt-5 text-sm text-muted">Checking your sign-in…</p></Centered>
   const briefing = me.lanes.briefing
   if (!briefing) {
-    const forecast = me.lanes.forecast
+    if (me.lanes.forecast) return <Shell me={me} title="Forecast explanation" subtitle="Coming soon" nav={[]} startInForecast>{null}</Shell>
     return <Centered>
-      <h1 className="mt-5 text-lg font-semibold">{forecast ? "The Forecast view is not available yet" : "No access"}</h1>
-      <p className="mt-2 text-sm text-muted">{forecast ? `You are signed in as ${forecast.label} (${forecast.persona}). The Forecast-Explanation lane has not published its view in this app yet.` : "Your account has no PharmAgentics role. Ask the project owner to assign one."}</p>
+      <h1 className="mt-5 text-lg font-semibold">No access</h1>
+      <p className="mt-2 text-sm text-muted">Your account has no PharmAgentics role. Ask the project owner to assign one.</p>
       <a className="mt-5 inline-block text-sm font-medium text-agentdeep hover:underline" href="/auth/logout">Sign out</a>
     </Centered>
   }

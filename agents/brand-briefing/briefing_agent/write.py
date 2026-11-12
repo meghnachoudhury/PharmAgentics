@@ -100,20 +100,14 @@ def assemble(sections: dict, stories: list[dict], answer: str, sentences: dict[s
     return "\n".join(x for x in out if x)
 
 
-def render(template: str, claims: list[dict]) -> tuple[str, list[dict]]:
-    """Fill tokens from the run's claims; return the text and the claims it uses, in order of use."""
-    used: list[int] = []
+def render(template: str, claims: list[dict]) -> tuple[str, list[dict], list[dict]]:
+    """Fill tokens from the run's claims; return the text, the claims it uses (in order of use) and where
+    each sits in the text (inline citations, indexed into the used claims)."""
+    from pharmagentics.tools.registry import cite
 
-    def fill(m):
-        n = int(m.group(1))
-        if not 0 < n <= len(claims):
-            return m.group(0)
-        if n not in used:
-            used.append(n)
-        return claims[n - 1]["value"]
-
-    text = TOKEN.sub(fill, template)
-    return text, [claims[n - 1] for n in used]
+    used = list(dict.fromkeys(int(m.group(1)) for m in TOKEN.finditer(template) if 0 < int(m.group(1)) <= len(claims)))
+    text, spans = cite(template, claims, index={n: i for i, n in enumerate(used)})
+    return text, [claims[n - 1] for n in used], spans
 
 
 def flow(base: list[dict], plan: dict, record: dict, tools: list[str], revised: bool, model: str) -> list[dict]:

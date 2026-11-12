@@ -27,7 +27,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
-from . import auth, jobs, rbac, service, store, views
+from . import auth, forecast, jobs, rbac, service, store, views
 from .schemas import (AgentJobRequest, BriefingQuery, InsightMark, ReleaseContext, ReviewRequest, WorkerPoll,
                       WorkerResult)
 
@@ -62,6 +62,7 @@ app.add_middleware(
     same_site="lax", https_only=bool(os.environ.get("K_SERVICE") or os.environ.get("PHARMAGENTICS_SECURE_COOKIES")),
 )
 app.include_router(auth.router)
+app.include_router(forecast.router)  # Forecast lane scaffold (Alvin and Sienna)
 
 Briefing = Depends(rbac.require_briefing)
 
@@ -261,7 +262,7 @@ def _worker(authorization: str | None = Header(default=None)) -> None:
 
 @app.post("/api/worker/next", dependencies=[Depends(_worker)])
 def worker_next(poll: WorkerPoll) -> Response:
-    job = jobs.next_job(poll.model)
+    job = jobs.next_job(poll.model, poll.worker)
     if job is None:
         return Response(status_code=204)
     return JSONResponse({"id": job["id"], "kind": job["kind"], "payload": job["payload"]})

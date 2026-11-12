@@ -168,7 +168,7 @@ async def _run(question: str, plan: dict, order: list[str], spec: str, reviewed:
     template = write.assemble(sections, stories, answer_text, sentences, _left_out(plan, order), dropped_line)
     if (bad := digits_outside_tokens(template)):  # code sections are clean; this guards the assembly itself
         raise AssertionError(f"digit outside a claim token: {bad[:3]}")
-    text, used = write.render(template, claims)
+    text, used, citations = write.render(template, claims)
     keep = {c["evidence_id"] for c in used}
     record = planmod.record(plan, order, reviewed)
     flow_record = dict(record, calls=[dict(c, outcome="investigated") if c["outcome"] == "restored" else c for c in record["calls"]])
@@ -177,7 +177,7 @@ async def _run(question: str, plan: dict, order: list[str], spec: str, reviewed:
     envelope = {
         "system": f"{NAME}:{spec}", "answer": text, "claims": used,
         "evidence": [e for e in run["evidence"] if e["id"] in keep],
-        "abstained": bool(run["abstained"]),
+        "abstained": bool(run["abstained"]), "citations": citations,
         "trajectory": {"tools": log.tools, "llm_calls": log.llm_calls, "tokens": log.tokens, "capped": capped,
                        "revised": revised, "dropped_pieces": dropped, "stories": run["stories"], "notes": notes,
                        "manager_order": plan.get("manager_order"), "flagged": plan.get("flagged"),

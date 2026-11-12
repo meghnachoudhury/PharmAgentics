@@ -129,8 +129,9 @@ def test_assembly_keeps_code_sections_and_places_story_sentences():
     lines = t.split("\n")
     assert lines[0] == "Pacific fell." and lines[1].startswith("Brief for") and lines[5] == "Supply is the lead."
     assert lines[-2].startswith("Left out") and lines[-1].startswith("Considered")
-    text, used = write.render(t, [{"value": str(i), "evidence_id": f"e{i}"} for i in range(1, 10)])
+    text, used, spans = write.render(t, [{"value": str(i), "evidence_id": f"e{i}"} for i in range(1, 10)])
     assert "{c" not in text and [c["evidence_id"] for c in used] == ["e1", "e2", "e3", "e5", "e8"]
+    assert all(text[s["start"]:s["end"]] == used[s["claim"]]["value"] for s in spans) and len(spans) == 5
 
 
 def test_manager_slips_seen_in_eval_run_e994d094():

@@ -39,6 +39,7 @@ export type BriefingResult = {
   abstained: boolean
   triage?: TriageRecord | null  // brief-002: who made each triage call (analyst view only)
   flow?: Stage[] | null         // brief-002: the seven stages, run states and actors (analyst view only)
+  citations?: { start: number; end: number; claim: number }[] | null  // where each claim sits in the answer
 }
 // brief-002 Phase A: the code triage plan P1 reviews, and how a brief was made.
 export type StoryCard = {
@@ -79,7 +80,7 @@ export type TriagePlan = {
   week_start: string
 }
 export type TriageDecision = { plan_id: string; stories: string[] }
-export type AgentStatus = { online: boolean; configured: boolean; model: string | null; queued: number; running: number; last_seen_seconds: number | null }
+export type AgentStatus = { online: boolean; configured: boolean; model: string | null; hosts?: { name: string; model: string | null }[]; queued: number; running: number; last_seen_seconds: number | null }
 export type AgentJob = { id: string; kind: "triage" | "brief"; status: "queued" | "running" | "done" | "failed"; error: string | null; result?: unknown }
 export type TriageRecord = {
   plan_id: string

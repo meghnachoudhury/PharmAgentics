@@ -12,7 +12,7 @@ function standaloneHtml(): Plugin {
     transformIndexHtml(html) {
       return html
         .replace("<!-- figma:lang -->", "en")
-        .replace("<!-- figma:title -->", "PharmAgentics Briefing")
+        .replace("<!-- figma:title -->", "PharmAgentics")
     },
   }
 }

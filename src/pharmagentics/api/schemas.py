@@ -71,6 +71,7 @@ class BriefingResult(BaseModel):
     # brief-002 Phase A, analyst view only (never in the leadership allow-list):
     triage: dict[str, Any] | None = None  # TriageRecord: who made each triage call
     flow: list[dict[str, Any]] | None = None  # StageFlow: the seven stages, states and actors
+    citations: list[dict[str, int]] | None = None  # where each claim value sits in `answer`: {start, end, claim}
 
 
 class ReleaseContext(BaseModel):
@@ -119,6 +120,7 @@ class WorkerPoll(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     model: str | None = Field(default=None, max_length=120)
+    worker: str = Field(default="worker", min_length=1, max_length=60, pattern=r"^[\w.@-]+$")  # which teammate's machine
 
 
 class WorkerResult(BaseModel):

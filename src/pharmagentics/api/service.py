@@ -166,7 +166,7 @@ def run_briefing(request: BriefingQuery) -> BriefingResult:
         week_start=request.week_start,
         answer=raw["answer"], claims=claims, evidence=evidence,
         data_version=_traceable(claims, evidence),
-        abstained=bool(raw.get("abstained", False)), **extra,
+        abstained=bool(raw.get("abstained", False)), citations=raw.get("citations"), **extra,
     )
 
 
@@ -196,4 +196,12 @@ def accept_agent_brief(query: BriefingQuery, posted: dict) -> BriefingResult:
         brand_id=query.brand_id, territory_id=query.territory_id, week_start=query.week_start,
         answer=env.get("answer", ""), claims=claims, evidence=evidence, data_version=version,
         abstained=bool(env.get("abstained", False)), triage=posted.get("triage"), flow=posted.get("flow"),
+        citations=_valid_citations(env.get("answer", ""), claims, env.get("citations")),
     )
+
+
+def _valid_citations(answer: str, claims: list[dict], spans) -> list[dict] | None:
+    """Keep a posted citation only if it points at its claim's value in the text."""
+    ok = [s for s in spans or [] if isinstance(s, dict) and 0 <= s.get("claim", -1) < len(claims)
+          and answer[s.get("start", 0):s.get("end", 0)] == claims[s["claim"]]["value"]]
+    return ok or None

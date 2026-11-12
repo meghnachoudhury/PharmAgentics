@@ -70,8 +70,9 @@ def test_only_analysts_submit_and_one_job_runs_at_a_time():
     a = analyst.post("/api/agent/jobs", json={"kind": "triage", "query": Q}).json()
     b = analyst.post("/api/agent/jobs", json={"kind": "triage", "query": Q}).json()
     assert a["status"] == b["status"] == "queued"
-    assert worker().post("/api/worker/next", json={}, headers=W).json()["id"] == a["id"]
-    assert worker().post("/api/worker/next", json={}, headers=W).status_code == 204  # a is still running
+    assert worker().post("/api/worker/next", json={"worker": "pc-1"}, headers=W).json()["id"] == a["id"]
+    assert worker().post("/api/worker/next", json={"worker": "pc-1"}, headers=W).status_code == 204  # pc-1 still runs a
+    assert worker().post("/api/worker/next", json={"worker": "pc-2"}, headers=W).json()["id"] == b["id"]  # a second host helps
 
 
 def test_host_status_follows_the_polls():
@@ -80,7 +81,9 @@ def test_host_status_follows_the_polls():
     worker().post("/api/worker/next", json={"model": "ollama:qwen3"}, headers=W)
     status = analyst.get("/api/agent/status").json()
     assert status["online"] is True and status["model"] == "ollama:qwen3"
-    jobs._host["last_seen"] -= 120
+    assert [h["name"] for h in analyst.get("/api/agent/status").json()["hosts"]] == ["worker"]
+    for h in jobs._hosts.values():
+        h["last_seen"] -= 120
     assert analyst.get("/api/agent/status").json()["online"] is False
 
 

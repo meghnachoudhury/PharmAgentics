@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import os
+import socket
 import time
 import traceback
 from pathlib import Path
@@ -46,6 +47,8 @@ def main(argv: list[str] | None = None) -> None:
     ap.add_argument("--model", default=None, help="model spec; default PHARMAGENTICS_AGENT_MODEL or the local qwen3")
     ap.add_argument("--interval", type=float, default=10.0, help="seconds between polls when idle")
     ap.add_argument("--once", action="store_true", help="take at most one job, then exit")
+    ap.add_argument("--name", default=os.environ.get("PHARMAGENTICS_WORKER_NAME") or socket.gethostname()[:60],
+                    help="how this machine shows in the app's host list (default: the computer name)")
     a = ap.parse_args(argv)
     if not a.token:
         raise SystemExit("No worker token: set PHARMAGENTICS_WORKER_TOKEN or run deploy/make_env.py.")
@@ -54,12 +57,12 @@ def main(argv: list[str] | None = None) -> None:
     spec = model_spec(a.model)
     app = a.app.rstrip("/")
     headers = {"Authorization": f"Bearer {a.token}"}
-    print(f"Agent worker: {app}, model {spec}. Polling every {a.interval:g} s; Ctrl+C to stop.", flush=True)
+    print(f"Agent worker '{a.name}': {app}, model {spec}. Polling every {a.interval:g} s; Ctrl+C to stop.", flush=True)
     backoff = a.interval
     with httpx.Client(timeout=60) as http:
         while True:
             try:
-                r = http.post(f"{app}/api/worker/next", json={"model": spec}, headers=headers)
+                r = http.post(f"{app}/api/worker/next", json={"model": spec, "worker": a.name}, headers=headers)
                 if r.status_code == 401:
                     raise SystemExit("The app refused the worker token.")
                 r.raise_for_status()

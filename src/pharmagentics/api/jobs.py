@@ -2,7 +2,8 @@
 outbound, runs the agent on its local model, and posts results back.
 
 The queue lives in memory and is mirrored to the store (jobs/<id>.json), so it survives a restart; the
-app runs as one Cloud Run instance, so the in-memory index is the queue. One job runs at a time (one GPU).
+app runs as one Cloud Run instance, so the in-memory index is the queue. Any teammate may run a worker:
+each worker (one GPU) runs one job at a time, and the oldest queued job goes to whichever worker asks.
 """
 from __future__ import annotations
 
@@ -18,7 +19,7 @@ OFFLINE_AFTER = 60       # no poll for this long: the agent host is offline
 _lock = threading.Lock()
 _jobs: dict[str, dict] = {}
 _loaded = False
-_host = {"last_seen": 0.0, "model": None}
+_hosts: dict[str, dict] = {}  # worker name -> {"last_seen": epoch seconds, "model": spec}
 
 
 def _save(job: dict) -> None:
@@ -43,7 +44,7 @@ def reset() -> None:
     global _loaded
     with _lock:
         _jobs.clear()
-        _host.update(last_seen=0.0, model=None)
+        _hosts.clear()
         _loaded = False
 
 
@@ -71,20 +72,20 @@ def _expire(now: float) -> None:
             _save(job)
 
 
-def next_job(model: str | None) -> dict | None:
-    """The worker's poll: records the heartbeat, hands out the oldest queued job if none is running."""
+def next_job(model: str | None, worker: str = "worker") -> dict | None:
+    """A worker's poll: records its heartbeat and hands it the oldest queued job, unless it is still running one."""
     now = time.time()
     with _lock:
         _load()
-        _host.update(last_seen=now, model=model)
+        _hosts[worker] = {"last_seen": now, "model": model}
         _expire(now)
-        if any(j["status"] == "running" for j in _jobs.values()):
+        if any(j["status"] == "running" and j.get("worker") == worker for j in _jobs.values()):
             return None
         queued = sorted((j for j in _jobs.values() if j["status"] == "queued"), key=lambda j: j["created_at"])
         if not queued:
             return None
         job = queued[0]
-        job.update(status="running", started_at=store.now(), started_ts=now)
+        job.update(status="running", started_at=store.now(), started_ts=now, worker=worker)
         _save(job)
         return job
 
@@ -106,8 +107,9 @@ def status() -> dict:
     with _lock:
         _load()
         _expire(now)
-        seen = _host["last_seen"]
-        return {"online": bool(seen) and now - seen < OFFLINE_AFTER,
-                "last_seen_seconds": round(now - seen) if seen else None, "model": _host["model"],
+        live = sorted(((n, h) for n, h in _hosts.items() if now - h["last_seen"] < OFFLINE_AFTER), key=lambda x: -x[1]["last_seen"])
+        seen = max((h["last_seen"] for h in _hosts.values()), default=0.0)
+        return {"online": bool(live), "hosts": [{"name": n, "model": h["model"]} for n, h in live],
+                "last_seen_seconds": round(now - seen) if seen else None, "model": live[0][1]["model"] if live else None,
                 "queued": sum(j["status"] == "queued" for j in _jobs.values()),
                 "running": sum(j["status"] == "running" for j in _jobs.values())}

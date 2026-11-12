@@ -133,3 +133,14 @@ def test_stage_flow_names_who_acted():
 
     routine = stage_flow(_plan("2025-04-21"), None, verified=True)
     assert routine[2]["states"] == ["ROUTINE"] and routine[3]["states"] == []
+
+
+# --- Inline citations: every span points at its claim's value -------------------------------------
+
+def test_citations_point_at_their_claims():
+    from briefing_baseline.pipeline import answer
+
+    env = answer(q("2026-06-08", "Pacific"))
+    spans = env["citations"]
+    assert spans and all(env["answer"][s["start"]:s["end"]] == env["claims"][s["claim"]]["value"] for s in spans)
+    assert [s["start"] for s in spans] == sorted(s["start"] for s in spans)

@@ -167,7 +167,8 @@ def _brief(reg: Registry, question: str, order: list[str] | None = None, left_ou
         finish(sp, {"digits_outside_tokens": bad})
         if bad:
             raise AssertionError(f"digit outside a claim token: {bad[:3]}")
-    return _envelope(reg, reg.render(template), abstained)
+    text, spans = reg.render_cited(template)
+    return dict(_envelope(reg, text, abstained), citations=spans)  # citations: where each claim sits (UI only)
 
 
 def _story(reg, n, s, p):

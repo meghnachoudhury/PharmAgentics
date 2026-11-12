@@ -271,3 +271,19 @@ def test_login_shows_a_retry_page_while_keycloak_is_starting(monkeypatch):
     monkeypatch.setattr(auth, "_oauth", None)
     assert response.status_code == 503 and response.headers["retry-after"] == "5"
     assert "Starting the sign-in service" in response.text
+
+
+@pytest.mark.skipif(not service.DB.is_file(), reason="Build local/pharmagentics.duckdb first")
+def test_citations_reach_the_analyst_only():
+    analyst, director = signed_in("dev-analyst"), signed_in("dev-director")
+    brief = analyst.post("/api/briefing/query", json=TRIAGE_Q).json()
+    assert brief["citations"] and all(brief["answer"][s["start"]:s["end"]] == brief["claims"][s["claim"]]["value"] for s in brief["citations"])
+    analyst.post(f"/api/briefing/{brief['brief_id']}/review", json={"decision": "approved"})
+    assert "citations" not in director.get(f"/api/briefing/{brief['brief_id']}").json()
+
+
+def test_forecast_scaffold_reports_role_and_not_live():
+    assert TestClient(app).get("/api/forecast/status").status_code == 401
+    body = signed_in("dev-forecast-manager").get("/api/forecast/status").json()
+    assert body["available"] is False and body["persona"] == "BM" and body["views"] == ["leadership"]
+    assert signed_in("dev-analyst").get("/api/forecast/status").json()["role"] is None
