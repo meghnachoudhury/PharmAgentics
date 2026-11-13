@@ -49,9 +49,14 @@ if not _secret:
     _secret = secrets.token_urlsafe(32)  # local only: sessions end when the process restarts
 
 app = FastAPI(
-    title="PharmAgentics — Briefing API",
+    title="PharmAgentics API",
     version="0.2.0",
-    description="Briefing API over the governed scripted baseline, with role-based views (core-007).",
+    description="The Briefing and Forecast lanes over the governed data, with role-based views (core-007).",
+    openapi_tags=[
+        {"name": "app", "description": "Health and who is signed in."},
+        {"name": "briefing", "description": "Briefing lane: briefs, triage review, agent jobs and the local worker."},
+        {"name": "forecast", "description": "Forecast lane: runs, submission and review."},
+    ],
 )
 app.add_middleware(
     CORSMiddleware, allow_origins=origins, allow_credentials=False,
@@ -76,12 +81,12 @@ def _who(p: rbac.Principal, role: rbac.Role) -> dict:
     return {"user": rbac.pseudonym(p.sub), "role": role.name, "persona": role.persona}
 
 
-@app.get("/api/health")
+@app.get("/api/health", tags=["app"])
 def health() -> dict:
     return {"service": "pharmagentics_briefing_api", "database_ready": service.DB.is_file()}
 
 
-@app.get("/api/me")
+@app.get("/api/me", tags=["app"])
 def me(response: Response, p: rbac.Principal = Depends(rbac.require_user)) -> dict:
     """Who is signed in and what they may open (FR-008). Only the user's own details."""
     _no_store(response)
@@ -90,7 +95,7 @@ def me(response: Response, p: rbac.Principal = Depends(rbac.require_user)) -> di
     return {"name": p.name, "auth_mode": auth.mode(), "lanes": lanes}
 
 
-@app.get("/api/briefing/context", response_model=ReleaseContext)
+@app.get("/api/briefing/context", tags=["briefing"], response_model=ReleaseContext)
 async def context(who=Briefing) -> ReleaseContext:
     try:
         return await run_in_threadpool(service.release_context)
@@ -101,7 +106,7 @@ async def context(who=Briefing) -> ReleaseContext:
         raise HTTPException(status_code=500, detail="Could not read data release") from exc
 
 
-@app.post("/api/briefing/triage")
+@app.post("/api/briefing/triage", tags=["briefing"])
 async def briefing_triage(payload: BriefingQuery, response: Response, who=Briefing) -> dict:
     """Stages 1 to 3 and the code triage plan the analyst reviews before investigation (brief-002 US8)."""
     p, role = who
@@ -122,7 +127,7 @@ async def briefing_triage(payload: BriefingQuery, response: Response, who=Briefi
     return plan
 
 
-@app.post("/api/briefing/query")
+@app.post("/api/briefing/query", tags=["briefing"])
 async def briefing_query(payload: BriefingQuery, response: Response, who=Briefing) -> dict:
     p, role = who
     rbac.allow(role, "run")
@@ -148,7 +153,7 @@ async def briefing_query(payload: BriefingQuery, response: Response, who=Briefin
     return views.analyst(record)
 
 
-@app.get("/api/briefing/published")
+@app.get("/api/briefing/published", tags=["briefing"])
 async def published(response: Response, who=Briefing) -> list[dict]:
     """Analyst-approved briefs on the current data version (FR-009), as leadership summaries' headers."""
     _p, role = who
@@ -159,7 +164,7 @@ async def published(response: Response, who=Briefing) -> list[dict]:
             for r in store.approved(version)]
 
 
-@app.get("/api/briefing/{brief_id}")
+@app.get("/api/briefing/{brief_id}", tags=["briefing"])
 async def open_brief(brief_id: str, response: Response, view: str | None = Query(default=None), who=Briefing) -> dict:
     p, role = who
     rbac.allow(role, "read")
@@ -173,7 +178,7 @@ async def open_brief(brief_id: str, response: Response, view: str | None = Query
     return views.analyst(record) if chosen == rbac.ANALYST else views.leadership(record)
 
 
-@app.post("/api/briefing/{brief_id}/review")
+@app.post("/api/briefing/{brief_id}/review", tags=["briefing"])
 async def review(brief_id: str, decision: ReviewRequest, response: Response, who=Briefing) -> dict:
     p, role = who
     rbac.allow(role, "review")
@@ -188,7 +193,7 @@ async def review(brief_id: str, decision: ReviewRequest, response: Response, who
     return views.analyst(record)
 
 
-@app.post("/api/uat/insight", status_code=204)
+@app.post("/api/uat/insight", tags=["briefing"], status_code=204)
 async def insight(mark: InsightMark, who=Briefing) -> Response:
     p, role = who
     rbac.view_for(role, mark.view)
@@ -214,14 +219,14 @@ def _wake_cloud_host() -> None:
     cloud.maybe_start(st["queued"], st["online"])
 
 
-@app.get("/api/agent/status")
+@app.get("/api/agent/status", tags=["briefing"])
 def agent_status(response: Response, who=Briefing) -> dict:
     _no_store(response)
     _wake_cloud_host()
     return {**jobs.status(), "configured": bool(os.environ.get("PHARMAGENTICS_WORKER_TOKEN")), "cloud": cloud.status()}
 
 
-@app.post("/api/agent/jobs")
+@app.post("/api/agent/jobs", tags=["briefing"])
 async def agent_submit(req: AgentJobRequest, response: Response, who=Briefing) -> dict:
     p, role = who
     rbac.allow(role, "run")
@@ -248,7 +253,7 @@ async def agent_submit(req: AgentJobRequest, response: Response, who=Briefing) -
     return _job_view(job)
 
 
-@app.get("/api/agent/jobs/{job_id}")
+@app.get("/api/agent/jobs/{job_id}", tags=["briefing"])
 def agent_job(job_id: str, response: Response, who=Briefing) -> dict:
     _p, role = who
     rbac.allow(role, "run")
@@ -270,14 +275,14 @@ def _worker(authorization: str | None = Header(default=None)) -> None:
         raise HTTPException(status_code=401, detail="Worker token required.")
 
 
-@app.post("/api/worker/heartbeat", dependencies=[Depends(_worker)], status_code=204)
+@app.post("/api/worker/heartbeat", tags=["briefing"], dependencies=[Depends(_worker)], status_code=204)
 def worker_heartbeat(poll: WorkerPoll) -> Response:
     """A worker busy on a job says it is alive. It never hands out work, so a job cannot be lost to it."""
     jobs.heartbeat(poll.model, poll.worker)
     return Response(status_code=204)
 
 
-@app.post("/api/worker/next", dependencies=[Depends(_worker)])
+@app.post("/api/worker/next", tags=["briefing"], dependencies=[Depends(_worker)])
 def worker_next(poll: WorkerPoll) -> Response:
     job = jobs.next_job(poll.model, poll.worker)
     if job is None:
@@ -291,7 +296,7 @@ def _charge_cloud(job: dict) -> None:
         cloud.record_job_seconds(time.time() - job["started_ts"])
 
 
-@app.post("/api/worker/jobs/{job_id}", dependencies=[Depends(_worker)])
+@app.post("/api/worker/jobs/{job_id}", tags=["briefing"], dependencies=[Depends(_worker)])
 async def worker_result(job_id: str, posted: WorkerResult) -> dict:
     job = jobs.get(job_id)
     if job is None or job["status"] != "running":
