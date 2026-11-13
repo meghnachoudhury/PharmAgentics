@@ -83,7 +83,14 @@ export type TriagePlan = {
 export type TriageDecision = { plan_id: string; stories: string[] }
 export type CloudHost = { enabled: boolean; seconds_left: number; starting: boolean; error: string | null; eta_minutes: number | null; cpu: boolean }
 export type AgentStatus = { cloud?: CloudHost; online: boolean; configured: boolean; model: string | null; hosts?: { name: string; model: string | null }[]; queued: number; running: number; last_seen_seconds: number | null }
-export type AgentJob = { id: string; kind: "triage" | "brief"; status: "queued" | "running" | "done" | "failed"; error: string | null; result?: unknown }
+export type AgentJob = {
+  id: string
+  kind: "triage" | "brief"
+  status: "queued" | "running" | "done" | "failed"
+  error: string | null
+  host_kind?: "cloud_cpu" | "teammate" | null
+  result?: unknown
+}
 export type TriageRecord = {
   plan_id: string
   default: boolean
@@ -261,7 +268,7 @@ export async function markInsight(id: string, view: "analyst" | "leadership"): P
   await api("/api/uat/insight", post({ brief_id: id, view }))
 }
 
-// Agent jobs (core-007 FR-028): run by the owner's local worker; the app only queues and checks them.
+// Agent jobs (core-007 FR-028/FR-031): run by teammate or cloud CPU hosts; the app only queues and checks them.
 export async function getAgentStatus(): Promise<AgentStatus> {
   return await api("/api/agent/status") as AgentStatus
 }
