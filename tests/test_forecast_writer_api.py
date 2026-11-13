@@ -69,11 +69,52 @@ def key(monkeypatch):
     monkeypatch.setenv("OPENAI_API_KEY", "sk-test-key")
 
 
-def run(body=NATIONAL, user="dev-forecast-analyst"):
+def start(body=NATIONAL, user="dev-forecast-analyst"):
+    """The POST response itself: what the caller gets before any model has written."""
     sign_in(user)
     res = CLIENT.post("/api/forecast/runs", json=body)
     assert res.status_code == 200, res.text
     return res.json()
+
+
+def run(body=NATIONAL, user="dev-forecast-analyst"):
+    """The run once the writer has finished (the test client runs the background task before it returns)."""
+    first = start(body, user)
+    return CLIENT.get(f"/api/forecast/runs/{first['forecast_run_id']}").json()
+
+
+def test_the_run_comes_back_at_once_and_the_prose_arrives_afterwards(monkeypatch, key):
+    monkeypatch.setattr(forecast, "_write", Fake(terra="ok"))
+    first = start()
+    assert first["writer_status"] == "pending" and first["narrative"] is None and first["report_model"] == "none"
+    assert first["report"]["variance_trx"] == -1036 and len(first["stages"]) == 7  # the answer does not wait
+    later = CLIENT.get(f"/api/forecast/runs/{first['forecast_run_id']}").json()
+    assert later["writer_status"] == "ok" and later["narrative"]["summary"]
+    assert numbers(later) == numbers(first)
+
+
+def test_a_review_made_while_the_prose_is_being_written_is_kept(monkeypatch, key):
+    from pharmagentics.api import forecast_store
+    monkeypatch.setattr(forecast, "_write_and_store", lambda run_id, report: None)  # the writer has not finished yet
+    rid = start()["forecast_run_id"]
+    assert CLIENT.post(f"/api/forecast/runs/{rid}/submit").json()["writer_status"] == "pending"
+    forecast_store.set_writer(rid, Fake(terra="ok")(forecast_store.get(rid)["result"]["report"]))
+    body = CLIENT.get(f"/api/forecast/runs/{rid}").json()
+    assert body["review_status"] == "pending_review" and body["writer_status"] == "ok"
+
+
+def test_a_run_still_being_written_is_not_started_twice_but_a_lost_one_is(monkeypatch, key):
+    from pharmagentics.api import forecast_store
+    calls = []
+    monkeypatch.setattr(forecast, "_write_and_store", lambda run_id, report: calls.append(run_id))
+    rid = start()["forecast_run_id"]
+    start()
+    assert calls == [rid]  # the second request found it pending and left it alone
+    record = forecast_store.get(rid)
+    record["writer_started_at"] = "2020-01-01T00:00:00.000+00:00"  # lost in a restart long ago
+    forecast_store._put(record)
+    start()
+    assert calls == [rid, rid]
 
 
 def test_a_new_run_carries_the_prose_and_which_model_wrote_it(monkeypatch, key):

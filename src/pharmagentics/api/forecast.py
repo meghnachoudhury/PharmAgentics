@@ -19,7 +19,7 @@ import os
 import sys
 from pathlib import Path
 
-from fastapi import APIRouter, Depends, HTTPException, Response
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Response
 from fastapi.concurrency import run_in_threadpool
 
 from . import forecast_store, rbac, service, store, views
@@ -54,6 +54,33 @@ def _write(report: dict) -> dict:
     from feagent import writer
 
     return writer.write_report(report)
+
+
+FALLBACK = {"narrative": None, "report_model": "none", "writer_status": "fallback_stub",
+            "writer_attempts": [{"model": "none", "outcome": "error"}]}
+
+
+def _safe_write(report: dict) -> dict:
+    try:
+        return _write(report)
+    except Exception:  # noqa: BLE001 - whatever goes wrong with the prose, the scripted report stands
+        log.exception("report writer failed")
+        return dict(FALLBACK)
+
+
+def _write_and_store(run_id: str, report: dict) -> None:
+    """Runs after the response has been sent: the caller never waits for a model."""
+    forecast_store.set_writer(run_id, _safe_write(report))
+
+
+def _calls_a_model(report: dict) -> bool:
+    try:
+        _pipeline()
+        from feagent import writer
+
+        return writer.needs_model(report)
+    except HTTPException:
+        return False
 
 
 def _writer_info() -> dict:
@@ -135,7 +162,7 @@ def _visible(role: rbac.Role, record: dict) -> bool:
 
 
 @router.post("/runs")
-async def run(payload: ForecastRunRequest, response: Response, who=Forecast) -> dict:
+async def run(payload: ForecastRunRequest, response: Response, background: BackgroundTasks, who=Forecast) -> dict:
     _no_store(response)
     p, role = who
     rbac.allow(role, "run")
@@ -154,16 +181,15 @@ async def run(payload: ForecastRunRequest, response: Response, who=Forecast) -> 
     except Exception:
         log.exception("forecast run failed")
         raise HTTPException(status_code=500, detail="The Forecast run failed.") from None
-    writer = None
+    # After stage 6: prose for the verified report. It never changes the numbers or fails the run, and when a
+    # model is needed it is written after this response, so the run comes back at once (writer_status "pending").
+    writer, later = None, False
     if forecast_store.needs_writer(request, result):
-        # After stage 6: prose for the verified report. It never changes the numbers or fails the run.
-        try:
-            writer = await run_in_threadpool(_write, result["report"])
-        except Exception:  # noqa: BLE001 - whatever goes wrong with the prose, the scripted report stands
-            log.exception("report writer failed")
-            writer = {"narrative": None, "report_model": "none", "writer_status": "fallback_stub",
-                      "writer_attempts": [{"model": "none", "outcome": "error"}]}
+        later = _calls_a_model(result["report"])
+        writer = forecast_store.pending_writer() if later else _safe_write(result["report"])
     record = forecast_store.save(request, result, by=rbac.pseudonym(p.sub), writer=writer)
+    if later:
+        background.add_task(_write_and_store, record["run_id"], result["report"])
     store.record_event("forecast_run", **_who(p, role), forecast_run_id=record["run_id"], view=view)
     return views.forecast_record(record, view)
 

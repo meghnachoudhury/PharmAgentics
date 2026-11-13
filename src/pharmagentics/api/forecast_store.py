@@ -51,14 +51,44 @@ def _put(record: dict) -> dict:
     return record
 
 
+PENDING_WRITER_SECONDS = 300  # a writer still "pending" after this long was lost (a restart); try again
+
+
+def pending_writer() -> dict:
+    return {"narrative": None, "report_model": "none", "writer_status": "pending", "writer_attempts": [],
+            "writer_started_at": now()}
+
+
+def _stale(started_at: str | None) -> bool:
+    if not started_at:
+        return True
+    from datetime import datetime, timezone
+    return (datetime.now(timezone.utc) - datetime.fromisoformat(started_at)).total_seconds() > PENDING_WRITER_SECONDS
+
+
 def needs_writer(request: dict, result: dict) -> bool:
     """Whether the report writer should run for this answer. A rerun of an answer that already has prose, or that
-    was correctly left without (an attribution paused), spends nothing; one that fell back is tried again."""
+    was correctly left without (an attribution paused), spends nothing; one that fell back is tried again, and
+    one still being written is left alone."""
     existing = get(run_id(request, result))
     if existing is None or not _same_answer(existing["result"], result):
         return True
+    status = existing.get("writer_status")
+    if status == "pending":
+        return _stale(existing.get("writer_started_at"))
     outcomes = [a.get("outcome") for a in existing.get("writer_attempts") or []]
-    return existing.get("writer_status") in (None, "fallback_stub") or outcomes == ["disabled"]
+    return status in (None, "fallback_stub") or outcomes == ["disabled"]
+
+
+def set_writer(rid: str, writer: dict) -> None:
+    """Store the finished prose on a run. Re-reads the run first, so a review made meanwhile is kept."""
+    record = get(rid)
+    if record is None:
+        return
+    record.update(narrative=writer["narrative"], report_model=writer["report_model"],
+                  writer_status=writer["writer_status"], writer_attempts=writer["writer_attempts"])
+    record.pop("writer_started_at", None)
+    _put(record)
 
 
 def save(request: dict, result: dict, by: str, writer: dict | None = None) -> dict:
@@ -66,16 +96,14 @@ def save(request: dict, result: dict, by: str, writer: dict | None = None) -> di
     existing = get(rid)
     if existing and _same_answer(existing["result"], result):
         if writer is not None:  # the answer is unchanged; keep its review state and refresh the prose
-            existing.update(narrative=writer["narrative"], report_model=writer["report_model"],
-                            writer_status=writer["writer_status"], writer_attempts=writer["writer_attempts"])
+            existing.update(writer)
             return _put(existing)
         return existing
     writer = writer or {"narrative": None, "report_model": "none", "writer_status": "skipped", "writer_attempts": []}
     record = {"run_id": rid, "created_at": now(), "created_by": by, "request": request, "result": result,
               "review_status": NOT_SUBMITTED, "submitted_by": None, "submitted_at": None,
               "reviewed_by": None, "reviewed_at": None, "review_decision": None, "review_note": None, "history": [],
-              "narrative": writer["narrative"], "report_model": writer["report_model"],
-              "writer_status": writer["writer_status"], "writer_attempts": writer["writer_attempts"]}
+              **writer}
     return _put(record)
 
 

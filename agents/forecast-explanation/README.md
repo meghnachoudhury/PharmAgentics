@@ -48,7 +48,7 @@ Investigation is always scripted: no model chooses tools, and the numbers never 
 
 Each piece of prose is checked in code before it is kept. It must be the expected JSON. Every number in it must be one the verified report already holds (a figure of ten or more may be rounded to the nearest whole number; a smaller one must be as given). It may name only drivers the report names, assign only owners the report names (or Commercial Analyst, Brand Manager), and recommend no commercial action. Prose that breaks a rule is dropped and the next model is tried; the scripted numbers are never changed. A paused attribution calls no model.
 
-The prose is stored with the run, so opening or re-running the same request spends nothing; a run that fell back is tried again on a re-run. `POST /api/forecast/runs` and `GET .../runs/{id}` return `narrative`, `report_model` and `writer_status`; the analyst view also returns `writer_attempts` (one short outcome per model tried) and the `analyst_notes` inside the narrative. The UI does not show the narrative yet; the report header says "Report coming soon".
+The run never waits for a model: `POST /api/forecast/runs` answers at once with `writer_status` `pending`, the prose is written after the response, and `GET .../runs/{id}` then shows `ok` or `fallback_stub` (`skipped` when the writer is off or the attribution is paused). The prose is stored with the run, so opening or re-running the same request spends nothing; a run that fell back is tried again on a re-run. `POST /api/forecast/runs` and `GET .../runs/{id}` return `narrative`, `report_model` and `writer_status`; the analyst view also returns `writer_attempts` (one short outcome per model tried) and the `analyst_notes` inside the narrative. The UI does not show the narrative yet; the report header says "Report coming soon".
 
 ## API
 
@@ -103,7 +103,7 @@ Bad input is `422`; an unknown week or a window past the data is `400` with a me
 | `OPENAI_API_KEY` | none | The GPT Terra key, set on the server only. Without it the writer goes straight to Qwen |
 | `OPENAI_MODEL` | `gpt-6.1-terra` | The GPT Terra model id. Confirm it on the account |
 | `OLLAMA_WRITER_MODEL` | `qwen2.5:7b` | The local writer. Separate from `OLLAMA_MODEL`, which is the investigator's in `ollama` and `auto` mode |
-| `FEAGENT_WRITER_TERRA_TIMEOUT_SEC`, `FEAGENT_WRITER_LOCAL_TIMEOUT_SEC` | `25`, `45` | Per call. A new run can take up to their sum when both models are down |
+| `FEAGENT_WRITER_TERRA_TIMEOUT_SEC`, `FEAGENT_WRITER_LOCAL_TIMEOUT_SEC` | `25`, `45` | Per call, in the background. The run itself does not wait |
 | `PHARMAGENTICS_DATA_DIR` | the repository's `data/agent_visible/` | Where the data release is read from |
 
 **Investigation:** scripted (`stub`) for every request; `ollama` and `auto` exist for local trials only. **Report writer:** GPT Terra first, then local Qwen, then the scripted report. The key lives on the server, never in this repository or in a request. A provisional actual is stopped at the gate before any model is called, and a model's prose is checked as described above.

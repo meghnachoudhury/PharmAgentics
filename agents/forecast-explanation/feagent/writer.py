@@ -54,6 +54,11 @@ def describe() -> dict[str, Any]:
             "fallback": cfg["local_model"]}
 
 
+def needs_model(report: dict[str, Any]) -> bool:
+    """False when the writer would answer at once without a model: switched off, or the attribution is paused."""
+    return settings()["mode"] == "on" and not report.get("abstained")
+
+
 class WriterError(Exception):
     """A model call that did not give usable text. ``code`` is short and safe to store."""
 
