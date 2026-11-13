@@ -41,6 +41,18 @@ export async function forecastCases(): Promise<ForecastCase[]> { const value: un
 export async function forecastContext(): Promise<ForecastContext> { const value: unknown = await api("/api/forecast/context"); object(value); if (!Array.isArray(value.territory_ids) || !Array.isArray(value.available_weeks) || typeof value.latest_week !== "string" || value.metric !== "TRx" || typeof value.brand !== "string") throw new Error("Forecast scope is unavailable."); return value as unknown as ForecastContext }
 export async function createForecast(request: ForecastRequest): Promise<ForecastRun> { return run(await api("/api/forecast/runs", post(request))) }
 export async function listForecasts(status?: string): Promise<ForecastSummary[]> { const value: unknown = await api(`/api/forecast/runs${status ? `?status=${encodeURIComponent(status)}` : ""}`); object(value); if (!Array.isArray(value.runs)) throw new Error("Forecast run list is unavailable."); return value.runs as ForecastSummary[] }
-export async function openForecast(id: string): Promise<ForecastRun> { return run(await api(`/api/forecast/runs/${encodeURIComponent(id)}`)) }
+export async function openForecast(
+  id: string,
+  view?: ForecastRun["view"],
+): Promise<ForecastRun> {
+  const query = view ? `?view=${encodeURIComponent(view)}` : ""
+  const result = run(await api(`/api/forecast/runs/${encodeURIComponent(id)}${query}`))
+
+  if (view && result.view !== view) {
+    throw new Error("The server returned a different Forecast view.")
+  }
+
+  return result
+}
 export async function submitForecast(id: string): Promise<ForecastRun> { return run(await api(`/api/forecast/runs/${encodeURIComponent(id)}/submit`, post())) }
 export async function reviewForecast(id: string, decision: "approved" | "rejected" | "returned", note?: string): Promise<ForecastRun> { return run(await api(`/api/forecast/runs/${encodeURIComponent(id)}/review`, post({ decision, note: note || null }))) }

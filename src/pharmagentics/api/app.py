@@ -205,6 +205,10 @@ async def insight(mark: InsightMark, who=Briefing) -> Response:
 
 def _job_view(job: dict) -> dict:
     out = {k: job[k] for k in ("id", "kind", "status", "created_at", "started_at", "finished_at", "error")}
+    worker = job.get("worker")
+    out["host_kind"] = None
+    if worker:
+        out["host_kind"] = "cloud_cpu" if worker == "cloud" else "teammate"
     if job["status"] == "done" and job["kind"] == "triage":
         out["result"] = job["result"]
     elif job["status"] == "done" and job["kind"] == "brief":

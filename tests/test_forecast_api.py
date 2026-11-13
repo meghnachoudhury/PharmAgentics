@@ -76,6 +76,30 @@ def test_an_analyst_can_preview_the_leadership_view_but_a_manager_cannot_open_th
     assert preview["view"] == "leadership" and "stages" not in preview
 
 
+def test_opening_a_saved_run_in_both_views_keeps_the_same_run_and_review_state():
+    sign_in("dev-forecast-analyst")
+    created = CLIENT.post("/api/forecast/runs", json=NATIONAL).json()
+    run_id = created["forecast_run_id"]
+    path = f"/api/forecast/runs/{run_id}"
+
+    preview_response = CLIENT.get(path, params={"view": "leadership"})
+    assert preview_response.status_code == 200
+    preview = preview_response.json()
+    assert preview["view"] == "leadership" and preview["forecast_run_id"] == run_id
+    assert preview["review_status"] == created["review_status"] == "not_submitted"
+    assert preview["report"]["variance_trx"] == created["report"]["variance_trx"]
+    assert "stages" not in preview and "history" not in preview and "pin" not in preview
+    assert "evidence" not in preview["report"]
+    assert all("evidence_ids" not in d for d in preview["report"]["drivers"])
+
+    for params in ({"view": "analyst"}, {}):
+        response = CLIENT.get(path, params=params)
+        assert response.status_code == 200
+        analyst = response.json()
+        assert analyst["view"] == "analyst" and analyst["forecast_run_id"] == run_id
+        assert analyst["review_status"] == "not_submitted" and len(analyst["stages"]) == 7
+
+
 def test_a_provisional_actual_pauses_attribution():
     sign_in("dev-forecast-analyst")
     body = CLIENT.post("/api/forecast/runs", json=NEW_ENGLAND).json()

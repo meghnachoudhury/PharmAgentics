@@ -136,6 +136,24 @@ def _running_job_on(worker_name: str):
     return analyst, job["id"]
 
 
+@pytest.mark.parametrize(("worker_name", "host_kind"), [("cloud", "cloud_cpu"), ("meghna-pc", "teammate")])
+def test_job_view_reports_the_host_that_actually_took_the_job(worker_name, host_kind):
+    analyst = signed_in("dev-analyst")
+    submitted = analyst.post("/api/agent/jobs", json={"kind": "triage", "query": Q}).json()
+    job_id = submitted["id"]
+    assert submitted["status"] == "queued" and submitted["host_kind"] is None
+    assert analyst.get(f"/api/agent/jobs/{job_id}").json()["host_kind"] is None
+
+    worker().post("/api/worker/next", json={"worker": worker_name}, headers=W)
+    running = analyst.get(f"/api/agent/jobs/{job_id}").json()
+    assert running["status"] == "running" and running["host_kind"] == host_kind
+    assert "worker" not in running  # expose the host class, not the machine's name
+
+    worker().post(f"/api/worker/jobs/{job_id}", json={"ok": False, "error": "test"}, headers=W)
+    failed = analyst.get(f"/api/agent/jobs/{job_id}").json()
+    assert failed["status"] == "failed" and failed["host_kind"] == host_kind
+
+
 def test_heartbeat_keeps_a_long_job_alive_and_silence_fails_it():
     analyst, job_id = _running_job_on("pc-1")
     jobs.get(job_id)["started_ts"] -= 1200  # twenty minutes in: a slow CPU run, not a stuck one

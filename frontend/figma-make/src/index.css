@@ -1,8 +1,8 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:wght@400;500;600&display=swap");
 @import 'tailwindcss';
 
 @theme {
-  --font-serif: "Inter", system-ui, sans-serif;
+  --font-serif: "Source Serif 4", Georgia, serif;
   --font-sans: "Inter", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
   /* Warm ivory workspace */
@@ -20,9 +20,9 @@
   --color-human: #1e3a8a;
   --color-humanbg: #e8eefb;
   /* Agent interactions and primary controls */
-  --color-agent: #4f46e5;
-  --color-agentdeep: #3730a3;
-  --color-agentbg: #eef0fd;
+  --color-agent: #475569;
+  --color-agentdeep: #243247;
+  --color-agentbg: #edf1f5;
   /* Verified results and successful states */
   --color-ok: #0f766e;
   --color-okbg: #e7f4f1;
@@ -55,6 +55,12 @@
   50% { opacity: 1; }
 }
 @layer utilities {
+  .workspace-content {
+    width: 100%;
+    max-width: 48rem;
+    margin-inline: auto;
+    padding-inline: 1.25rem;
+  }
   .pa-rise { animation: pa-rise 260ms ease-out both; }
   .pa-slide { animation: pa-slide 220ms ease-out both; }
   .pa-pulse { animation: pa-pulse 1.2s ease-in-out infinite; }

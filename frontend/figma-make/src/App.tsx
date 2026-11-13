@@ -132,20 +132,21 @@ function forecastReviewLabel(status: string): string {
   return status.replace(/_/g, " ")
 }
 
-function ForecastReport({run, analyst}: {run: ForecastRun, analyst: boolean}) {
+function ForecastReport({run}: {run: ForecastRun}) {
   const report = run.report
   return <div className="space-y-4">
-    <article className="rounded-2xl bg-white p-6 ring-1 ring-rule"><div className="flex flex-wrap items-center gap-2"><span className={`${chip} ${report.abstained ? "bg-amberbg text-amber" : "bg-agentbg text-agentdeep"}`}>{report.abstained ? "Attribution paused" : "Forecast explanation"}</span><span className={`${chip} bg-paper text-muted`}>{forecastReviewLabel(run.review_status)}</span>{report.investigator_mode && <span className={`${chip} ${report.investigator_mode === "ollama" ? "bg-okbg text-ok" : "bg-paper text-muted"}`}>{report.investigator_mode === "ollama" ? "Local Qwen" : "Scripted fallback"}</span>}</div><h2 className="mt-3 text-lg font-semibold">{report.headline}</h2><p className="mt-2 text-sm text-muted">{labelTerritory(report.territory_id)} · week ending {labelWeek(report.week_ending)} · {report.window_weeks}-week window</p><div className="mt-5 grid gap-3 sm:grid-cols-3">{[["Forecast TRx",report.forecast_trx],["Actual TRx",report.actual_trx],["Variance TRx",report.variance_trx]].map(([label,value])=><div key={String(label)} className="rounded-xl bg-paper p-4"><p className="text-xs text-muted">{label}</p><p className="mt-1 text-lg font-semibold">{formatNumber(value as number | null)}</p></div>)}</div>{report.variance_pct !== null && report.variance_pct !== undefined && <p className="mt-4 text-sm text-muted">Variance: {report.variance_pct.toFixed(1)}% · residual: {formatNumber(report.residual_trx)} TRx · verification: {report.verification?.verdict ?? "—"}</p>}</article>
+    <article className="rounded-2xl bg-white p-6 ring-1 ring-rule"><div className="flex flex-wrap items-center gap-2"><span className={`${chip} ${report.abstained ? "bg-amberbg text-amber" : "bg-agentbg text-agentdeep"}`}>{report.abstained ? "Attribution paused" : "Forecast explanation"}</span><span className={`${chip} bg-paper text-muted`}>{forecastReviewLabel(run.review_status)}</span>{report.investigator_mode && <span className={`${chip} ${report.investigator_mode === "ollama" ? "bg-okbg text-ok" : "bg-paper text-muted"}`}>{report.investigator_mode === "ollama" ? "Local Qwen" : "Scripted fallback"}</span>}</div><h2 className="mt-3 font-serif text-2xl font-medium">{report.headline}</h2><p className="mt-2 text-sm text-muted">{labelTerritory(report.territory_id)} · week ending {labelWeek(report.week_ending)} · {report.window_weeks}-week window</p><div className="mt-5 grid gap-3 sm:grid-cols-3">{[["Forecast TRx",report.forecast_trx],["Actual TRx",report.actual_trx],["Variance TRx",report.variance_trx]].map(([label,value])=><div key={String(label)} className="rounded-xl bg-paper p-4"><p className="text-xs text-muted">{label}</p><p className="mt-1 text-lg font-semibold">{formatNumber(value as number | null)}</p></div>)}</div>{report.variance_pct !== null && report.variance_pct !== undefined && <p className="mt-4 text-sm text-muted">Variance: {report.variance_pct.toFixed(1)}% · residual: {formatNumber(report.residual_trx)} TRx · verification: {report.verification?.verdict ?? "—"}</p>}</article>
     <article className="rounded-2xl bg-white p-6 ring-1 ring-rule"><h3 className="font-semibold">Drivers</h3>{report.drivers.length ? <div className="mt-3 space-y-2">{report.drivers.map(d=><div key={d.driver} className="flex flex-wrap items-center justify-between gap-2 rounded-xl bg-paper px-4 py-3 text-sm"><span className="font-medium capitalize">{d.driver}</span><span>{formatNumber(d.impact_trx)} TRx · {d.confidence}</span></div>)}</div> : <p className="mt-3 text-sm text-muted">No driver attribution is shown because the data-quality gate paused this run.</p>}</article>
     {!!report.caveats.length && <article className="rounded-2xl bg-amberbg p-6 ring-1 ring-amberline"><h3 className="font-semibold">Caveats</h3><ul className="mt-3 list-disc space-y-1 pl-5 text-sm">{report.caveats.map(c=><li key={c}>{c}</li>)}</ul></article>}
     {!!report.what_to_check.length && <article className="rounded-2xl bg-white p-6 ring-1 ring-rule"><h3 className="font-semibold">What to check next</h3><div className="mt-3 space-y-3">{report.what_to_check.map(c=><div key={c.question} className="rounded-xl bg-paper p-4 text-sm"><p className="font-medium">{c.question}</p><p className="mt-1 text-muted">{c.why}</p><p className="mt-2 text-xs text-agentdeep">Owner: {c.owner}</p></div>)}</div></article>}
-    {analyst && run.stages && <article className="rounded-2xl bg-white p-6 ring-1 ring-rule"><h3 className="font-semibold">Run trace</h3><div className="mt-3 grid gap-2 sm:grid-cols-2">{run.stages.map(s=><div key={s.stage} className="rounded-xl bg-paper px-4 py-3 text-sm"><span className="text-muted">Stage {s.stage}</span><p className="font-medium">{s.name}</p><p className="text-xs text-muted">{s.status}</p></div>)}</div></article>}
+    {run.view === "analyst" && run.stages && <article className="rounded-2xl bg-white p-6 ring-1 ring-rule"><h3 className="font-semibold">Run trace</h3><div className="mt-3 grid gap-2 sm:grid-cols-2">{run.stages.map(s=><div key={s.stage} className="rounded-xl bg-paper px-4 py-3 text-sm"><span className="text-muted">Stage {s.stage}</span><p className="font-medium">{s.name}</p><p className="text-xs text-muted">{s.status}</p></div>)}</div></article>}
   </div>
 }
 
 function ForecastWorkspace({me, section}: {me: Me, section: "workbench" | "approved"}) {
   const r = me.lanes.forecast
   const analyst = !!r?.actions.includes("run")
+  const canPreview = analyst && !!r?.views.includes("leadership")
   const [cases,setCases] = useState<ForecastCase[]>([])
   const [runs,setRuns] = useState<ForecastSummary[]>([])
   const [selected,setSelected] = useState<ForecastRun | null>(null)
@@ -164,13 +165,59 @@ function ForecastWorkspace({me, section}: {me: Me, section: "workbench" | "appro
   useEffect(()=>{ void refresh() }, [analyst, section])
   const start = async (c: ForecastCase) => { setBusy(true); setError(null); try { setSelected(await createForecast(c.request)); await refresh() } catch(e) { setError(message(e)) } finally { setBusy(false) } }
   const startCustom = async (event: React.FormEvent) => { event.preventDefault(); if (!week) return; setBusy(true); setError(null); try { setSelected(await createForecast({territory_id: territory, week_start: week, window_weeks: windowWeeks})); await refresh() } catch(e) { setError(message(e)) } finally { setBusy(false) } }
-  const open = async (id: string) => { setBusy(true); setError(null); try { setSelected(await openForecast(id)) } catch(e) { setError(message(e)) } finally { setBusy(false) } }
+  const open = async (id: string, view?: ForecastRun["view"]) => {
+    setBusy(true)
+    setError(null)
+    try {
+      setSelected(await openForecast(id, view))
+    } catch (e) {
+      setError(message(e))
+    } finally {
+      setBusy(false)
+    }
+  }
   const submit = async () => { if (!selected) return; setBusy(true); setError(null); try { setSelected(await submitForecast(selected.forecast_run_id)); await refresh() } catch(e) { setError(message(e)) } finally { setBusy(false) } }
   const decide = async (decision: "approved" | "rejected" | "returned") => { if (!selected) return; setBusy(true); setError(null); try { setSelected(await reviewForecast(selected.forecast_run_id, decision, note)); setNote(""); await refresh() } catch(e) { setError(message(e)) } finally { setBusy(false) } }
-  return <div className="mx-auto max-w-4xl space-y-5 px-5 py-7 pa-rise">
-    <div><span className={`${chip} bg-agentbg text-agentdeep`}>{analyst ? "Commercial Analyst" : "Brand Manager"}</span><h2 className="mt-3 text-xl font-semibold">Forecast explanation</h2><p className="mt-1 text-sm text-muted">Forecast-versus-actual analysis from the governed synthetic-data release. The server fixes the engine and enforces your view.</p></div>
+  return <div className="workspace-content space-y-6 py-8 sm:py-10 pa-rise">
+    <div><span className={`${chip} bg-agentbg text-agentdeep`}>{analyst ? "Commercial Analyst" : "Brand Manager"}</span><h2 className="mt-3 font-serif text-2xl font-medium">Forecast explanation</h2><p className="mt-1 text-sm text-muted">Forecast-versus-actual analysis from the governed synthetic-data release. The server fixes the engine and enforces your view.</p></div>
     {error && <div role="alert" className="rounded-2xl bg-amberbg px-5 py-4 text-sm text-amber">{error}</div>}
-    {selected ? <><button className="flex items-center gap-2 text-sm text-agentdeep hover:underline" onClick={()=>setSelected(null)}><Icon name="back"/>All {section === "approved" ? "approved explanations" : "forecast runs"}</button><ForecastReport run={selected} analyst={analyst}/>{analyst && selected.review_status === "pending_review" && <div className="rounded-2xl bg-sheet px-5 py-4 text-sm text-muted ring-1 ring-rule"><strong className="text-ink">Submitted for Brand Manager approval.</strong><p className="mt-1">This explanation is no longer editable. Sign in as <code>uat-forecast-manager</code> to approve, return, or reject it.</p></div>}{analyst && section === "workbench" && (selected.review_status === "not_submitted" || selected.review_status === "returned") && <button disabled={busy} onClick={()=>void submit()} className="rounded-xl bg-navy px-4 py-3 text-sm font-semibold text-white disabled:bg-rule">Submit to Brand Manager</button>}{!analyst && selected.review_status === "pending_review" && <div className="rounded-2xl bg-white p-5 ring-1 ring-rule"><label className="text-sm font-medium">Review note (required for return or rejection)<textarea value={note} onChange={e=>setNote(e.target.value)} className="mt-2 block w-full rounded-xl border border-rule bg-paper p-3 text-sm" rows={3}/></label><div className="mt-4 flex flex-wrap gap-2"><button disabled={busy} onClick={()=>void decide("approved")} className="rounded-xl bg-navy px-4 py-2 text-sm font-semibold text-white disabled:bg-rule">Approve</button><button disabled={busy || !note.trim()} onClick={()=>void decide("returned")} className="rounded-xl bg-paper px-4 py-2 text-sm font-semibold ring-1 ring-rule disabled:text-muted">Return</button><button disabled={busy || !note.trim()} onClick={()=>void decide("rejected")} className="rounded-xl bg-paper px-4 py-2 text-sm font-semibold ring-1 ring-rule disabled:text-muted">Reject</button></div></div>}</> : <>{analyst && section === "workbench" && <><section className="rounded-3xl bg-white p-5 shadow-lg shadow-ink/5 ring-1 ring-rule sm:p-7"><h3 className="text-lg font-semibold">Forecast scope</h3><p className="mt-1 text-sm text-muted">Choose the territory, reporting week, and analysis window. BXA and TRx are the governed Forecast scope.</p><form onSubmit={startCustom} className="mt-5 space-y-5"><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"><label className="flex flex-col gap-2 text-xs font-medium text-muted">Brand<input value={context?.brand ?? "BXA Cardiovela"} disabled className="rounded-xl border border-rule bg-paper px-3 py-3 text-sm text-ink"/></label><label className="flex flex-col gap-2 text-xs font-medium text-muted">Metric<input value="TRx" disabled className="rounded-xl border border-rule bg-paper px-3 py-3 text-sm text-ink"/></label><label className="flex flex-col gap-2 text-xs font-medium text-muted">Territory<select value={territory} onChange={e=>setTerritory(e.target.value)} disabled={!context || busy} className="rounded-xl border border-rule bg-paper px-3 py-3 text-sm text-ink">{context?.territory_ids.map(id=><option key={id} value={id}>{labelTerritory(id)}</option>)}</select></label><label className="flex flex-col gap-2 text-xs font-medium text-muted">Reporting week<select value={week} onChange={e=>setWeek(e.target.value)} disabled={!context || busy} className="rounded-xl border border-rule bg-paper px-3 py-3 text-sm text-ink">{[...(context?.available_weeks ?? [])].reverse().map(w=><option key={w} value={w}>{labelWeek(w)}</option>)}</select></label></div><label className="flex max-w-xs flex-col gap-2 text-xs font-medium text-muted">Analysis window<select value={windowWeeks} onChange={e=>setWindowWeeks(Number(e.target.value))} disabled={busy} className="rounded-xl border border-rule bg-paper px-3 py-3 text-sm text-ink"><option value={1}>1 week</option><option value={4}>4 weeks</option><option value={13}>13 weeks</option></select></label><button type="submit" disabled={!context || !week || busy} className="flex w-full items-center justify-center gap-2 rounded-xl bg-navy px-4 py-3.5 text-sm font-semibold text-white hover:bg-agentdeep disabled:bg-rule"><Icon name="send"/>{busy ? "Generating forecast explanation…" : "Generate forecast explanation"}</button></form></section><section><h3 className="font-semibold">Suggested investigations</h3><div className="mt-3 grid gap-3 md:grid-cols-3">{cases.map(c=><button disabled={busy} key={c.case_id} onClick={()=>void start(c)} className="rounded-2xl bg-white p-5 text-left ring-1 ring-rule hover:bg-paper disabled:opacity-60"><p className="text-xs text-agentdeep">{c.tag}</p><p className="mt-2 font-medium">{c.label}</p><p className="mt-2 text-xs text-muted">{labelTerritory(c.request.territory_id)} · {labelWeek(c.request.week_start)}</p></button>)}</div></section></>}<section><h3 className="font-semibold">{section === "approved" ? "Approved explanations" : analyst ? "Your forecast runs" : "Runs awaiting your review"}</h3>{loading ? <p className="mt-3 text-sm text-muted">Loading forecast runs…</p> : runs.length ? <div className="mt-3 space-y-2">{runs.map(run=><button key={run.forecast_run_id} onClick={()=>void open(run.forecast_run_id)} className="w-full rounded-xl bg-white p-4 text-left ring-1 ring-rule hover:bg-paper"><div className="flex flex-wrap justify-between gap-2"><span className="font-medium">{run.headline}</span><span className="text-xs text-muted">{forecastReviewLabel(run.review_status)}</span></div><p className="mt-1 text-sm text-muted">{labelTerritory(run.territory_id)} · variance {formatNumber(run.variance_trx)} TRx</p></button>)}</div> : <p className="mt-3 text-sm text-muted">No {section === "approved" ? "approved explanations" : "forecast runs available"} yet.</p>}</section></>}
+    {selected ? <>
+      <button disabled={busy} className="flex items-center gap-2 text-sm text-agentdeep hover:underline" onClick={()=>setSelected(null)}><Icon name="back"/>All {section === "approved" ? "approved explanations" : "forecast runs"}</button>
+      {canPreview && (
+        <div
+          role="group"
+          aria-label="Forecast report view"
+          aria-busy={busy}
+          className="inline-flex rounded-xl bg-sheet p-1 ring-1 ring-rule"
+        >
+          {(["analyst", "leadership"] as const).map(view => (
+            <button
+              key={view}
+              type="button"
+              aria-pressed={selected.view === view}
+              disabled={busy || selected.view === view}
+              onClick={() => void open(selected.forecast_run_id, view)}
+              className={`rounded-lg px-3 py-1.5 text-xs font-medium ${
+                selected.view === view ? "bg-navy text-white" : "text-muted"
+              }`}
+            >
+              {view === "analyst" ? "Analyst view" : "Leadership preview"}
+            </button>
+          ))}
+        </div>
+      )}
+      <ForecastReport run={selected}/>
+      {analyst && selected.view === "analyst" && selected.review_status === "pending_review" && <div className="rounded-2xl bg-sheet px-5 py-4 text-sm text-muted ring-1 ring-rule"><strong className="text-ink">Submitted for Brand Manager approval.</strong><p className="mt-1">This explanation is no longer editable. Sign in as <code>uat-forecast-manager</code> to approve, return, or reject it.</p></div>}
+      {analyst && selected.view === "analyst" && section === "workbench" && (selected.review_status === "not_submitted" || selected.review_status === "returned") && <button disabled={busy} onClick={()=>void submit()} className="rounded-xl bg-navy px-4 py-3 text-sm font-semibold text-white disabled:bg-rule">Submit to Brand Manager</button>}
+      {!analyst && selected.review_status === "pending_review" && <div className="rounded-2xl bg-white p-5 ring-1 ring-rule">
+        <label className="text-sm font-medium">Review note (required for return or rejection)<textarea value={note} onChange={e=>setNote(e.target.value)} className="mt-2 block w-full rounded-xl border border-rule bg-paper p-3 text-sm" rows={3}/></label>
+        <div className="mt-4 flex flex-wrap gap-2">
+          <button disabled={busy} onClick={()=>void decide("approved")} className="rounded-xl bg-navy px-4 py-2 text-sm font-semibold text-white disabled:bg-rule">Approve</button>
+          <button disabled={busy || !note.trim()} onClick={()=>void decide("returned")} className="rounded-xl bg-paper px-4 py-2 text-sm font-semibold ring-1 ring-rule disabled:text-muted">Return</button>
+          <button disabled={busy || !note.trim()} onClick={()=>void decide("rejected")} className="rounded-xl bg-paper px-4 py-2 text-sm font-semibold ring-1 ring-rule disabled:text-muted">Reject</button>
+        </div>
+      </div>}
+    </> : <>{analyst && section === "workbench" && <><section className="rounded-3xl bg-white p-5 shadow-lg shadow-ink/5 ring-1 ring-rule sm:p-7"><h3 className="text-lg font-semibold">Forecast scope</h3><p className="mt-1 text-sm text-muted">Choose the territory, reporting week, and analysis window. BXA and TRx are the governed Forecast scope.</p><form onSubmit={startCustom} className="mt-5 space-y-5"><div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4"><label className="flex flex-col gap-2 text-xs font-medium text-muted">Brand<input value={context?.brand ?? "BXA Cardiovela"} disabled className="rounded-xl border border-rule bg-paper px-3 py-3 text-sm text-ink"/></label><label className="flex flex-col gap-2 text-xs font-medium text-muted">Metric<input value="TRx" disabled className="rounded-xl border border-rule bg-paper px-3 py-3 text-sm text-ink"/></label><label className="flex flex-col gap-2 text-xs font-medium text-muted">Territory<select value={territory} onChange={e=>setTerritory(e.target.value)} disabled={!context || busy} className="rounded-xl border border-rule bg-paper px-3 py-3 text-sm text-ink">{context?.territory_ids.map(id=><option key={id} value={id}>{labelTerritory(id)}</option>)}</select></label><label className="flex flex-col gap-2 text-xs font-medium text-muted">Reporting week<select value={week} onChange={e=>setWeek(e.target.value)} disabled={!context || busy} className="rounded-xl border border-rule bg-paper px-3 py-3 text-sm text-ink">{[...(context?.available_weeks ?? [])].reverse().map(w=><option key={w} value={w}>{labelWeek(w)}</option>)}</select></label></div><label className="flex max-w-xs flex-col gap-2 text-xs font-medium text-muted">Analysis window<select value={windowWeeks} onChange={e=>setWindowWeeks(Number(e.target.value))} disabled={busy} className="rounded-xl border border-rule bg-paper px-3 py-3 text-sm text-ink"><option value={1}>1 week</option><option value={4}>4 weeks</option><option value={13}>13 weeks</option></select></label><button type="submit" disabled={!context || !week || busy} className="flex w-full items-center justify-center gap-2 rounded-xl bg-navy px-4 py-3.5 text-sm font-semibold text-white hover:bg-agentdeep disabled:bg-rule"><Icon name="send"/>{busy ? "Generating forecast explanation…" : "Generate forecast explanation"}</button></form></section><section><h3 className="font-semibold">Suggested investigations</h3><div className="mt-3 grid gap-3 md:grid-cols-3">{cases.map(c=><button disabled={busy} key={c.case_id} onClick={()=>void start(c)} className="rounded-2xl bg-white p-5 text-left ring-1 ring-rule hover:bg-paper disabled:opacity-60"><p className="text-xs text-agentdeep">{c.tag}</p><p className="mt-2 font-medium">{c.label}</p><p className="mt-2 text-xs text-muted">{labelTerritory(c.request.territory_id)} · {labelWeek(c.request.week_start)}</p></button>)}</div></section></>}<section><h3 className="font-semibold">{section === "approved" ? "Approved explanations" : analyst ? "Your forecast runs" : "Runs awaiting your review"}</h3>{loading ? <p className="mt-3 text-sm text-muted">Loading forecast runs…</p> : runs.length ? <div className="mt-3 space-y-2">{runs.map(run=><button disabled={busy} key={run.forecast_run_id} onClick={()=>void open(run.forecast_run_id)} className="w-full rounded-xl bg-white p-4 text-left ring-1 ring-rule hover:bg-paper"><div className="flex flex-wrap justify-between gap-2"><span className="font-medium">{run.headline}</span><span className="text-xs text-muted">{forecastReviewLabel(run.review_status)}</span></div><p className="mt-1 text-sm text-muted">{labelTerritory(run.territory_id)} · variance {formatNumber(run.variance_trx)} TRx</p></button>)}</div> : <p className="mt-3 text-sm text-muted">No {section === "approved" ? "approved explanations" : "forecast runs available"} yet.</p>}</section></>}
   </div>
 }
 
@@ -229,7 +276,7 @@ function SummaryCard({brief, preview=false}: {brief: LeadershipBrief, preview?: 
       <span className={`${chip} bg-humanbg text-human`}>{preview ? "Leadership preview" : "Executive summary"}</span>
       {brief.review_status==="approved" ? <span className={`${chip} bg-okbg text-ok`}>Approved by the Commercial Analyst · {labelTime(brief.reviewed_at)}</span> : <span className={REVIEW_CHIP[brief.review_status][0]}>{REVIEW_CHIP[brief.review_status][1]}</span>}
       {brief.abstained && <span className={`${chip} bg-amberbg text-amber`}>Unresolved findings</span>}
-    </div><h2 className="mt-3 text-lg font-semibold">Weekly briefing · {labelTerritory(brief.territory_id)}</h2><p className="mt-1 text-sm text-muted">{labelWeek(brief.week_start)} · {brief.brand_id} · data version {brief.data_version ?? "unavailable"}</p></div>
+    </div><h2 className="mt-3 font-serif text-2xl font-medium">Weekly briefing · {labelTerritory(brief.territory_id)}</h2><p className="mt-1 text-sm text-muted">{labelWeek(brief.week_start)} · {brief.brand_id} · data version {brief.data_version ?? "unavailable"}</p></div>
     <div className="px-6 py-6"><pre className="whitespace-pre-wrap break-words font-sans text-[14px] leading-[1.85] text-ink">{brief.summary}</pre></div>
     <div className="border-t border-rule px-6 py-4 text-xs text-muted">Every figure comes from the approved analyst brief. Evidence and source queries stay with the Commercial Analyst.</div>
   </article>
@@ -296,7 +343,7 @@ function TriageReview({plan, busy, onApprove}: {plan: TriagePlan, busy: boolean,
       <p className="mt-1 text-sm text-muted">Code screened every territory and proposes the stories below, ranked by impact. Keep, drop or reorder them; investigation runs only on what you approve, in your order.</p>
       <details className="mt-4 rounded-xl bg-paper p-4 text-sm"><summary className="cursor-pointer font-medium">What stages 1 to 3 found (data health, restatements, KPIs)</summary><pre className="mt-3 whitespace-pre-wrap break-words font-sans text-[13px] leading-relaxed text-ink">{plan.context}</pre></details>
       {plan.engine==="agent" && plan.state==="TRIAGE_REVIEW" && <div className={`mt-4 rounded-xl p-4 text-sm ${plan.flagged?"bg-amberbg text-amber":"bg-agentbg text-agentdeep"}`}>
-        <p className="font-medium">{plan.flagged ? "The manager's plan is flagged for your review" : "The manager kept code's plan"}<span className="font-normal"> · agent on the owner's PC ({plan.model})</span></p>
+        <p className="font-medium">{plan.flagged ? "The manager's plan is flagged for your review" : "The manager kept code's plan"}<span className="font-normal"> · agent ({plan.model})</span></p>
         {plan.flags?.map((f,i)=><p key={i} className="mt-1">{f}</p>)}
         {plan.corrections?.map((f,i)=><p key={`c${i}`} className="mt-1 text-ink"><span className="font-medium">Rule applied by code:</span> {f}</p>)}
         {plan.manager_note && <p className="mt-1 text-ink">Manager's note: {plan.manager_note}</p>}
@@ -380,7 +427,7 @@ function AnalystBrief({result, onChange}: {result: BriefingResult, onChange: (r:
     </div>
     {mode==="leadership" ? (previewError ? <div role="alert" className="rounded-2xl bg-amberbg px-5 py-4 text-sm text-amber">{previewError}</div> : preview ? <SummaryCard brief={preview} preview/> : <p className="text-sm text-muted">Loading the leadership view…</p>) :
     <article className="overflow-hidden rounded-2xl bg-sheet shadow-sm ring-1 ring-rule">
-      <div className="border-b border-rule px-6 py-5"><div className="flex flex-wrap items-center gap-2"><span className={`${chip} bg-agentbg text-agentdeep`}>{result.engine==="agent" ? `Agent · ${result.system.split(":").slice(1).join(":") || "local model"} · experimental` : "Scripted baseline · DuckDB"}</span><span className={REVIEW_CHIP[result.review_status][0]}>{REVIEW_CHIP[result.review_status][1]}</span>{result.abstained && <span className={`${chip} bg-amberbg text-amber`}>Unresolved findings</span>}</div><h2 className="mt-3 text-lg font-semibold">Weekly briefing · {labelTerritory(result.territory_id)}</h2><p className="mt-1 text-sm text-muted">{labelWeek(result.week_start)} · {result.brand_id}</p></div>
+      <div className="border-b border-rule px-6 py-5"><div className="flex flex-wrap items-center gap-2"><span className={`${chip} bg-agentbg text-agentdeep`}>{result.engine==="agent" ? `Agent · ${result.system.split(":").slice(1).join(":") || "local model"} · experimental` : "Scripted baseline · DuckDB"}</span><span className={REVIEW_CHIP[result.review_status][0]}>{REVIEW_CHIP[result.review_status][1]}</span>{result.abstained && <span className={`${chip} bg-amberbg text-amber`}>Unresolved findings</span>}</div><h2 className="mt-3 font-serif text-2xl font-medium">Weekly briefing · {labelTerritory(result.territory_id)}</h2><p className="mt-1 text-sm text-muted">{labelWeek(result.week_start)} · {result.brand_id}</p></div>
       <div className="px-6 py-6"><div className="whitespace-pre-wrap break-words text-[14px] leading-[1.85] text-ink"><CitedText result={result} onOpen={setEvidenceId}/></div>
         <p className="mt-4 text-[11px] text-muted">Each underlined number is a claim: click it, or its source number, to open the query and record behind it.</p></div>
       <section className="flex flex-wrap items-center justify-between gap-2 border-t border-rule bg-paper/60 px-6 py-3">
@@ -408,7 +455,7 @@ function AnalystApp({me, role}: {me: Me, role: LaneRole}) {
   const [view,setView] = useState<"home" | "triage" | "result" | "approved">("home")
   const [requestScope,setRequestScope] = useState<{brand:string,territory:string,week:string} | null>(null)
   const [plan,setPlan] = useState<TriagePlan | null>(null)
-  // Agent engine (core-007 FR-028): jobs run on the owner's PC; the app only queues them.
+  // Agent engine (core-007 FR-028/FR-031): jobs run on teammate or cloud CPU hosts; the app only queues them.
   const [engine,setEngine] = useState<"scripted" | "agent">("scripted")
   const [ask,setAsk] = useState("")
   const [agent,setAgent] = useState<AgentStatus | null>(null)
@@ -420,7 +467,35 @@ function AnalystApp({me, role}: {me: Me, role: LaneRole}) {
     poll(); const t = setInterval(poll, 15000)
     return ()=>{ live=false; clearInterval(t) }
   },[])
-  const describeJob = (j: AgentJob) => setJobNote(j.status==="queued" ? (agent?.online ? "Queued for the next free agent host…" : agent?.cloud?.enabled && agent.cloud.seconds_left>0 ? `Starting the cloud CPU host (about a minute and a half). ${j.kind==="brief" ? `The brief then takes about ${agent.cloud.eta_minutes ?? 15} minutes on CPU.` : "The plan then takes under a minute."}` : "Waiting for an agent host: nobody is running one right now…") : j.status==="running" ? (j.kind==="triage" ? "The manager is reviewing code's plan on the agent host…" : "The agent team is investigating on the agent host (one to four minutes)…") : null)
+  const describeJob = (job: AgentJob) => {
+    if (job.status === "queued") {
+      if (agent?.online) {
+        setJobNote("Queued for the next available agent host…")
+      } else if (agent?.cloud?.enabled && agent.cloud.seconds_left > 0) {
+        setJobNote("Queued for the cloud CPU host. Startup can take about 90 seconds…")
+      } else {
+        setJobNote("Waiting for an agent host to become available…")
+      }
+      return
+    }
+
+    if (job.status === "running") {
+      if (job.host_kind === "cloud_cpu") {
+        const eta = agent?.cloud?.eta_minutes ?? 15
+        setJobNote(job.kind === "triage"
+          ? "The manager is reviewing the plan on the cloud CPU host…"
+          : `The agent team is investigating on the cloud CPU host. Allow about ${eta} minutes for a full brief…`)
+      } else {
+        const host = job.host_kind === "teammate" ? "a teammate’s host" : "the agent host"
+        setJobNote(job.kind === "triage"
+          ? `The manager is reviewing the plan on ${host}…`
+          : `The agent team is investigating on ${host}…`)
+      }
+      return
+    }
+
+    setJobNote(null)
+  }
 
   const refresh = async () => {
     setLoadingContext(true); setContextError(null)
@@ -480,9 +555,9 @@ function AnalystApp({me, role}: {me: Me, role: LaneRole}) {
     {key:"approved",label:"Approved briefings",icon:"evidence",active:view==="approved",onClick:()=>setView("approved")},
   ]
   return <Shell me={me} role={role} title="Brand performance" subtitle="Weekly briefing · analyst view · evidence-backed synthetic commercial analytics" nav={nav}>
-    {view==="home" ? <div className="mx-auto flex max-w-3xl flex-col px-5 pb-10 pt-[7vh] md:pt-[10vh]">
-      <div className="pa-rise flex flex-col items-center text-center"><BrandMark size="lg"/><h2 className="mt-6 text-[clamp(1.9rem,4vw,2.6rem)] font-semibold tracking-tight">What should we investigate?</h2><p className="mt-3 max-w-xl text-[15px] leading-relaxed text-muted">Generate a weekly brand-performance briefing from the governed DuckDB release, review its evidence, and approve it for the Brand Director.</p></div>
-      <div className="mt-9 rounded-3xl bg-white p-5 shadow-lg shadow-ink/5 ring-1 ring-rule sm:p-7">
+    {view==="home" ? <div className="workspace-content flex flex-col space-y-6 py-8 sm:py-10">
+      <div className="pa-rise flex flex-col items-center text-center"><BrandMark size="lg"/><h2 className="mt-6 font-serif text-[clamp(1.9rem,4vw,2.6rem)] font-medium tracking-tight">What should we investigate?</h2><p className="mt-3 max-w-xl text-[15px] leading-relaxed text-muted">Generate a weekly brand-performance briefing from the governed DuckDB release, review its evidence, and approve it for the Brand Director.</p></div>
+      <div className="rounded-3xl bg-sheet p-5 ring-1 ring-rule sm:p-7">
         {contextError && <div role="alert" className="mb-5 rounded-xl bg-amberbg p-4 text-sm text-amber"><strong>Backend unavailable.</strong> {contextError}<button className="mt-2 block underline" onClick={()=>void refresh()}>Retry connection</button></div>}
         {loadingContext && <p className="text-sm text-muted">Loading supported data context…</p>}
         <form onSubmit={submit} className="space-y-5">
@@ -510,12 +585,15 @@ function AnalystApp({me, role}: {me: Me, role: LaneRole}) {
           <button type="submit" disabled={!selectable} className="flex w-full items-center justify-center gap-2 rounded-xl bg-navy px-4 py-3.5 text-sm font-semibold text-white transition hover:bg-agentdeep disabled:cursor-not-allowed disabled:bg-rule disabled:text-muted"><Icon name="send"/>Generate weekly briefing</button>
         </form>
       </div>
-      <div className="mt-6 rounded-xl border border-rule bg-sheet/65 p-4 text-sm text-muted"><p className="font-medium text-ink">Implemented functionality</p><p className="mt-1 leading-relaxed">This is the deterministic Briefing baseline (the manager-off version of the agent). Code checks the data and screens every territory, then you review its triage plan: keep, drop or reorder the stories before they are investigated. You then review the brief; only briefings you approve reach the Brand Director, as an executive summary without evidence. Each brief shows how it was made, stage by stage. The agent team (manager, Data Forensics, Driver Investigator) runs locally and is not in this app yet; free-form questions, Forecast explanations and charts are not implemented here.</p></div>
-    </div> : view==="approved" ? <div className="mx-auto max-w-3xl space-y-5 px-5 py-7"><h2 className="text-lg font-semibold">Approved briefings</h2><p className="text-sm text-muted">What the Brand Director can open, on the current data release.</p><PublishedList onOpen={id=>void openApproved(id)}/></div>
-    : <div className="mx-auto max-w-3xl space-y-5 px-5 py-7">
+    </div> : view==="approved" ? <div className="workspace-content space-y-6 py-8 sm:py-10"><h2 className="text-lg font-semibold">Approved briefings</h2><p className="text-sm text-muted">What the Brand Director can open, on the current data release.</p><PublishedList onOpen={id=>void openApproved(id)}/></div>
+    : <div className="workspace-content space-y-6 py-8 sm:py-10">
       <button className="flex items-center gap-2 text-sm text-agentdeep hover:underline" onClick={()=>setView("home")}><Icon name="back"/>Change scope</button>
       {requestScope && <div className="flex justify-end"><div className="max-w-[90%] rounded-2xl rounded-br-md bg-navy px-5 py-3 text-sm leading-relaxed text-white">Generate the weekly briefing for {requestScope.brand}, {labelTerritory(requestScope.territory)}, week of {labelWeek(requestScope.week)}.</div></div>}
-      {pending && <div role="status" className="rounded-2xl bg-sheet px-5 py-4 text-sm text-muted ring-1 ring-rule">{jobNote ?? (view==="triage" ? "Checking the data and screening every territory (stages 1 to 3, code triage)…" : "Investigating the stories you approved (scripted checks against DuckDB)…")}</div>}
+      {pending && (
+        <div role="status" className="rounded-2xl bg-sheet px-5 py-4 text-sm text-muted ring-1 ring-rule">
+          {jobNote ?? (view === "triage" ? "Preparing the triage plan…" : "Preparing the briefing…")}
+        </div>
+      )}
       {runError && <div role="alert" className="rounded-2xl bg-amberbg px-5 py-4 text-sm text-amber"><strong>{view==="triage" ? "The triage plan could not be built." : "Briefing could not be generated."}</strong><p className="mt-2">{runError}</p><p className="mt-2">No mock result was substituted.</p>{view==="result" && plan && <button className="mt-2 underline" onClick={()=>{setRunError(null);setView("triage")}}>Back to the triage plan</button>}</div>}
       {view==="triage" && plan && !pending && <TriageReview plan={plan} busy={pending} onApprove={d=>void approvePlan(d)}/>}
       {view==="result" && result && <AnalystBrief result={result} onChange={setResult}/>}
@@ -533,7 +611,7 @@ function LeaderApp({me, role}: {me: Me, role: LaneRole}) {
   }
   const nav: NavItem[] = [{key:"approved",label:"Approved briefings",icon:"briefings",active:true,onClick:()=>{setBrief(null);setError(null)}}]
   return <Shell me={me} role={role} title="Brand performance" subtitle="Weekly briefing · leadership view · executive summaries approved by the Commercial Analyst" nav={nav}>
-    <div className="mx-auto max-w-3xl space-y-5 px-5 py-7">
+    <div className="workspace-content space-y-6 py-8 sm:py-10">
       {brief || loading || error ? <>
         <button className="flex items-center gap-2 text-sm text-agentdeep hover:underline" onClick={()=>{setBrief(null);setError(null)}}><Icon name="back"/>All approved briefings</button>
         {loading && <p role="status" className="text-sm text-muted">Opening the briefing…</p>}
