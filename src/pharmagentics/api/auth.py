@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 DEV_USERS = {
     "dev-analyst": ("Dev Commercial Analyst", ["briefing-analyst"]),
     "dev-director": ("Dev Brand Director", ["briefing-director"]),
-    "dev-forecast-analyst": ("Dev Commercial Analytics Analyst", ["forecast-analyst"]),
+    "dev-forecast-analyst": ("Dev Commercial Analyst", ["forecast-analyst"]),
     "dev-forecast-manager": ("Dev Brand Manager", ["forecast-manager"]),
     "dev-norole": ("Dev user with no role", []),
 }

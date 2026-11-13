@@ -2,7 +2,7 @@
 
 Who may do what (the personas do not assume the Brand Manager operates the agent):
 
-- The Commercial Analytics Analyst (CA) runs the agent, reads the full run (seven stages, report, evidence), may
+- The Commercial Analyst (CA) runs the agent, reads the full run (seven stages, report, evidence), may
   preview the leadership view, and submits a run for approval.
 - The Brand Manager (BM) cannot run or submit. BM reads the leadership view (an executive summary with no evidence
   or trace) of submitted runs and approves, rejects or returns them, with a note for a rejection or a return.
@@ -63,7 +63,7 @@ def status(response: Response, p: rbac.Principal = Depends(rbac.require_user)) -
         "actions": list(role.actions) if role else [],
         "planned": {
             "analyst": "Forecast against actual by territory and week, the drivers of the gap with evidence, "
-                       "and what to revise (Commercial Analytics Analyst, CA).",
+                       "and what to revise (Commercial Analyst, CA).",
             "leadership": "An executive summary of the forecast gap and dynamic projections, with no evidence "
                           "or trace (Brand Manager, BM).",
         },

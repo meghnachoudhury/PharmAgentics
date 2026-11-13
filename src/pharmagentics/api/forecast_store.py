@@ -1,7 +1,7 @@
 """Forecast runs and their review state as small JSON documents (forecast_runs/<id>.json), on the same two
 backends as the Briefing store (a local folder, or the Cloud Storage bucket on Cloud Run).
 
-A run starts as ``not_submitted``. The Commercial Analytics Analyst submits it (``pending_review``); the Brand
+A run starts as ``not_submitted``. The Commercial Analyst submits it (``pending_review``); the Brand
 Manager approves, rejects or returns it. Nothing is ever approved by the system. Each step is kept in
 ``history`` with a pseudonym, never a name, so a later evaluation log can read it.
 """

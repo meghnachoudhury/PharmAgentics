@@ -20,7 +20,7 @@
     "realm": [
       {"name": "briefing-analyst", "description": "P1 Commercial Analyst: analyst view, runs and approves briefings (core-007)"},
       {"name": "briefing-director", "description": "P3 Brand Director: leadership view of approved briefings only (core-007)"},
-      {"name": "forecast-analyst", "description": "CA Commercial Analytics Analyst: reserved; Alvin and Sienna confirm (core-007)"},
+      {"name": "forecast-analyst", "description": "CA Commercial Analyst: reserved; Alvin and Sienna confirm (core-007)"},
       {"name": "forecast-manager", "description": "BM Brand Manager: reserved; Alvin and Sienna confirm (core-007)"}
     ]
   },
@@ -91,7 +91,7 @@
       "username": "uat-forecast-analyst",
       "enabled": true,
       "firstName": "UAT",
-      "lastName": "Commercial Analytics Analyst",
+      "lastName": "Commercial Analyst",
       "email": "uat-forecast-analyst@pharmagentics.test",
       "emailVerified": true,
       "credentials": [{"type": "password", "value": "${UAT_PASSWORD_FORECAST_ANALYST}", "temporary": false}],

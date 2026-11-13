@@ -236,7 +236,7 @@ def _run_forecast_pipeline(payload: dict[str, Any], mode: str) -> dict[str, Any]
         {
             **STAGE_META[6],
             "status": "PENDING",
-            "summary": "Needs Commercial Analytics Analyst review",
+            "summary": "Needs Commercial Analyst review",
         },
     ]
     return {

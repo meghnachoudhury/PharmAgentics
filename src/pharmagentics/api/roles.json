@@ -19,7 +19,7 @@
     "forecast-analyst": {
       "lane": "forecast",
       "persona": "CA",
-      "label": "Commercial Analytics Analyst",
+      "label": "Commercial Analyst",
       "views": ["analyst", "leadership"],
       "actions": ["run", "read"]
     },
