@@ -282,8 +282,8 @@ def test_citations_reach_the_analyst_only():
     assert "citations" not in director.get(f"/api/briefing/{brief['brief_id']}").json()
 
 
-def test_forecast_scaffold_reports_role_and_not_live():
+def test_forecast_status_reports_the_enabled_role():
     assert TestClient(app).get("/api/forecast/status").status_code == 401
     body = signed_in("dev-forecast-manager").get("/api/forecast/status").json()
-    assert body["available"] is False and body["persona"] == "BM" and body["views"] == ["leadership"]
+    assert body["available"] is True and body["persona"] == "BM" and body["views"] == ["leadership"]
     assert signed_in("dev-analyst").get("/api/forecast/status").json()["role"] is None
