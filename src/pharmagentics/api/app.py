@@ -27,7 +27,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
-from . import auth, cloud, forecast, jobs, rbac, service, store, views
+from . import auth, chat, cloud, forecast, jobs, rbac, service, store, views
 from .schemas import (AgentJobRequest, BriefingQuery, InsightMark, ReleaseContext, ReviewRequest, WorkerPoll,
                       WorkerResult)
 
@@ -68,6 +68,7 @@ app.add_middleware(
 )
 app.include_router(auth.router)
 app.include_router(forecast.router)  # Forecast lane scaffold (Alvin and Sienna)
+app.include_router(chat.router)
 
 Briefing = Depends(rbac.require_briefing)
 

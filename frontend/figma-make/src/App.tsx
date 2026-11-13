@@ -1,5 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react"
 import { BrandMark, Icon } from "./agent/primitives"
+import {ChatWorkspace} from "./agent/ChatWorkspace"
+import type {ChatLane} from "./agent/chatApi"
 import {
   getContext, getBriefing, getMe, getTriage, listPublished, markInsight, openBrief, reviewBrief, NotSignedIn,
   getAgentStatus, submitAgentJob, waitAgentJob, agentPlan, agentBrief,
@@ -225,20 +227,23 @@ function Shell({me, title, subtitle, nav, children, startInForecast=false}: {me:
   const [mobileNav,setMobileNav] = useState(false)
   const [forecast,setForecast] = useState(startInForecast)
   const [forecastSection,setForecastSection] = useState<"workbench" | "approved">("workbench")
+  const [chatLane,setChatLane] = useState<ChatLane | null>(null)
   const row = (active: boolean) => `flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-medium ${active?"bg-paper ring-1 ring-rule":"hover:bg-paper/70"}`
   const side=<aside className="flex h-full w-full flex-col border-r border-rule bg-sheet/80">
     <div className="flex items-center gap-3 px-5 py-6"><BrandMark/><div className="text-[17px] font-semibold tracking-tight">PharmAgentics</div></div>
-    <nav className="space-y-5 px-3" aria-label="Workspaces">
+    <nav className="min-h-0 flex-1 space-y-5 overflow-y-auto px-3 pb-4" aria-label="Workspaces">
       <div><p className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted">Brand performance</p>
-        {nav.length ? <div className="space-y-1">{nav.map(n=><button key={n.key} aria-current={!forecast && n.active} className={row(!forecast && n.active)} onClick={()=>{setForecast(false);n.onClick();setMobileNav(false)}}><Icon name={n.icon} className="text-agent"/>{n.label}</button>)}</div>
+        {nav.length ? <div className="space-y-1">{nav.map(n=><button key={n.key} aria-current={!chatLane && !forecast && n.active} className={row(!chatLane && !forecast && n.active)} onClick={()=>{setChatLane(null);setForecast(false);n.onClick();setMobileNav(false)}}><Icon name={n.icon} className="h-4 w-4 shrink-0 text-agent"/>{n.label}</button>)}</div>
         : <p className="px-3 py-2 text-xs text-muted">No access</p>}
+        {me.lanes.briefing?.available && <button aria-label="Ask about brand performance" aria-current={chatLane==='briefing'} className={row(chatLane==='briefing')} onClick={()=>{setChatLane('briefing');setMobileNav(false)}}><Icon name="briefings" className="h-4 w-4 text-agent"/>Ask PharmAgentics</button>}
       </div>
       {me.lanes.forecast?.available && <div><p className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-widest text-muted">Forecast explanation</p>
-        <div className="space-y-1"><button aria-current={forecast && forecastSection==="workbench"} className={row(forecast && forecastSection==="workbench")} onClick={()=>{setForecast(true);setForecastSection("workbench");setMobileNav(false)}}><Icon name="layers" className="text-agent"/>Forecast explanation</button>
-        <button aria-current={forecast && forecastSection==="approved"} className={row(forecast && forecastSection==="approved")} onClick={()=>{setForecast(true);setForecastSection("approved");setMobileNav(false)}}><Icon name="evidence" className="text-agent"/>Approved explanations</button></div>
+        <div className="space-y-1"><button aria-current={!chatLane && forecast && forecastSection==="workbench"} className={row(!chatLane && forecast && forecastSection==="workbench")} onClick={()=>{setChatLane(null);setForecast(true);setForecastSection("workbench");setMobileNav(false)}}><Icon name="layers" className="h-4 w-4 shrink-0 text-agent"/>Forecast explanation</button>
+        <button aria-current={!chatLane && forecast && forecastSection==="approved"} className={row(!chatLane && forecast && forecastSection==="approved")} onClick={()=>{setChatLane(null);setForecast(true);setForecastSection("approved");setMobileNav(false)}}><Icon name="evidence" className="h-4 w-4 shrink-0 text-agent"/>Approved explanations</button>
+        <button aria-label="Ask about forecast" aria-current={chatLane==='forecast'} className={row(chatLane==='forecast')} onClick={()=>{setChatLane('forecast');setMobileNav(false)}}><Icon name="briefings" className="h-4 w-4 text-agent"/>Ask PharmAgentics</button></div>
       </div>}
     </nav>
-    <div className="mt-auto border-t border-rule px-5 py-4 text-[11px] leading-relaxed text-muted">
+    <div className="mt-auto shrink-0 border-t border-rule px-5 py-4 text-[11px] leading-relaxed text-muted">
       {me.auth_mode==="dev" && <p className="mb-2 rounded bg-amberbg px-2 py-1 text-amber">Development sign-in</p>}
       <p>Synthetic data only. A leader sees a brief only after the Commercial Analyst approves it.</p>
     </div>
@@ -248,10 +253,13 @@ function Shell({me, title, subtitle, nav, children, startInForecast=false}: {me:
     {mobileNav && <div className="fixed inset-0 z-30 flex md:hidden"><button aria-label="Close navigation" className="absolute inset-0 bg-ink/30" onClick={()=>setMobileNav(false)}/><div className="relative w-[280px] max-w-[85vw] bg-paper">{side}</div></div>}
     <main className="flex min-w-0 flex-1 flex-col">
       <header className="flex items-center justify-between gap-3 border-b border-rule bg-sheet/80 px-5 py-2.5">
-        <div className="flex min-w-0 items-center gap-3"><button className="rounded-lg p-1.5 md:hidden" aria-label="Open navigation" onClick={()=>setMobileNav(true)}><Icon name="menu"/></button><div className="min-w-0"><h1 className="truncate text-sm font-semibold">{forecast ? "Forecast explanation" : title}</h1><p className="truncate text-[11px] text-muted">{forecast ? "Forecast lane" : subtitle}</p></div></div>
+        <div className="flex min-w-0 items-center gap-3"><button className="rounded-lg p-1.5 md:hidden" aria-label="Open navigation" onClick={()=>setMobileNav(true)}><Icon name="menu"/></button><div className="min-w-0"><h1 className="truncate text-sm font-semibold">{chatLane ? "Ask PharmAgentics" : forecast ? "Forecast explanation" : title}</h1><p className="truncate text-[11px] text-muted">{chatLane ? (chatLane === "briefing" ? "Brand performance questions" : "Forecast questions") : forecast ? "Forecast lane" : subtitle}</p></div></div>
         <div className="flex shrink-0 items-center gap-3"><span className={`${chip} hidden rounded-full bg-humanbg text-human sm:inline`}>Synthetic data</span><AccountMenu me={me}/></div>
       </header>
-      <section className="min-h-0 flex-1 overflow-y-auto"><div hidden={forecast}>{children}</div>{forecast && <ForecastWorkspace key={forecastSection} me={me} section={forecastSection}/>}</section>
+      <section className="min-h-0 flex-1 overflow-y-auto"><div hidden={forecast || !!chatLane}>{children}</div><div hidden={!!chatLane}>{forecast && <ForecastWorkspace key={forecastSection} me={me} section={forecastSection}/>}</div>
+        {me.lanes.briefing?.available && <div hidden={chatLane!=='briefing'}><ChatWorkspace lane="briefing" active={chatLane==='briefing'}/></div>}
+        {me.lanes.forecast?.available && <div hidden={chatLane!=='forecast'}><ChatWorkspace lane="forecast" active={chatLane==='forecast'}/></div>}
+      </section>
     </main>
   </div>
 }

@@ -1,5 +1,7 @@
 # PharmAgentics: backend feature audit and future enhancements
 
+**2026-11-13 update:** Ask PharmAgentics now adds source-backed, role-aware conversational Q&A alongside the existing workflows. `/api/chat` supports governed live metrics for analysts and accessible saved-report questions for all roles. It retains scope and intent for follow-ups, provides analyst sources, withholds bad cuts and refuses unsupported questions. It does not provide unrestricted LLM dialogue or bypass report review. The original audit below is historical; its removed mock chat was replaced by a weekly-brief form during the earlier backend integration.
+
 **Audit date:** 2026-11-06. **Repository:** `mwc2150/PharmAgentics` `main` at `ede7189af2` (checked before this patch).
 
 ## What is actually available

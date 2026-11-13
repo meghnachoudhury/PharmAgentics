@@ -1,3 +1,5 @@
 # PharmAgentics Figma Make — implemented-only UI
 
 This frontend must ONLY expose real capabilities returned by the PharmAgentics Briefing API. Do not load mockService.ts, fixtures.ts, or sample cases. Do not fabricate prescriptions, charts, tool traces, review approvals, or investigations. No silent fallback to demo values if the API is unreachable. Evidence and numbers come exclusively from the backend response. The engine is a deterministic scripted baseline, not a free-form LLM chatbot. Features without backend endpoints are documented in `docs/FUTURE_ENHANCEMENTS.md` and do not appear as active navigation/actions.
+
+The role-aware **Ask PharmAgentics** workspace is backed by `/api/chat/context` and `/api/chat/query` (core-008). It provides deterministic source-backed questions and scoped follow-ups, not unrestricted model dialogue. Analysts can query governed metrics; leaders can ask about accessible saved reports. Preserve all existing investigation and review workspaces alongside chat.
