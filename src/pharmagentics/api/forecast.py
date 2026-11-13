@@ -95,7 +95,8 @@ async def context(response: Response, who=Forecast) -> dict:
         release = await run_in_threadpool(service.release_context)
     except service.MissingDatabase as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
-    return {"territory_ids": release.territory_ids, "available_weeks": [d.isoformat() for d in release.available_weeks],
+    # The Briefing release lists the eight territories; Forecast also runs the national total, first.
+    return {"territory_ids": ["NATIONAL", *release.territory_ids], "available_weeks": [d.isoformat() for d in release.available_weeks],
             "latest_week": release.latest_week.isoformat(), "metric": "TRx", "brand": "BXA Cardiovela"}
 
 
