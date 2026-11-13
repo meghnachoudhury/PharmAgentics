@@ -21,14 +21,14 @@
       "persona": "CA",
       "label": "Commercial Analytics Analyst",
       "views": ["analyst", "leadership"],
-      "actions": []
+      "actions": ["run", "read"]
     },
     "forecast-manager": {
       "lane": "forecast",
       "persona": "BM",
       "label": "Brand Manager",
       "views": ["leadership"],
-      "actions": []
+      "actions": ["read", "review"]
     }
   },
   "lanes": {

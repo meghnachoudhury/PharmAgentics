@@ -83,6 +83,14 @@ def require_briefing(request: Request) -> tuple[Principal, Role]:
     return p, role
 
 
+def require_forecast(request: Request) -> tuple[Principal, Role]:
+    p = require_user(request)
+    role = p.role("forecast")
+    if role is None:
+        raise HTTPException(status_code=403, detail="Your account has no Forecast role.")
+    return p, role
+
+
 def allow(role: Role, action: str) -> None:
     if action not in role.actions:
         raise HTTPException(status_code=403, detail=f"The {role.label} role cannot {action}.")

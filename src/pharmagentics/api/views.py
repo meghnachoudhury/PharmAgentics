@@ -55,3 +55,37 @@ def analyst(record: dict) -> dict:
         flow[-1]["states"] = ["IN_REVIEW"] if record["review_status"] == "pending" else ["IN_REVIEW", REVIEW_STATE[record["review_status"]]]
         out["flow"] = flow
     return out
+
+
+# Forecast leadership view: an executive summary. No stage trace, evidence, tool calls or check detail.
+FORECAST_LEADERSHIP_REPORT = ("headline", "brand", "territory_id", "week", "week_ending", "window_weeks", "forecast_trx",
+                              "actual_trx", "variance_trx", "variance_pct", "residual_trx", "caveats", "abstained")
+
+
+def forecast_leadership(run: dict) -> dict:
+    """Allow-list, so a new field on the analyst run never reaches a leader by accident."""
+    report = run["report"]
+    out = {k: run.get(k) for k in ("run_id", "lane", "workflow_status", "dataset_release")}
+    out["report"] = {k: report.get(k) for k in FORECAST_LEADERSHIP_REPORT}
+    out["report"]["drivers"] = [{k: d.get(k) for k in ("driver", "impact_trx", "confidence")} for d in report["drivers"]]
+    out["report"]["what_to_check"] = [{k: c.get(k) for k in ("question", "why", "owner")} for c in report["what_to_check"]]
+    out["report"]["verification"] = {"verdict": (report.get("verification") or {}).get("verdict")}
+    return out
+
+
+def forecast_record(record: dict, view: str) -> dict:
+    """A stored Forecast run for one view, with its review state. The analyst also sees who did what (pseudonyms)."""
+    out = {"view": view, "forecast_run_id": record["run_id"], "review_status": record["review_status"],
+           "reviewed_at": record["reviewed_at"], "review_note": record["review_note"]}
+    if view == "leadership":
+        return {**out, **forecast_leadership(record["result"])}
+    return {**out, "submitted_at": record["submitted_at"], "history": record["history"], **record["result"]}
+
+
+def forecast_summary(record: dict) -> dict:
+    """One row of a list: enough to pick a run, no evidence."""
+    report, request = record["result"]["report"], record["request"]
+    return {"forecast_run_id": record["run_id"], "territory_id": request["territory_id"], "week_start": request["week_start"],
+            "window_weeks": request["window_weeks"], "variance_trx": report["variance_trx"], "abstained": report["abstained"],
+            "headline": report["headline"], "review_status": record["review_status"], "created_at": record["created_at"],
+            "reviewed_at": record["reviewed_at"]}

@@ -129,3 +129,26 @@ class WorkerResult(BaseModel):
     ok: bool
     result: dict[str, Any] | None = None
     error: str | None = Field(default=None, max_length=2000)
+
+
+class ForecastRunRequest(BaseModel):
+    """One Forecast explanation request. The engine and model are fixed by the server, never by the caller."""
+    model_config = ConfigDict(extra="forbid")
+
+    territory_id: Territory = "NATIONAL"
+    week_start: date
+    window_weeks: int = Field(default=1, ge=1, le=52)
+    view: Literal["analyst", "leadership"] | None = None
+
+
+class ForecastReview(BaseModel):
+    """The Brand Manager's decision on a submitted Forecast run. Rejecting or returning needs a note."""
+    model_config = ConfigDict(extra="forbid")
+
+    decision: Literal["approved", "rejected", "returned"]
+    note: str | None = Field(default=None, max_length=500)
+
+    @field_validator("note")
+    @classmethod
+    def strip(cls, value: str | None) -> str | None:
+        return value.strip() or None if value else None
