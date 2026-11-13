@@ -9,6 +9,7 @@
 !sql/
 !data/agent_visible/
 !agents/brand-briefing/
+!agents/forecast-explanation/feagent/
 !deploy/agent/entrypoint.sh
 !frontend/figma-make/
 **/__pycache__

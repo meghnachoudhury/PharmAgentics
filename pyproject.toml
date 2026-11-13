@@ -56,8 +56,8 @@ constraint-dependencies = [
 ]
 
 [tool.pytest.ini_options]
-testpaths = ["tests", "eval/tests"]
-pythonpath = ["."]
+testpaths = ["tests", "eval/tests", "agents/forecast-explanation/tests"]
+pythonpath = [".", "agents/forecast-explanation"]
 
 [build-system]
 requires = ["uv_build>=0.12.15,<0.13"]
