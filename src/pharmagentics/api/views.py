@@ -75,11 +75,15 @@ def forecast_leadership(run: dict) -> dict:
 
 def forecast_record(record: dict, view: str) -> dict:
     """A stored Forecast run for one view, with its review state. The analyst also sees who did what (pseudonyms)."""
+    narrative = record.get("narrative")
     out = {"view": view, "forecast_run_id": record["run_id"], "review_status": record["review_status"],
-           "reviewed_at": record["reviewed_at"], "review_note": record["review_note"]}
-    if view == "leadership":
-        return {**out, **forecast_leadership(record["result"])}
-    return {**out, "submitted_at": record["submitted_at"], "history": record["history"], **record["result"]}
+           "reviewed_at": record["reviewed_at"], "review_note": record["review_note"],
+           "report_model": record.get("report_model", "none"), "writer_status": record.get("writer_status", "skipped")}
+    if view == "leadership":  # the writer's notes for the analyst never reach a leader
+        leadership_narrative = {k: v for k, v in narrative.items() if k != "analyst_notes"} if narrative else None
+        return {**out, "narrative": leadership_narrative, **forecast_leadership(record["result"])}
+    return {**out, "narrative": narrative, "writer_attempts": record.get("writer_attempts", []),
+            "submitted_at": record["submitted_at"], "history": record["history"], **record["result"]}
 
 
 def forecast_summary(record: dict) -> dict:

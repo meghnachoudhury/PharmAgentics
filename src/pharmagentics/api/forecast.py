@@ -48,6 +48,24 @@ def _pipeline():
     return pipeline
 
 
+def _write(report: dict) -> dict:
+    """The writer for a verified report. Needs the engine on the path; a test replaces this function."""
+    _pipeline()
+    from feagent import writer
+
+    return writer.write_report(report)
+
+
+def _writer_info() -> dict:
+    try:
+        _pipeline()
+        from feagent import writer
+
+        return writer.describe()
+    except HTTPException:
+        return {"enabled": False, "primary": None, "fallback": None}
+
+
 def _no_store(response: Response) -> None:
     response.headers["Cache-Control"] = "no-store"
 
@@ -59,7 +77,7 @@ def status(response: Response, p: rbac.Principal = Depends(rbac.require_user)) -
     return {
         "lane": "forecast", "available": rbac.lane_available("forecast"), "engine": engine_mode(),
         "role": role.name if role else None, "persona": role.persona if role else None,
-        "label": role.label if role else None, "views": list(role.views) if role else [],
+        "label": role.label if role else None, "views": list(role.views) if role else [], "writer": _writer_info(),
         "actions": list(role.actions) if role else [],
         "planned": {
             "analyst": "Forecast against actual by territory and week, the drivers of the gap with evidence, "
@@ -136,7 +154,16 @@ async def run(payload: ForecastRunRequest, response: Response, who=Forecast) -> 
     except Exception:
         log.exception("forecast run failed")
         raise HTTPException(status_code=500, detail="The Forecast run failed.") from None
-    record = forecast_store.save(request, result, by=rbac.pseudonym(p.sub))
+    writer = None
+    if forecast_store.needs_writer(request, result):
+        # After stage 6: prose for the verified report. It never changes the numbers or fails the run.
+        try:
+            writer = await run_in_threadpool(_write, result["report"])
+        except Exception:  # noqa: BLE001 - whatever goes wrong with the prose, the scripted report stands
+            log.exception("report writer failed")
+            writer = {"narrative": None, "report_model": "none", "writer_status": "fallback_stub",
+                      "writer_attempts": [{"model": "none", "outcome": "error"}]}
+    record = forecast_store.save(request, result, by=rbac.pseudonym(p.sub), writer=writer)
     store.record_event("forecast_run", **_who(p, role), forecast_run_id=record["run_id"], view=view)
     return views.forecast_record(record, view)
 

@@ -51,14 +51,31 @@ def _put(record: dict) -> dict:
     return record
 
 
-def save(request: dict, result: dict, by: str) -> dict:
+def needs_writer(request: dict, result: dict) -> bool:
+    """Whether the report writer should run for this answer. A rerun of an answer that already has prose, or that
+    was correctly left without (an attribution paused), spends nothing; one that fell back is tried again."""
+    existing = get(run_id(request, result))
+    if existing is None or not _same_answer(existing["result"], result):
+        return True
+    outcomes = [a.get("outcome") for a in existing.get("writer_attempts") or []]
+    return existing.get("writer_status") in (None, "fallback_stub") or outcomes == ["disabled"]
+
+
+def save(request: dict, result: dict, by: str, writer: dict | None = None) -> dict:
     rid = run_id(request, result)
     existing = get(rid)
     if existing and _same_answer(existing["result"], result):
+        if writer is not None:  # the answer is unchanged; keep its review state and refresh the prose
+            existing.update(narrative=writer["narrative"], report_model=writer["report_model"],
+                            writer_status=writer["writer_status"], writer_attempts=writer["writer_attempts"])
+            return _put(existing)
         return existing
+    writer = writer or {"narrative": None, "report_model": "none", "writer_status": "skipped", "writer_attempts": []}
     record = {"run_id": rid, "created_at": now(), "created_by": by, "request": request, "result": result,
               "review_status": NOT_SUBMITTED, "submitted_by": None, "submitted_at": None,
-              "reviewed_by": None, "reviewed_at": None, "review_decision": None, "review_note": None, "history": []}
+              "reviewed_by": None, "reviewed_at": None, "review_decision": None, "review_note": None, "history": [],
+              "narrative": writer["narrative"], "report_model": writer["report_model"],
+              "writer_status": writer["writer_status"], "writer_attempts": writer["writer_attempts"]}
     return _put(record)
 
 

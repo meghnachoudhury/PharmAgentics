@@ -20,6 +20,7 @@ def _isolated_state(monkeypatch, tmp_path):
     monkeypatch.setenv("PHARMAGENTICS_STATE_DIR", str(tmp_path))
     monkeypatch.delenv("PHARMAGENTICS_STATE_BUCKET", raising=False)
     monkeypatch.delenv("FEAGENT_MODE", raising=False)
+    monkeypatch.setenv("FEAGENT_WRITER", "off")  # no model call in these tests; the writer has its own tests
     CLIENT.cookies.clear()
 
 

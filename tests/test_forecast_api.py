@@ -21,6 +21,7 @@ def _dev_auth(monkeypatch, tmp_path):
     monkeypatch.setenv("PHARMAGENTICS_AUTH", "dev")
     monkeypatch.setenv("PHARMAGENTICS_STATE_DIR", str(tmp_path))
     monkeypatch.delenv("FEAGENT_MODE", raising=False)
+    monkeypatch.setenv("FEAGENT_WRITER", "off")  # no model call in these tests; the writer has its own tests
     CLIENT.cookies.clear()
 
 

@@ -36,6 +36,20 @@ The rule it keeps: **V = A − F = Σc + r.** The miss V is the sum of the drive
 
 Scope matches the request (week, territory, window); V equals A − F; drivers plus residual equal V; a provisional week is never attributed; every driver cites a real tool result for the right window with a matching number (within 0.5 TRx); confidence is not above its cap. A large residual (over half the miss), a driver against the direction of the miss, or disagreeing estimators raise warnings. Any failed check fails stage 6. The verdict is `PASS`, `WARN` or `FAIL` and shows as stage status `COMPLETE`, `FLAG` or `FAIL`.
 
+### The report writer
+
+Investigation is always scripted: no model chooses tools, and the numbers never come from a model. After stage 6, a **writer** turns the verified report into plain-language prose for the Commercial Analyst (full) and the Brand Manager (an executive summary with no evidence): the miss, the residual and the confidence in words, and what to check next with an owner. It may not add a TRx figure, a driver or a commercial action (price, targeting, budget, a change to the forecast).
+
+| Order | Model | When |
+| :- | :- | :- |
+| 1 | **GPT Terra** | The server holds the key and makes the call. The caller cannot choose the model |
+| 2 | **Qwen** through Ollama (`qwen2.5:7b`) | Terra has no key, times out, or returns an error or unusable text |
+| 3 | The scripted report alone | Both fail: the run still succeeds, `writer_status` is `fallback_stub` and `report_model` is `none` |
+
+Each piece of prose is checked in code before it is kept. It must be the expected JSON. Every number in it must be one the verified report already holds (a figure of ten or more may be rounded to the nearest whole number; a smaller one must be as given). It may name only drivers the report names, assign only owners the report names (or Commercial Analyst, Brand Manager), and recommend no commercial action. Prose that breaks a rule is dropped and the next model is tried; the scripted numbers are never changed. A paused attribution calls no model.
+
+The prose is stored with the run, so opening or re-running the same request spends nothing; a run that fell back is tried again on a re-run. `POST /api/forecast/runs` and `GET .../runs/{id}` return `narrative`, `report_model` and `writer_status`; the analyst view also returns `writer_attempts` (one short outcome per model tried) and the `analyst_notes` inside the narrative. The UI does not show the narrative yet; the report header says "Report coming soon".
+
 ## API
 
 Roles come from `src/pharmagentics/api/roles.json`. The server decides the view from the signed-in role.
@@ -85,9 +99,14 @@ Bad input is `422`; an unknown week or a window past the data is `400` with a me
 | :- | :- | :- |
 | `FEAGENT_MODE` | `stub` | The engine for every request. `stub`: the scripted playbook, no language model. `ollama`: a local model through Ollama. `auto`: a local model if one is running, else stub. Anything else means `stub` |
 | `OLLAMA_HOST`, `OLLAMA_MODEL` | `http://localhost:11434`, `gpt-oss:20b` | Used only when the mode is `ollama` or `auto` |
+| `FEAGENT_WRITER` | `on` | `off` turns the writer off: runs keep the scripted report and `writer_status` is `skipped` |
+| `OPENAI_API_KEY` | none | The GPT Terra key, set on the server only. Without it the writer goes straight to Qwen |
+| `OPENAI_MODEL` | `gpt-6.1-terra` | The GPT Terra model id. Confirm it on the account |
+| `OLLAMA_WRITER_MODEL` | `qwen2.5:7b` | The local writer. Separate from `OLLAMA_MODEL`, which is the investigator's in `ollama` and `auto` mode |
+| `FEAGENT_WRITER_TERRA_TIMEOUT_SEC`, `FEAGENT_WRITER_LOCAL_TIMEOUT_SEC` | `25`, `45` | Per call. A new run can take up to their sum when both models are down |
 | `PHARMAGENTICS_DATA_DIR` | the repository's `data/agent_visible/` | Where the data release is read from |
 
-**Model: GPT Terra**, fixed for the shared deployment. The model and its credentials are set on the server, outside this repository, and a caller cannot pick or change them. The code in this repository runs the stub (no language model) or a local model. A provisional actual is stopped at the gate before any model is called, and a model's report is verified by stage 6 like any other, so an invented number fails.
+**Investigation:** scripted (`stub`) for every request; `ollama` and `auto` exist for local trials only. **Report writer:** GPT Terra first, then local Qwen, then the scripted report. The key lives on the server, never in this repository or in a request. A provisional actual is stopped at the gate before any model is called, and a model's prose is checked as described above.
 
 ## Run and test locally
 
