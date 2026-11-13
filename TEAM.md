@@ -8,8 +8,8 @@ How to use, host, run and deploy the PharmAgentics web app. For the design behin
 
 | Sign-in account | Role | What it sees |
 | :- | :- | :- |
-| `uat-analyst` | Commercial Analyst (P1) | Runs briefs, reviews the triage plan, sees every number's source, approves or rejects |
-| `uat-director` | Brand Director (P3) | Executive summaries of approved briefs only; no evidence |
+| `uat-briefing-analyst` | Commercial Analyst (P1) | Runs briefs, reviews the triage plan, sees every number's source, approves or rejects |
+| `uat-briefing-director` | Brand Director (P3) | Executive summaries of approved briefs only; no evidence |
 | `uat-forecast-analyst` | Commercial Analytics Analyst (CA) | Forecast section (coming soon) |
 | `uat-forecast-manager` | Brand Manager (BM) | Forecast section (coming soon) |
 | `mentor-analyst` | Commercial Analyst (P1) and Commercial Analytics Analyst (CA) | For the mentor, with edit rights: runs briefs, reviews the triage plan, approves or rejects, sees every number's source. Also previews the leadership view |
@@ -36,12 +36,12 @@ After that, every command in this guide works with `--account <your Google accou
 
 ## Use the app
 
-1. Sign in as `uat-analyst`, choose a territory and a week, pick an engine, and generate.
+1. Sign in as `uat-briefing-analyst`, choose a territory and a week, pick an engine, and generate.
    - **Scripted:** instant. The fixed order of checks runs with the manager off.
    - **Agent team:** the manager, Data Forensics and the Driver Investigator run on a teammate's GPU machine if one is hosting (see below), or else on the cloud CPU host, which starts by itself. Experimental; you can type your own question.
 2. **Triage review.** Code proposes the stories to investigate. On the agent engine, the manager's changes are shown and flagged. Keep, drop or reorder the stories, then approve.
 3. **The brief.** Every underlined number is a claim: click it to see the query and record behind it. "How this brief was made" shows each stage and who did it: code, an agent or a person.
-4. Approve or reject the brief. Only approved briefs reach `uat-director`.
+4. Approve or reject the brief. Only approved briefs reach `uat-briefing-director`.
 
 ## Who runs the agent team
 

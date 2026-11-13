@@ -22,7 +22,7 @@ from pathlib import Path
 from fastapi import APIRouter, Depends, HTTPException, Response
 from fastapi.concurrency import run_in_threadpool
 
-from . import forecast_store, rbac, store, views
+from . import forecast_store, rbac, service, store, views
 from .schemas import ForecastReview, ForecastRunRequest
 
 log = logging.getLogger("pharmagentics.forecast")
@@ -84,6 +84,19 @@ def cases(response: Response, who=Forecast) -> dict:
                         "window_weeks": req.get("window_weeks", 1)},
         })
     return {"lane": "forecast", "cases": out}
+
+
+@router.get("/context")
+async def context(response: Response, who=Forecast) -> dict:
+    """The governed scope choices for a manual Forecast run."""
+    _no_store(response)
+    rbac.allow(who[1], "run")
+    try:
+        release = await run_in_threadpool(service.release_context)
+    except service.MissingDatabase as exc:
+        raise HTTPException(status_code=503, detail=str(exc)) from exc
+    return {"territory_ids": release.territory_ids, "available_weeks": [d.isoformat() for d in release.available_weeks],
+            "latest_week": release.latest_week.isoformat(), "metric": "TRx", "brand": "BXA Cardiovela"}
 
 
 def _who(p: rbac.Principal, role: rbac.Role) -> dict:

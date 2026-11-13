@@ -13,7 +13,7 @@ spec = importlib.util.spec_from_file_location("gcp", ROOT / "deploy" / "gcp.py")
 gcp = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(gcp)
 
-ENV = {"PHARMAGENTICS_OIDC_CLIENT_SECRET": "s3cret", "UAT_PASSWORD_ANALYST": "a", "UAT_PASSWORD_DIRECTOR": "d",
+ENV = {"PHARMAGENTICS_OIDC_CLIENT_SECRET": "s3cret", "UAT_PASSWORD_BRIEFING_ANALYST": "a", "UAT_PASSWORD_BRIEFING_DIRECTOR": "d",
        "UAT_PASSWORD_FORECAST_ANALYST": "fa", "UAT_PASSWORD_FORECAST_MANAGER": "fm",
        "UAT_PASSWORD_MENTOR_ANALYST": "ma", "UAT_PASSWORD_MENTOR_LEADER": "ml"}
 
@@ -41,8 +41,8 @@ def test_render_realm_fills_every_placeholder():
 
 
 def test_render_realm_refuses_a_missing_password():
-    with pytest.raises(SystemExit, match="UAT_PASSWORD_DIRECTOR"):
-        gcp.render_realm({k: v for k, v in ENV.items() if k != "UAT_PASSWORD_DIRECTOR"}, "https://app.example")
+    with pytest.raises(SystemExit, match="UAT_PASSWORD_BRIEFING_DIRECTOR"):
+        gcp.render_realm({k: v for k, v in ENV.items() if k != "UAT_PASSWORD_BRIEFING_DIRECTOR"}, "https://app.example")
 
 
 def test_dockerignore_is_an_allow_list_that_keeps_eval_out():

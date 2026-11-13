@@ -21,8 +21,8 @@ They cover: the 2026-06-08 plan (Pacific, then Metacora; quiet territories liste
 
 ## 3. In the browser (US7, US8)
 
-1. Sign in as `uat-analyst`. Choose Mid-Atlantic, week of 2026-07-13, and generate.
+1. Sign in as `uat-briefing-analyst`. Choose Mid-Atlantic, week of 2026-07-13, and generate.
 2. The triage review shows the candidate cards (Pacific, Mid-Atlantic, Metacora) with Decision, Population, Granularity and Time, and the territories code dropped.
 3. Approve unchanged. The brief matches the scripted baseline's for that week. "How this brief was made" lists seven stages; stage 4 shows the triage rules, your plan review, and "fixed order of checks, manager off".
 4. Go back, drop Mid-Atlantic, approve. The brief says Mid-Atlantic was left out by the analyst; the triage record shows that call as human.
-5. Approve the brief, sign in as `uat-director`: the executive summary has no stage list and no triage record.
+5. Approve the brief, sign in as `uat-briefing-director`: the executive summary has no stage list and no triage record.

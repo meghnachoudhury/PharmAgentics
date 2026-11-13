@@ -1,7 +1,7 @@
 # Local UAT stack (core-007): Keycloak + the PharmAgentics app, as on Cloud Run.
 #   uv run python deploy/make_env.py      # once: random secrets into deploy/.env.uat (git-ignored)
 #   docker compose up --build
-#   open http://localhost:8080 and sign in as uat-analyst or uat-director
+#   open http://localhost:8080 and sign in as uat-briefing-analyst or uat-briefing-director
 # Keycloak keeps no database: the realm, roles and accounts are reimported at every start.
 name: pharmagentics
 
@@ -36,6 +36,11 @@ services:
       PHARMAGENTICS_OIDC_METADATA_URL: http://keycloak:8080/realms/pharmagentics/.well-known/openid-configuration
       PHARMAGENTICS_OIDC_CLIENT_ID: pharmagentics-app
       PHARMAGENTICS_STATE_DIR: /state
+      # Forecast uses the same local Qwen model as the Brand Briefing agent.
+      # `auto` retains the deterministic Forecast baseline when Ollama is offline.
+      FEAGENT_MODE: auto
+      OLLAMA_HOST: http://host.docker.internal:11434
+      OLLAMA_MODEL: qwen3:4b-instruct-2507-q4_K_M
     volumes:
       - app-state:/state
     ports: ["8080:8080"]

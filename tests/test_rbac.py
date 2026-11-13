@@ -97,12 +97,12 @@ def test_user_without_a_role_sees_no_data():
     assert client.get("/api/briefing/published").status_code == 403
 
 
-def test_forecast_roles_are_reserved_and_do_not_cross_lanes():
+def test_forecast_roles_do_not_cross_lanes():
     for user, persona in (("dev-forecast-analyst", "CA"), ("dev-forecast-manager", "BM")):
         client = signed_in(user)
         lanes = client.get("/api/me").json()["lanes"]
         assert list(lanes) == ["forecast"] and lanes["forecast"]["persona"] == persona
-        assert lanes["forecast"]["available"] is False
+        assert lanes["forecast"]["available"] is True
         assert client.post("/api/briefing/query", json=VALID).status_code == 403
 
 

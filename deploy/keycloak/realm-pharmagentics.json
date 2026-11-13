@@ -68,23 +68,23 @@
   ],
   "users": [
     {
-      "username": "uat-analyst",
+      "username": "uat-briefing-analyst",
       "enabled": true,
       "firstName": "UAT",
       "lastName": "Commercial Analyst",
-      "email": "uat-analyst@pharmagentics.test",
+      "email": "uat-briefing-analyst@pharmagentics.test",
       "emailVerified": true,
-      "credentials": [{"type": "password", "value": "${UAT_PASSWORD_ANALYST}", "temporary": false}],
+      "credentials": [{"type": "password", "value": "${UAT_PASSWORD_BRIEFING_ANALYST}", "temporary": false}],
       "realmRoles": ["briefing-analyst"]
     },
     {
-      "username": "uat-director",
+      "username": "uat-briefing-director",
       "enabled": true,
       "firstName": "UAT",
       "lastName": "Brand Director",
-      "email": "uat-director@pharmagentics.test",
+      "email": "uat-briefing-director@pharmagentics.test",
       "emailVerified": true,
-      "credentials": [{"type": "password", "value": "${UAT_PASSWORD_DIRECTOR}", "temporary": false}],
+      "credentials": [{"type": "password", "value": "${UAT_PASSWORD_BRIEFING_DIRECTOR}", "temporary": false}],
       "realmRoles": ["briefing-director"]
     },
     {

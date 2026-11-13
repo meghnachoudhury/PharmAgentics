@@ -18,7 +18,7 @@ uv run python deploy/make_env.py     # once: random secrets and passwords in dep
 docker compose up --build            # Keycloak on :8081, app on :8080
 ```
 
-Open http://localhost:8080 and sign in as `uat-analyst` or `uat-director` (passwords: the `UAT_PASSWORD_*` lines in `deploy/.env.uat`). Keycloak's admin console is not used: accounts and roles are configuration, reloaded at every start.
+Open http://localhost:8080 and sign in as `uat-briefing-analyst` or `uat-briefing-director` (passwords: the `UAT_PASSWORD_*` lines in `deploy/.env.uat`). Keycloak's admin console is not used: accounts and roles are configuration, reloaded at every start.
 
 Without Keycloak: `docker run --rm -p 8080:8080 -e PHARMAGENTICS_AUTH=dev pharmagentics:uat` gives a page of stand-in identities, one per role. Dev sign-in refuses to start on Cloud Run.
 

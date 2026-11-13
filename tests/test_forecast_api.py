@@ -119,7 +119,16 @@ def test_cases_list_the_three_ready_made_requests():
         assert CLIENT.post("/api/forecast/runs", json=case["request"]).status_code == 200
 
 
-def test_the_lane_stays_closed_to_the_ui_until_roles_json_opens_it():
+def test_context_exposes_the_governed_forecast_scope():
+    sign_in("dev-forecast-analyst")
+    body = CLIENT.get("/api/forecast/context").json()
+    assert body["metric"] == "TRx" and "NATIONAL" in body["territory_ids"]
+    assert body["latest_week"] in body["available_weeks"]
+    sign_in("dev-forecast-manager")
+    assert CLIENT.get("/api/forecast/context").status_code == 403
+
+
+def test_the_lane_is_open_to_the_ui():
     sign_in("dev-forecast-analyst")
     status = CLIENT.get("/api/forecast/status").json()
-    assert status["available"] is False and status["actions"] == ["run", "read"]
+    assert status["available"] is True and status["actions"] == ["run", "read"]

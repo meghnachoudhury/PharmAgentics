@@ -33,6 +33,6 @@
   },
   "lanes": {
     "briefing": {"available": true},
-    "forecast": {"available": false}
+    "forecast": {"available": true}
   }
 }
