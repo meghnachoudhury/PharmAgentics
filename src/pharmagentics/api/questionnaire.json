@@ -1,0 +1,71 @@
+{
+  "_comment": "The PharmAgentics platform questionnaire (core-008). Edit the wording, add or remove questions, and bump `version`; no code changes are needed. Item types: agree5 (1-5 agreement), nps (0-10), choice (one of), multi (any of), text (free text, `max` characters). `reverse: true` marks a negatively worded SUS statement (display only; the scoring in feedback.py knows the SUS order). Responses record the version they answered.",
+  "id": "pharmagentics-platform",
+  "version": 1,
+  "title": "PharmAgentics platform questionnaire",
+  "intro": "About five minutes. Answer for PharmAgentics as a whole, not one briefing. Skip anything that does not apply. Please do not write names or other personal details in the text answers.",
+  "scale": {
+    "agree5": ["Strongly disagree", "Disagree", "Neutral", "Agree", "Strongly agree"]
+  },
+  "scoring": {
+    "sus": ["sus1", "sus2", "sus3", "sus4", "sus5", "sus6", "sus7", "sus8", "sus9", "sus10"]
+  },
+  "sections": [
+    {
+      "id": "usability",
+      "title": "Using PharmAgentics",
+      "items": [
+        {"id": "sus1", "type": "agree5", "text": "I think that I would like to use PharmAgentics frequently."},
+        {"id": "sus2", "type": "agree5", "reverse": true, "text": "I found PharmAgentics unnecessarily complex."},
+        {"id": "sus3", "type": "agree5", "text": "I thought PharmAgentics was easy to use."},
+        {"id": "sus4", "type": "agree5", "reverse": true, "text": "I think that I would need the support of a technical person to be able to use PharmAgentics."},
+        {"id": "sus5", "type": "agree5", "text": "I found the various functions in PharmAgentics were well integrated."},
+        {"id": "sus6", "type": "agree5", "reverse": true, "text": "I thought there was too much inconsistency in PharmAgentics."},
+        {"id": "sus7", "type": "agree5", "text": "I would imagine that most people would learn to use PharmAgentics very quickly."},
+        {"id": "sus8", "type": "agree5", "reverse": true, "text": "I found PharmAgentics very cumbersome to use."},
+        {"id": "sus9", "type": "agree5", "text": "I felt very confident using PharmAgentics."},
+        {"id": "sus10", "type": "agree5", "reverse": true, "text": "I needed to learn a lot of things before I could get going with PharmAgentics."}
+      ]
+    },
+    {
+      "id": "trust",
+      "title": "Trusting what it tells you",
+      "items": [
+        {"id": "t_trace", "type": "agree5", "text": "When I checked, I could see where each number came from."},
+        {"id": "t_explain", "type": "agree5", "text": "The explanations helped me understand why something changed."},
+        {"id": "t_wording", "type": "agree5", "text": "The wording of the briefs and explanations was clear."},
+        {"id": "t_rely", "type": "agree5", "text": "I would rely on PharmAgentics for a first pass, before my own checks."}
+      ]
+    },
+    {
+      "id": "overall",
+      "title": "Overall",
+      "items": [
+        {"id": "o_nps", "type": "nps", "text": "How likely are you to recommend PharmAgentics to a colleague?", "low": "Not at all likely", "high": "Extremely likely"},
+        {"id": "o_used", "type": "multi", "text": "Which parts did you use?", "options": [
+          {"value": "briefing", "label": "Weekly briefing"},
+          {"value": "triage", "label": "Triage review"},
+          {"value": "evidence", "label": "Evidence and citations"},
+          {"value": "agent", "label": "Agent team"},
+          {"value": "leadership", "label": "Leadership summaries"},
+          {"value": "forecast", "label": "Forecast explanation"}
+        ]},
+        {"id": "o_freq", "type": "choice", "text": "How often would you use something like this in your work?", "options": [
+          {"value": "weekly", "label": "Every week"},
+          {"value": "monthly", "label": "A few times a month"},
+          {"value": "rarely", "label": "Rarely"},
+          {"value": "never", "label": "Not at all"}
+        ]}
+      ]
+    },
+    {
+      "id": "open",
+      "title": "In your words",
+      "items": [
+        {"id": "x_best", "type": "text", "max": 1000, "text": "What worked best?"},
+        {"id": "x_fix", "type": "text", "max": 1000, "text": "What should we fix first?"},
+        {"id": "x_missing", "type": "text", "max": 1000, "text": "Is anything missing or confusing?"}
+      ]
+    }
+  ]
+}

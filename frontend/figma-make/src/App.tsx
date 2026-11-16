@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react"
 import { BrandMark, Icon } from "./agent/primitives"
+import { FeedbackProvider, PulseButton, QuestionnaireMenuItem, SignOutMenuItem, SurveyBanner } from "./Feedback"
 import {
   getContext, getBriefing, getMe, getTriage, listPublished, markInsight, openBrief, reviewBrief, NotSignedIn,
   getAgentStatus, submitAgentJob, waitAgentJob, agentPlan, agentBrief,
@@ -113,7 +114,7 @@ function AccountMenu({me}: {me: Me}) {
           <p className="font-medium text-ink">{label}</p>
           <p className="text-muted">{r ? `${r.label} (${r.persona}) · ${r.views.includes("analyst") ? "analyst view" : "leadership view"}${r.available ? "" : " · not live yet"}` : "No access"}</p>
         </div>})}</div>
-        <a role="menuitem" href="/auth/logout" className="mt-4 block rounded-xl bg-paper px-3 py-2 text-center text-sm font-medium text-ink ring-1 ring-rule hover:bg-sheet">Sign out</a>
+        <div className="mt-4 border-t border-rule pt-1"><QuestionnaireMenuItem onDone={()=>setOpen(false)}/><SignOutMenuItem/></div>
       </div>
     </>}
   </div>
@@ -243,17 +244,18 @@ function Shell({me, title, subtitle, nav, children, startInForecast=false}: {me:
       <p>Synthetic data only. A leader sees a brief only after the Commercial Analyst approves it.</p>
     </div>
   </aside>
-  return <div className="flex h-dvh overflow-hidden bg-paper text-ink">
+  return <FeedbackProvider where={forecast ? "forecast" : "briefing"}><div className="flex h-dvh overflow-hidden bg-paper text-ink">
     <div className="hidden w-[260px] shrink-0 md:block">{side}</div>
     {mobileNav && <div className="fixed inset-0 z-30 flex md:hidden"><button aria-label="Close navigation" className="absolute inset-0 bg-ink/30" onClick={()=>setMobileNav(false)}/><div className="relative w-[280px] max-w-[85vw] bg-paper">{side}</div></div>}
     <main className="flex min-w-0 flex-1 flex-col">
       <header className="flex items-center justify-between gap-3 border-b border-rule bg-sheet/80 px-5 py-2.5">
         <div className="flex min-w-0 items-center gap-3"><button className="rounded-lg p-1.5 md:hidden" aria-label="Open navigation" onClick={()=>setMobileNav(true)}><Icon name="menu"/></button><div className="min-w-0"><h1 className="truncate text-sm font-semibold">{forecast ? "Forecast explanation" : title}</h1><p className="truncate text-[11px] text-muted">{forecast ? "Forecast lane" : subtitle}</p></div></div>
-        <div className="flex shrink-0 items-center gap-3"><span className={`${chip} hidden rounded-full bg-humanbg text-human sm:inline`}>Synthetic data</span><AccountMenu me={me}/></div>
+        <div className="flex shrink-0 items-center gap-3"><PulseButton/><span className={`${chip} hidden rounded-full bg-humanbg text-human sm:inline`}>Synthetic data</span><AccountMenu me={me}/></div>
       </header>
+      <SurveyBanner/>
       <section className="min-h-0 flex-1 overflow-y-auto"><div hidden={forecast}>{children}</div>{forecast && <ForecastWorkspace key={forecastSection} me={me} section={forecastSection}/>}</section>
     </main>
-  </div>
+  </div></FeedbackProvider>
 }
 
 function Centered({children}: {children: ReactNode}) {

@@ -109,6 +109,24 @@ The Forecast section in the app is a placeholder for Alvin and Sienna. To wire i
 
 The roles CA (analyst view) and BM (leadership view) already exist.
 
+## Feedback: the session rating and the questionnaire
+
+Every signed-in user, in every role, can give two kinds of feedback (spec: `specs/core-008-uat-feedback/`):
+
+- **Rate the session.** The button in the page header (a face, "Rate this session") takes one click: Good, Fine or Bad, with an optional note. If you sign out without rating, the app asks once and lets you skip. A session is one sign-in, and the last rating counts.
+- **The platform questionnaire.** In the account menu ("Platform questionnaire", about five minutes), or from the banner that invites you until you answer or dismiss it. It has the ten System Usability Scale statements, a few questions on trusting what PharmAgentics says, a recommend score and three written questions. Everything is optional, and you can reopen it to change your answers. Please do not write names or personal details in the text answers.
+
+Answers are stored under an anonymous participant ID (the same one as the other UAT events), never your name or email. Nobody can read other people's answers in the app. To read everything, any teammate with access to the project runs:
+
+```powershell
+uv run python deploy/gcp.py feedback --project pharmagentics --account <you>      # the cloud copy: downloads, then prints the report
+uv run python deploy/feedback_report.py --out local/feedback-report.md --csv local/feedback-csv   # a local run
+```
+
+The report shows sessions rated good, fine and bad by persona with the notes, the System Usability Scale score (68 is the commonly cited average), each question's mean, the net promoter score and the written answers. Do not post it publicly: written answers are stored as typed.
+
+To change a question, edit `src/pharmagentics/api/questionnaire.json` and raise its `version`. The tests reject a malformed edit.
+
 ## Data version mismatch
 
 The data version is a hash of the exact bytes of `data/agent_visible/*.csv`, line endings included. `.gitattributes` makes git check those files out with LF on every OS, so everyone computes the same version. If you cloned before that change on Windows, your CSVs may still have CRLF endings, and your worker's briefs are refused. Fix it once:

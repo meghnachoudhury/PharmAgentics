@@ -6,6 +6,7 @@ Every gcloud call passes --project, so the global gcloud config is never changed
   uv run python deploy/gcp.py keycloak --project ID                        # realm or Keycloak change
   uv run python deploy/gcp.py app      --project ID                        # manual app deploy (CI does this on main)
   uv run python deploy/gcp.py agent    --project ID                        # the cloud CPU agent host (a Cloud Run job)
+  uv run python deploy/gcp.py feedback --project ID                        # download UAT feedback and print the report
   uv run python deploy/gcp.py status   --project ID
   uv run python deploy/gcp.py rollback --project ID [--service app|keycloak]
   uv run python deploy/gcp.py team     --project ID [--member EMAIL ...] [--viewer EMAIL ...] [--remove EMAIL ...]   # owner only
@@ -26,6 +27,7 @@ Teammates pass --account with their own Google account, or omit it to use their 
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import os
 import re
@@ -253,6 +255,24 @@ def keycloak(c: Ctx) -> None:
     print(f"\nKeycloak: {c.url(KC)}  (realm pharmagentics; restart to reload accounts)")
 
 
+def feedback(c: Ctx) -> None:
+    """Download the app's feedback documents (session ratings and the questionnaire) from the state bucket and
+    print the report (core-008). Read-only: it needs access to the bucket, which every deployer and the mentor have."""
+    dest = ROOT / "local" / "feedback-export"
+    shutil.rmtree(dest, ignore_errors=True)
+    dest.mkdir(parents=True)
+    c.gc("storage", "cp", "--recursive", f"gs://{c.bucket}/feedback", str(dest), check=False)
+    if not (dest / "feedback").is_dir():
+        print("No feedback has been submitted yet (or the bucket cannot be read with this account).")
+        return
+    spec = importlib.util.spec_from_file_location("feedback_report", HERE / "feedback_report.py")
+    mod = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(mod)
+    out, csv_dir = ROOT / "local" / "feedback-report.md", ROOT / "local" / "feedback-csv"
+    mod.main(["--state-dir", str(dest), "--out", str(out), "--csv", str(csv_dir)])
+    print(out.read_text(encoding="utf-8"))
+
+
 def cloud_env(c: Ctx) -> list[str]:
     """Environment that tells the app how to start the cloud agent host; empty until that job exists."""
     if not c.ok("run", "jobs", "describe", AGENT_JOB, f"--region={c.region}"):
@@ -410,7 +430,7 @@ def env_pull(c: Ctx, force: bool) -> None:
 
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("command", choices=["setup", "keycloak", "app", "agent", "status", "rollback", "github-vars",
+    p.add_argument("command", choices=["setup", "keycloak", "app", "agent", "feedback", "status", "rollback", "github-vars",
                                        "team", "env-push", "env-pull"])
     p.add_argument("--project", required=True)
     p.add_argument("--account", help="gcloud account to use (e.g. mwc2150@columbia.edu); the active account is not changed")
@@ -436,6 +456,8 @@ def main() -> None:
         app(c, a.image)
     elif a.command == "agent":
         agent(c, a.image)
+    elif a.command == "feedback":
+        feedback(c)
     elif a.command == "status":
         status(c)
     elif a.command == "rollback":

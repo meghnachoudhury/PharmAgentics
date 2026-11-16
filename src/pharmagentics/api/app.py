@@ -27,7 +27,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
-from . import auth, cloud, forecast, jobs, rbac, service, store, views
+from . import auth, cloud, feedback, forecast, jobs, rbac, service, store, views
 from .schemas import (AgentJobRequest, BriefingQuery, InsightMark, ReleaseContext, ReviewRequest, WorkerPoll,
                       WorkerResult)
 
@@ -56,6 +56,7 @@ app = FastAPI(
         {"name": "app", "description": "Health and who is signed in."},
         {"name": "briefing", "description": "Briefing lane: briefs, triage review, agent jobs and the local worker."},
         {"name": "forecast", "description": "Forecast lane: runs, submission and review."},
+        {"name": "feedback", "description": "UAT feedback: the session rating and the platform questionnaire."},
     ],
 )
 app.add_middleware(
@@ -67,6 +68,7 @@ app.add_middleware(
     same_site="lax", https_only=bool(os.environ.get("K_SERVICE") or os.environ.get("PHARMAGENTICS_SECURE_COOKIES")),
 )
 app.include_router(auth.router)
+app.include_router(feedback.router)  # UAT feedback (core-008)
 app.include_router(forecast.router)  # Forecast lane scaffold (Alvin and Sienna)
 
 Briefing = Depends(rbac.require_briefing)

@@ -77,6 +77,10 @@ uv run python agents/brand-briefing/run_worker.py --app http://localhost:8080
 
 The token comes from `PHARMAGENTICS_WORKER_TOKEN` in `deploy/.env.uat` (also a secret on Cloud Run). The worker polls every 10 s, outbound only; nothing on your PC is reachable from the internet. One job runs at a time. When the worker is stopped, the UI shows "host offline" and requests wait. Do not run evals while hosting: one 6 GB GPU serves one model run at a time.
 
+## UAT feedback (core-008)
+
+The app stores session ratings and questionnaire responses in the state bucket under `feedback/` (one JSON document per rating and per participant questionnaire, pseudonymous like the other UAT events). Read them with `uv run python deploy/gcp.py feedback --project pharmagentics --account <you>`, which downloads the folder into `local/feedback-export/` (git-ignored), writes `local/feedback-report.md` and CSV files in `local/feedback-csv/`, and prints the report. It is read-only and works for anyone with access to the bucket (deployers, and the mentor's read-only access). The questions are in `src/pharmagentics/api/questionnaire.json`.
+
 ## Cloud agent host (core-007 FR-031)
 
 If no teammate's machine is hosting, the app starts a Cloud Run **job**, `pharmagentics-agent`: Ollama (CPU only) with the qwen3 model baked into the image, plus the same worker. It drains the queue, exits when idle, and bills only while it runs. Nothing leaves the project, so there is no external model provider.

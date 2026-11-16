@@ -1,0 +1,358 @@
+"""UAT feedback (core-008): a quick "how is this session going" pulse, and the platform questionnaire.
+
+Both are stored as small JSON documents next to the other UAT state (the local folder or the Cloud Storage
+bucket), keyed by a pseudonymous participant ID: never a name or an email (core-007 FR-025). The questions live
+in questionnaire.json, so the team or the mentor can change them without code. Results are read by an owner
+through deploy/feedback_report.py (or `gcp.py feedback`), not through the web app: no role can read other people's
+answers in the browser.
+"""
+from __future__ import annotations
+
+import json
+import logging
+import os
+import secrets
+from collections import Counter
+from functools import lru_cache
+from pathlib import Path
+from statistics import mean, median
+from typing import Any, Literal
+
+from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+from . import rbac, store
+
+logger = logging.getLogger(__name__)
+router = APIRouter(prefix="/api/feedback", tags=["feedback"])
+
+QUESTIONNAIRE_FILE = Path(__file__).with_name("questionnaire.json")
+RATINGS = ("good", "fine", "bad")
+ITEM_TYPES = {"agree5", "nps", "choice", "multi", "text"}
+PULSE_PREFIX, SURVEY_PREFIX = "feedback/pulse/", "feedback/survey/"
+
+
+# --- the questionnaire file -----------------------------------------------------------------------
+
+def items(q: dict) -> list[dict]:
+    return [item for section in q["sections"] for item in section["items"]]
+
+
+def check_questionnaire(q: dict) -> None:
+    """A malformed edit must fail loudly (and in CI), not at a participant's expense."""
+    ids = [i["id"] for i in items(q)]
+    if len(ids) != len(set(ids)):
+        raise ValueError("questionnaire.json: question ids must be unique")
+    if not isinstance(q.get("version"), int) or q["version"] < 1:
+        raise ValueError("questionnaire.json: version must be a positive integer")
+    for i in items(q):
+        if i["type"] not in ITEM_TYPES:
+            raise ValueError(f"questionnaire.json: {i['id']} has unknown type {i['type']!r}")
+        if i["type"] in ("choice", "multi") and not i.get("options"):
+            raise ValueError(f"questionnaire.json: {i['id']} needs options")
+    by_id = {i["id"]: i for i in items(q)}
+    for sid in q.get("scoring", {}).get("sus", []):
+        if by_id.get(sid, {}).get("type") != "agree5":
+            raise ValueError(f"questionnaire.json: SUS item {sid} must exist and be agree5")
+
+
+@lru_cache(maxsize=1)
+def questionnaire() -> dict:
+    q = json.loads(QUESTIONNAIRE_FILE.read_text(encoding="utf-8"))
+    check_questionnaire(q)
+    return q
+
+
+def _int(value: Any, low: int, high: int, key: str) -> int:
+    if isinstance(value, bool) or not isinstance(value, int) or not low <= value <= high:
+        raise HTTPException(status_code=422, detail=f"{key}: answer with a whole number from {low} to {high}.")
+    return value
+
+
+def validate_answers(q: dict, answers: dict[str, Any]) -> dict[str, Any]:
+    """The answers a participant may store: known questions, the right kind of value, blanks dropped."""
+    by_id = {i["id"]: i for i in items(q)}
+    clean: dict[str, Any] = {}
+    for key, value in answers.items():
+        item = by_id.get(key)
+        if item is None:
+            raise HTTPException(status_code=422, detail=f"Unknown question: {key}")
+        kind = item["type"]
+        if kind == "agree5":
+            clean[key] = _int(value, 1, 5, key)
+        elif kind == "nps":
+            clean[key] = _int(value, 0, 10, key)
+        elif kind in ("choice", "multi"):
+            allowed = {o["value"] for o in item["options"]}
+            picked = value if kind == "multi" else [value]
+            if not isinstance(picked, list) or any(not isinstance(v, str) or v not in allowed for v in picked):
+                raise HTTPException(status_code=422, detail=f"{key}: choose from the listed options.")
+            picked = list(dict.fromkeys(picked))
+            if picked:
+                clean[key] = picked if kind == "multi" else picked[0]
+        else:  # text
+            if not isinstance(value, str):
+                raise HTTPException(status_code=422, detail=f"{key}: write text.")
+            text = value.strip()
+            if len(text) > item.get("max", 1000):
+                raise HTTPException(status_code=422, detail=f"{key}: at most {item.get('max', 1000)} characters.")
+            if text:
+                clean[key] = text
+    if not clean:
+        raise HTTPException(status_code=422, detail="Answer at least one question.")
+    return clean
+
+
+def sus_score(q: dict, answers: dict[str, Any]) -> float | None:
+    """System Usability Scale, 0 to 100, by code. Odd statements are worded positively (score - 1), even ones
+    negatively (5 - score); the sum is multiplied by 2.5. None unless all ten statements were answered."""
+    ids = q.get("scoring", {}).get("sus") or []
+    if len(ids) != 10 or any(i not in answers for i in ids):
+        return None
+    return sum((answers[i] - 1) if n % 2 == 0 else (5 - answers[i]) for n, i in enumerate(ids)) * 2.5
+
+
+# --- requests -------------------------------------------------------------------------------------
+
+class PulseIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    rating: Literal["good", "fine", "bad"]
+    comment: str | None = Field(default=None, max_length=300)
+    where: Literal["briefing", "forecast", "approved", "other"] = "other"
+    ref: str | None = Field(default=None, pattern=r"^[A-Za-z0-9._:-]{1,64}$")  # a brief or run ID, if the UI knows it
+
+    @field_validator("comment")
+    @classmethod
+    def blank_is_none(cls, value: str | None) -> str | None:
+        return (value.strip() or None) if value else None
+
+
+class SurveyIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    version: int = Field(ge=1)
+    answers: dict[str, Any] = Field(max_length=60)
+
+
+# --- who, and the documents -----------------------------------------------------------------------
+
+def participant(request: Request) -> tuple[rbac.Principal, list[rbac.Role]]:
+    """Signed in and holding at least one role. A dependency, so access is refused (401, 403) before FastAPI
+    validates a request body: a signed-out caller never learns what a valid body looks like."""
+    p = rbac.require_user(request)
+    roles = p.lanes
+    if not roles:
+        raise HTTPException(status_code=403, detail="Your account has no PharmAgentics role.")
+    return p, roles
+
+
+def _sid(request: Request) -> str:
+    """One sign-in is one session (the session cookie is cleared at every sign-in)."""
+    sid = request.session.get("sid")
+    if not sid:
+        sid = secrets.token_hex(6)
+        request.session["sid"] = sid
+    return sid
+
+
+def _who(p: rbac.Principal, roles: list[rbac.Role]) -> dict:
+    return {"user": rbac.pseudonym(p.sub), "roles": [r.name for r in roles], "personas": [r.persona for r in roles]}
+
+
+def _survey_key(user: str) -> str:
+    return f"{SURVEY_PREFIX}{user}.json"
+
+
+def _read_survey(user: str) -> dict | None:
+    text = store.backend().read(_survey_key(user))
+    return json.loads(text) if text else None
+
+
+def _write(key: str, doc: dict) -> None:
+    try:
+        store.backend().write(key, json.dumps(doc, indent=1))
+    except Exception as exc:  # noqa: BLE001 - feedback is something the participant is waiting on: say so, never drop it
+        logger.exception("Feedback not saved")
+        raise HTTPException(status_code=503, detail="Could not save your feedback. Please try again.") from exc
+
+
+def _no_store(response: Response) -> None:
+    response.headers["Cache-Control"] = "no-store"
+
+
+# --- routes ---------------------------------------------------------------------------------------
+
+@router.get("/status")
+def status(request: Request, response: Response, who=Depends(participant)) -> dict:
+    """What this participant has already given: this session's rating, and whether the questionnaire is done."""
+    _no_store(response)
+    p, _ = who
+    mine = _read_survey(rbac.pseudonym(p.sub))
+    return {"pulse": request.session.get("pulse"),
+            "survey": {"submitted_at": mine["ts"] if mine else None, "version": mine["version"] if mine else None},
+            "questionnaire_version": questionnaire()["version"]}
+
+
+@router.post("/pulse")
+def pulse(body: PulseIn, request: Request, response: Response, who=Depends(participant)) -> dict:
+    """A one-click rating of this session. The last rating of a session is the one that counts."""
+    _no_store(response)
+    p, roles = who
+    ts = store.now()
+    doc = {"kind": "pulse", "id": secrets.token_hex(4), "ts": ts, "session": _sid(request), **_who(p, roles),
+           "rating": body.rating, "comment": body.comment, "where": body.where, "ref": body.ref,
+           "app_version": os.environ.get("PHARMAGENTICS_VERSION", "dev")}
+    _write(f"{PULSE_PREFIX}{ts[:10]}/{ts.replace(':', '')}-{doc['id']}.json", doc)
+    request.session["pulse"] = {"rating": body.rating, "at": ts}
+    return request.session["pulse"]
+
+
+@router.get("/questionnaire")
+def get_questionnaire(response: Response, who=Depends(participant)) -> dict:
+    _no_store(response)
+    return {k: v for k, v in questionnaire().items() if not k.startswith("_")}
+
+
+@router.get("/survey")
+def my_survey(response: Response, who=Depends(participant)) -> dict:
+    """The participant's own earlier answers, so they can update them. Nobody else's."""
+    _no_store(response)
+    p, _ = who
+    mine = _read_survey(rbac.pseudonym(p.sub))
+    return {"version": mine["version"], "answers": mine["answers"], "submitted_at": mine["ts"]} if mine else \
+           {"version": None, "answers": {}, "submitted_at": None}
+
+
+@router.post("/survey")
+def submit_survey(body: SurveyIn, response: Response, who=Depends(participant)) -> dict:
+    """Store the questionnaire. One document per participant: sending again replaces the earlier answers."""
+    _no_store(response)
+    p, roles = who
+    q = questionnaire()
+    if body.version != q["version"]:
+        raise HTTPException(status_code=409, detail="The questionnaire changed while you were answering. Reload it.")
+    answers = validate_answers(q, body.answers)
+    user = rbac.pseudonym(p.sub)
+    before = _read_survey(user)
+    doc = {"kind": "survey", "ts": store.now(), "version": q["version"], **_who(p, roles), "answers": answers,
+           "sus": sus_score(q, answers), "updates": (before["updates"] + 1) if before else 0}
+    _write(_survey_key(user), doc)
+    return {"submitted_at": doc["ts"], "answered": len(answers)}
+
+
+# --- reading the results (owners, through deploy/feedback_report.py) -----------------------------
+
+def load_feedback(backend) -> tuple[list[dict], list[dict]]:
+    """Every pulse and survey document in a state backend."""
+    def docs(prefix: str) -> list[dict]:
+        return [json.loads(t) for k in backend.keys(prefix) if (t := backend.read(k))]
+    return docs(PULSE_PREFIX), docs(SURVEY_PREFIX)
+
+
+PERSONA_ORDER = ("P1", "P3", "CA", "BM")  # the Briefing pair, then the Forecast pair
+
+
+def _role_key(doc: dict) -> str:
+    return "/".join(sorted(doc.get("personas") or ["?"], key=lambda x: (PERSONA_ORDER.index(x) if x in PERSONA_ORDER else 99, x)))
+
+
+def _role_order(key: str) -> tuple[int, int, str]:
+    """Single personas first in the natural order (P1, P3, CA, BM), then logins that hold two."""
+    parts = key.split("/")
+    return (len(parts), min((PERSONA_ORDER.index(x) if x in PERSONA_ORDER else 99) for x in parts), key)
+
+
+def summarize(pulses: list[dict], surveys: list[dict], q: dict) -> dict:
+    """Counts, means and the written answers, from the stored documents. Pure: no I/O."""
+    latest: dict[str, dict] = {}
+    for doc in sorted(pulses, key=lambda d: d["ts"]):  # the last rating of each session counts
+        latest[doc["session"]] = doc
+    sessions = list(latest.values())
+    by_rating = {r: sum(1 for s in sessions if s["rating"] == r) for r in RATINGS}
+    by_role: dict[str, dict[str, int]] = {}
+    for s in sessions:
+        by_role.setdefault(_role_key(s), dict.fromkeys(RATINGS, 0))[s["rating"]] += 1
+    out: dict[str, Any] = {
+        "pulse": {"submissions": len(pulses), "sessions": len(sessions), "by_rating": by_rating, "by_role": by_role,
+                  "comments": [{"ts": s["ts"][:16], "rating": s["rating"], "role": _role_key(s), "where": s["where"],
+                                "comment": s["comment"]} for s in sessions if s.get("comment")]}}
+
+    by_id = {i["id"]: i for i in items(q)}
+    sus = [s["sus"] for s in surveys if s.get("sus") is not None]
+    survey: dict[str, Any] = {"responses": len(surveys), "versions": dict(Counter(s["version"] for s in surveys)),
+                              "sus": ({"n": len(sus), "mean": round(mean(sus), 1), "median": median(sus),
+                                       "min": min(sus), "max": max(sus)} if sus else None)}
+    rows: list[dict] = []
+    for item_id, item in by_id.items():
+        given = [(s, s["answers"][item_id]) for s in surveys if item_id in s["answers"]]
+        if not given:
+            continue
+        row: dict[str, Any] = {"id": item_id, "text": item["text"], "type": item["type"], "n": len(given)}
+        values = [v for _, v in given]
+        if item["type"] == "agree5":
+            row.update(mean=round(mean(values), 2), counts={str(k): values.count(k) for k in range(1, 6)},
+                       reverse=bool(item.get("reverse")))
+        elif item["type"] == "nps":
+            promoters, detractors = sum(v >= 9 for v in values), sum(v <= 6 for v in values)
+            row.update(mean=round(mean(values), 1), promoters=promoters, detractors=detractors,
+                       passives=len(values) - promoters - detractors,
+                       nps=round(100 * (promoters - detractors) / len(values)))
+        elif item["type"] in ("choice", "multi"):
+            labels = {o["value"]: o["label"] for o in item["options"]}
+            flat = [v for vs in values for v in (vs if isinstance(vs, list) else [vs])]
+            row["counts"] = {labels[o["value"]]: flat.count(o["value"]) for o in item["options"]}
+        else:
+            row["answers"] = [{"role": _role_key(s), "text": v} for s, v in given]
+        rows.append(row)
+    survey["items"] = rows
+    out["survey"] = survey
+    return out
+
+
+def to_markdown(summary: dict, q: dict) -> str:
+    """The summary as a short report for the team and the mentor."""
+    pulse, survey = summary["pulse"], summary["survey"]
+    lines = ["# PharmAgentics UAT feedback", "",
+             "## Session pulse: good, fine or bad", ""]
+    if not pulse["sessions"]:
+        lines.append("No session ratings yet.")
+    else:
+        r = pulse["by_rating"]
+        lines += [f"{pulse['sessions']} sessions rated ({pulse['submissions']} ratings in all; the last rating of each session counts).", "",
+                  "| Rating | Sessions |", "| :- | -: |", *(f"| {k.capitalize()} | {r[k]} |" for k in RATINGS), ""]
+        lines += ["| Persona | Good | Fine | Bad |", "| :- | -: | -: | -: |",
+                  *(f"| {role} | {c['good']} | {c['fine']} | {c['bad']} |" for role, c in sorted(pulse["by_role"].items(), key=lambda kv: _role_order(kv[0]))), ""]
+        if pulse["comments"]:
+            lines += ["Comments:", "", *(f"- {c['ts']} · {c['role']} · {c['rating']} · {c['where']}: {c['comment']}" for c in pulse["comments"]), ""]
+    lines += [f"## {q['title']}", ""]
+    if not survey["responses"]:
+        lines.append("No questionnaire responses yet.")
+        return "\n".join(lines) + "\n"
+    lines.append(f"{survey['responses']} responses (questionnaire versions: "
+                 + ", ".join(f"v{k}: {v}" for k, v in sorted(survey["versions"].items())) + ").")
+    lines.append("")
+    if survey["sus"]:
+        s = survey["sus"]
+        lines += [f"**System Usability Scale:** mean {s['mean']} (median {s['median']}, range {s['min']} to {s['max']}, "
+                  f"{s['n']} complete). 68 is the commonly cited average across products; above 80 is usually read as excellent.", ""]
+    else:
+        lines += ["System Usability Scale: no respondent answered all ten statements.", ""]
+    for section in q["sections"]:
+        rows = [r for r in survey["items"] if r["id"] in {i["id"] for i in section["items"]}]
+        if not rows:
+            continue
+        lines += [f"### {section['title']}", ""]
+        for r in rows:
+            if r["type"] == "agree5":
+                note = " (negatively worded: lower is better)" if r["reverse"] else ""
+                lines.append(f"- {r['text']} Mean {r['mean']} of 5, n={r['n']}{note}.")
+            elif r["type"] == "nps":
+                lines.append(f"- {r['text']} Mean {r['mean']} of 10; promoters {r['promoters']}, passives {r['passives']}, "
+                             f"detractors {r['detractors']}; net promoter score {r['nps']}.")
+            elif r["type"] in ("choice", "multi"):
+                lines.append(f"- {r['text']} " + "; ".join(f"{k}: {v}" for k, v in r["counts"].items()) + ".")
+            else:
+                lines += [f"- {r['text']}", *(f"  - ({a['role']}) {a['text']}" for a in r["answers"])]
+        lines.append("")
+    return "\n".join(lines)
