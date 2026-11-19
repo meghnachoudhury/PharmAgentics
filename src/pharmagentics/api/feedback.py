@@ -18,10 +18,10 @@ from pathlib import Path
 from statistics import mean, median
 from typing import Any, Literal
 
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from . import rbac, store
+from . import forecast_store, rbac, store, views
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/feedback", tags=["feedback"])
@@ -29,7 +29,7 @@ router = APIRouter(prefix="/api/feedback", tags=["feedback"])
 QUESTIONNAIRE_FILE = Path(__file__).with_name("questionnaire.json")
 RATINGS = ("good", "fine", "bad")
 ITEM_TYPES = {"agree5", "nps", "choice", "multi", "text"}
-PULSE_PREFIX, SURVEY_PREFIX = "feedback/pulse/", "feedback/survey/"
+PULSE_PREFIX, SURVEY_PREFIX, RESPONSE_PREFIX = "feedback/pulse/", "feedback/survey/", "feedback/response/"
 
 
 # --- the questionnaire file -----------------------------------------------------------------------
@@ -133,6 +133,24 @@ class SurveyIn(BaseModel):
 
     version: int = Field(ge=1)
     answers: dict[str, Any] = Field(max_length=60)
+
+
+ANSWER_ID = r"^(b|f)-[0-9a-f]{12}$"  # a brief (store.brief_id) or a Forecast run (forecast_store.run_id)
+
+
+class VoteIn(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    lane: Literal["briefing", "forecast"]
+    ref: str = Field(pattern=ANSWER_ID)
+    view: Literal["analyst", "leadership"]
+    vote: Literal["up", "down"]
+    comment: str | None = Field(default=None, max_length=500)
+
+    @field_validator("comment")
+    @classmethod
+    def blank_is_none(cls, value: str | None) -> str | None:
+        return (value.strip() or None) if value else None
 
 
 # --- who, and the documents -----------------------------------------------------------------------
@@ -241,6 +259,70 @@ def submit_survey(body: SurveyIn, response: Response, who=Depends(participant)) 
     return {"submitted_at": doc["ts"], "answered": len(answers)}
 
 
+# --- votes on one answer (User Story 5) -----------------------------------------------------------
+
+def _answer(p: rbac.Principal, lane: str, ref: str, view: str) -> dict:
+    """What the participant was shown, if they may open this answer in this view; otherwise 404 (or 403 for a
+    view their role does not hold), exactly as opening it would answer, so a vote never reveals that it exists."""
+    role = p.role(lane)
+    if role is None:
+        raise HTTPException(status_code=403, detail="Your account has no access to this workspace.")
+    rbac.view_for(role, view)
+    if lane == "briefing":
+        record = store.get_brief(ref)
+        if record is None or ("review" not in role.actions and record["review_status"] != "approved"):
+            raise HTTPException(status_code=404, detail="No such briefing.")
+        r = record["result"]
+        shown = r.get("answer") or ""
+        return {"scope": {k: r.get(k) for k in ("brand_id", "territory_id", "week_start", "question")},
+                "engine": r.get("engine"), "system": r.get("system"), "data_version": r.get("data_version"),
+                "review_status": record["review_status"],
+                "shown": views.executive_summary(shown) if view == "leadership" else shown}
+    record = forecast_store.get(ref)
+    if record is None or ("run" not in role.actions and record["review_status"] == forecast_store.NOT_SUBMITTED):
+        raise HTTPException(status_code=404, detail="No such Forecast run.")
+    report, narrative = record["result"]["report"], record.get("narrative") or {}
+    if view == "leadership":
+        narrative = {k: v for k, v in narrative.items() if k != "analyst_notes"}
+    return {"scope": {k: record["request"].get(k) for k in ("territory_id", "week_start", "window_weeks")},
+            "engine": report.get("investigator_mode"), "system": record.get("report_model"),
+            "data_version": record["result"].get("dataset_release"), "review_status": record["review_status"],
+            "shown": {"headline": report.get("headline"), "narrative": narrative or None}}
+
+
+def _vote_key(lane: str, ref: str, user: str, view: str) -> str:
+    return f"{RESPONSE_PREFIX}{lane}/{ref}/{user}-{view}.json"
+
+
+@router.get("/vote")
+def my_vote(response: Response, lane: Literal["briefing", "forecast"], ref: str = Query(pattern=ANSWER_ID),
+            view: Literal["analyst", "leadership"] = "analyst", who=Depends(participant)) -> dict:
+    """The participant's own vote on one answer, so the page can show it again. Nobody else's."""
+    _no_store(response)
+    p, _ = who
+    _answer(p, lane, ref, view)
+    text = store.backend().read(_vote_key(lane, ref, rbac.pseudonym(p.sub), view))
+    doc = json.loads(text) if text else None
+    return {"vote": doc["vote"], "comment": doc["comment"], "at": doc["ts"]} if doc else {"vote": None, "comment": None, "at": None}
+
+
+@router.post("/vote")
+def vote(body: VoteIn, response: Response, who=Depends(participant)) -> dict:
+    """Thumbs up or down on one answer, with an optional comment. One per participant, answer and view."""
+    _no_store(response)
+    p, roles = who
+    answer = _answer(p, body.lane, body.ref, body.view)
+    user = rbac.pseudonym(p.sub)
+    key = _vote_key(body.lane, body.ref, user, body.view)
+    before = store.backend().read(key)
+    doc = {"kind": "vote", "ts": store.now(), **_who(p, roles), "lane": body.lane, "ref": body.ref, "view": body.view,
+           "vote": body.vote, "comment": body.comment, **answer,
+           "updates": (json.loads(before)["updates"] + 1) if before else 0,
+           "app_version": os.environ.get("PHARMAGENTICS_VERSION", "dev")}
+    _write(key, doc)
+    return {"vote": doc["vote"], "comment": doc["comment"], "at": doc["ts"]}
+
+
 # --- reading the results (owners, through deploy/feedback_report.py) -----------------------------
 
 def load_feedback(backend) -> tuple[list[dict], list[dict]]:
@@ -263,7 +345,23 @@ def _role_order(key: str) -> tuple[int, int, str]:
     return (len(parts), min((PERSONA_ORDER.index(x) if x in PERSONA_ORDER else 99) for x in parts), key)
 
 
-def summarize(pulses: list[dict], surveys: list[dict], q: dict) -> dict:
+def load_votes(backend) -> list[dict]:
+    """Every per-answer vote in a state backend (one document per participant, answer and view)."""
+    return [json.loads(t) for k in backend.keys(RESPONSE_PREFIX) if (t := backend.read(k))]
+
+
+def summarize_votes(votes: list[dict]) -> dict:
+    """Up and down counts by lane, engine and view, and every downvote with its comment. Pure: no I/O."""
+    by: dict[str, dict[str, int]] = {}
+    for v in votes:
+        by.setdefault(f"{v['lane']} · {v.get('engine') or '?'} · {v['view']}", {"up": 0, "down": 0})[v["vote"]] += 1
+    down = [{"ts": v["ts"][:16], "lane": v["lane"], "ref": v["ref"], "view": v["view"], "role": _role_key(v),
+             "comment": v.get("comment")} for v in sorted(votes, key=lambda d: d["ts"]) if v["vote"] == "down"]
+    return {"votes": len(votes), "answers": len({(v["lane"], v["ref"]) for v in votes}),
+            "up": sum(v["vote"] == "up" for v in votes), "down": len(down), "by": dict(sorted(by.items())), "downvotes": down}
+
+
+def summarize(pulses: list[dict], surveys: list[dict], q: dict, votes: list[dict] | None = None) -> dict:
     """Counts, means and the written answers, from the stored documents. Pure: no I/O."""
     latest: dict[str, dict] = {}
     for doc in sorted(pulses, key=lambda d: d["ts"]):  # the last rating of each session counts
@@ -307,6 +405,8 @@ def summarize(pulses: list[dict], surveys: list[dict], q: dict) -> dict:
         rows.append(row)
     survey["items"] = rows
     out["survey"] = survey
+    if votes is not None:
+        out["answers"] = summarize_votes(votes)
     return out
 
 
@@ -325,6 +425,19 @@ def to_markdown(summary: dict, q: dict) -> str:
                   *(f"| {role} | {c['good']} | {c['fine']} | {c['bad']} |" for role, c in sorted(pulse["by_role"].items(), key=lambda kv: _role_order(kv[0]))), ""]
         if pulse["comments"]:
             lines += ["Comments:", "", *(f"- {c['ts']} · {c['role']} · {c['rating']} · {c['where']}: {c['comment']}" for c in pulse["comments"]), ""]
+    if "answers" in summary:
+        a = summary["answers"]
+        lines += ["## Votes on answers: thumbs up or down", ""]
+        if not a["votes"]:
+            lines += ["No votes on answers yet.", ""]
+        else:
+            lines += [f"{a['votes']} votes on {a['answers']} answers: {a['up']} up, {a['down']} down. "
+                      "`python -m eval candidates` turns them into draft golden-set cases.", "",
+                      "| Lane · engine · view | Up | Down |", "| :- | -: | -: |",
+                      *(f"| {k} | {c['up']} | {c['down']} |" for k, c in a["by"].items()), ""]
+            if a["downvotes"]:
+                lines += ["Downvotes:", "", *(f"- {d['ts']} · {d['role']} · {d['lane']} {d['ref']} ({d['view']}): "
+                                              f"{d['comment'] or '(no comment)'}" for d in a["downvotes"]), ""]
     lines += [f"## {q['title']}", ""]
     if not survey["responses"]:
         lines.append("No questionnaire responses yet.")

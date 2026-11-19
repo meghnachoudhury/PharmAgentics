@@ -1,9 +1,10 @@
-"""python -m eval {import-stories, check, run, gate, ui}"""
+"""python -m eval {import-stories, check, run, gate, candidates, ui}"""
 from __future__ import annotations
 
 import argparse
 import subprocess
 import sys
+from pathlib import Path
 
 
 def main(argv=None) -> int:
@@ -29,6 +30,10 @@ def main(argv=None) -> int:
     gate = sub.add_parser("gate", help="fail if a candidate run regresses on gated checks")
     gate.add_argument("candidate")
     gate.add_argument("baseline")
+
+    cand = sub.add_parser("candidates", help="draft golden-set candidates from UAT votes on answers (core-008)")
+    cand.add_argument("--state-dir", type=Path, help="downloaded state folder (default: local/feedback-export, else local/state)")
+    cand.add_argument("--force", action="store_true", help="overwrite existing drafts (loses hand edits)")
 
     ui = sub.add_parser("ui", help="open the MLflow dashboard on eval/mlflow")
     ui.add_argument("--port", default="5000")
@@ -70,6 +75,20 @@ def main(argv=None) -> int:
     if args.cmd == "gate":
         from .harness.run import gate as run_gate
         return run_gate(args.candidate, args.baseline)
+
+    if args.cmd == "candidates":
+        from .harness import candidates
+        written, kept, state_dir = candidates.run(args.state_dir, force=args.force)
+        if state_dir is None:
+            print("No votes found. Download them first: uv run python deploy/gcp.py feedback --project pharmagentics "
+                  "--account <you>, or pass --state-dir.")
+            return 1
+        print(f"read votes from {state_dir}")
+        print(f"wrote {len(written)} draft(s), kept {len(kept)} existing draft(s) in {candidates.CANDIDATES_DIR}")
+        for path in written:
+            print(f"  {path.relative_to(candidates.EVAL_DIR)}")
+        print("A draft is not a case: review it, write its facts, give it an ID and move it into eval/golden/<lane>/.")
+        return 0
 
     if args.cmd == "ui":
         from .harness.paths import MLFLOW_DIR, tracking_uri

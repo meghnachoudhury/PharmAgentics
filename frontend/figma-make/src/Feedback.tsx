@@ -2,8 +2,9 @@
 // The server stores both under a pseudonymous ID; this file only collects them and shows what has been given.
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react"
 import {
-  getFeedbackStatus, getMySurvey, getQuestionnaire, sendPulse, sendSurvey,
-  type Answers, type FeedbackStatus, type PulseWhere, type QItem, type Questionnaire, type Rating,
+  getFeedbackStatus, getMyVote, getMySurvey, getQuestionnaire, sendPulse, sendSurvey, sendVote,
+  type AnswerLane, type AnswerView, type Answers, type FeedbackStatus, type PulseWhere, type QItem, type Questionnaire,
+  type Rating, type Vote,
 } from "./agent/feedbackApi"
 
 const message = (e: unknown) => e instanceof Error ? e.message : String(e)
@@ -128,6 +129,55 @@ export function PulseButton() {
     <Face kind={r ?? "fine"} className={`h-4 w-4 ${r ? TONE[r] : "text-muted"}`} />
     <span className="hidden text-ink sm:inline">{r ? `This session: ${LABEL[r]}` : "Rate this session"}</span>
   </button>
+}
+
+// --- one answer: the mistakes notice and thumbs up or down (core-008 User Story 5, FR-017) ------------
+
+const THUMB = "M7 10v12M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"
+function Thumb({ down = false }: { down?: boolean }) {
+  return <svg viewBox="0 0 24 24" className={`h-4 w-4 ${down ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={THUMB} /></svg>
+}
+
+export function AnswerFeedback({ lane, refId, view }: { lane: AnswerLane; refId: string; view: AnswerView }) {
+  const [vote, setVote] = useState<Vote | null>(null)
+  const [comment, setComment] = useState("")
+  const [saved, setSaved] = useState("")
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  useEffect(() => {
+    let live = true
+    setVote(null); setComment(""); setSaved(""); setError(null)
+    getMyVote(lane, refId, view).then(v => { if (live) { setVote(v.vote); setComment(v.comment ?? ""); setSaved(v.comment ?? "") } })
+      .catch(() => { /* showing an earlier vote is a convenience; voting still reports its own errors */ })
+    return () => { live = false }
+  }, [lane, refId, view])
+  const send = async (v: Vote, note: string) => {
+    setBusy(true); setError(null)
+    try { const r = await sendVote({ lane, ref: refId, view, vote: v, comment: note.trim() || undefined }); setVote(r.vote); setSaved(r.comment ?? ""); setComment(r.comment ?? "") }
+    catch (e) { setError(message(e)) }
+    finally { setBusy(false) }
+  }
+  const thumb = (v: Vote) => `grid h-8 w-8 place-items-center rounded-lg ring-1 transition disabled:opacity-60 ${vote === v ? (v === "up" ? "bg-okbg text-ok ring-ok/40" : "bg-amberbg text-amber ring-amber/40") : "text-muted ring-rule hover:bg-paper hover:text-ink"}`
+  const noted = vote !== null && saved === comment.trim() && saved !== ""
+  return <div className="rounded-2xl bg-sheet px-5 py-3 ring-1 ring-rule">
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <p className="text-xs text-muted">PharmAgentics can make mistakes. Check important figures {view === "leadership" ? "with the Commercial Analyst" : "against the evidence"}.</p>
+      <div role="group" aria-label="Rate this answer" className="flex items-center gap-2">
+        <span className="text-xs text-muted">{vote ? "Thanks for rating" : "Was this answer right?"}</span>
+        <button type="button" aria-pressed={vote === "up"} aria-label="Thumbs up" title="Good answer" disabled={busy || vote === "up"} onClick={() => void send("up", "")} className={thumb("up")}><Thumb /></button>
+        <button type="button" aria-pressed={vote === "down"} aria-label="Thumbs down" title="Something is wrong" disabled={busy || vote === "down"} onClick={() => void send("down", "")} className={thumb("down")}><Thumb down /></button>
+      </div>
+    </div>
+    {vote && <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-start">
+      <label className="sr-only" htmlFor={`vote-note-${refId}-${view}`}>{vote === "down" ? "What was wrong?" : "What worked?"}</label>
+      <textarea id={`vote-note-${refId}-${view}`} value={comment} onChange={e => setComment(e.target.value)} maxLength={500} rows={2}
+        placeholder={vote === "down" ? "What was wrong? (optional, no names please)" : "What worked? (optional, no names please)"}
+        className="min-w-0 flex-1 rounded-xl border border-rule bg-paper p-2.5 text-sm" />
+      <button type="button" disabled={busy || noted || !comment.trim()} onClick={() => void send(vote, comment)}
+        className="rounded-lg px-3 py-2 text-xs font-semibold text-agentdeep ring-1 ring-rule hover:bg-paper disabled:text-muted disabled:opacity-60">{noted ? "Comment saved" : "Send comment"}</button>
+    </div>}
+    {error && <p role="alert" className="mt-2 text-xs text-amber">{error}</p>}
+  </div>
 }
 
 const menuItem = "mt-2 block w-full rounded-xl px-3 py-2 text-left text-sm font-medium text-ink ring-1 ring-rule hover:bg-sheet"

@@ -3,8 +3,8 @@
     uv run python deploy/feedback_report.py [--state-dir DIR] [--out report.md] [--csv DIR]
 
 Reads the documents the app stored (the local state folder, default local/state or PHARMAGENTICS_STATE_DIR) and prints a
-markdown report: sessions rated good, fine or bad by persona, the System Usability Scale score, per-question means, the
-net promoter score and every written answer. --csv also writes pulses.csv and survey.csv for a spreadsheet. For the cloud
+markdown report: sessions rated good, fine or bad by persona, thumbs up and down on answers (with every downvote), the System Usability Scale score, per-question means, the
+net promoter score and every written answer. --csv also writes pulses.csv, votes.csv and survey.csv for a spreadsheet. For the cloud
 copy run `uv run python deploy/gcp.py feedback --project pharmagentics --account <you>`, which downloads the bucket's
 feedback/ folder first and then runs this. Nothing here sends anything anywhere.
 """
@@ -22,6 +22,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from pharmagentics.api import feedback, store  # noqa: E402
 
 PULSE_COLUMNS = ["ts", "session", "user", "rating", "personas", "where", "ref", "comment"]
+VOTE_COLUMNS = ["ts", "user", "personas", "lane", "ref", "view", "vote", "engine", "data_version", "comment"]
 
 
 def _write_csv(path: Path, header: list[str], rows: list[list]) -> None:
@@ -35,15 +36,17 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser(description="Summarize UAT feedback.")
     ap.add_argument("--state-dir", type=Path, default=Path(os.environ.get("PHARMAGENTICS_STATE_DIR", ROOT / "local" / "state")))
     ap.add_argument("--out", type=Path, help="write the markdown report here instead of printing it")
-    ap.add_argument("--csv", type=Path, metavar="DIR", help="also write pulses.csv and survey.csv into this folder")
+    ap.add_argument("--csv", type=Path, metavar="DIR", help="also write pulses.csv, votes.csv and survey.csv into this folder")
     a = ap.parse_args(argv)
     if not a.state_dir.is_dir():
         print(f"No state folder at {a.state_dir}: nothing has been stored there yet.", file=sys.stderr)
         return 1
 
     q = feedback.questionnaire()
-    pulses, surveys = feedback.load_feedback(store.LocalBackend(a.state_dir))
-    report = feedback.to_markdown(feedback.summarize(pulses, surveys, q), q)
+    backend = store.LocalBackend(a.state_dir)
+    pulses, surveys = feedback.load_feedback(backend)
+    votes = feedback.load_votes(backend)
+    report = feedback.to_markdown(feedback.summarize(pulses, surveys, q, votes), q)
     if a.out:
         a.out.parent.mkdir(parents=True, exist_ok=True)
         a.out.write_text(report, encoding="utf-8")
@@ -56,6 +59,9 @@ def main(argv: list[str] | None = None) -> int:
         _write_csv(a.csv / "pulses.csv", PULSE_COLUMNS,
                    [[p["ts"], p["session"], p["user"], p["rating"], "/".join(p["personas"]), p["where"], p.get("ref") or "",
                      p.get("comment") or ""] for p in sorted(pulses, key=lambda d: d["ts"])])
+        _write_csv(a.csv / "votes.csv", VOTE_COLUMNS,
+                   [[v["ts"], v["user"], "/".join(v["personas"]), v["lane"], v["ref"], v["view"], v["vote"], v.get("engine") or "",
+                     v.get("data_version") or "", v.get("comment") or ""] for v in sorted(votes, key=lambda d: d["ts"])])
         item_ids = [i["id"] for i in feedback.items(q)]
         _write_csv(a.csv / "survey.csv", ["user", "ts", "version", "personas", "sus", *item_ids],
                    [[s["user"], s["ts"], s["version"], "/".join(s["personas"]), "" if s["sus"] is None else s["sus"],

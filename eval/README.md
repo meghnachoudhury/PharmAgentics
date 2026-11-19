@@ -21,6 +21,7 @@ All from the repository root, after `uv sync` and building the database (`uv run
 | `uv run python -m eval gate <candidate> <baseline>` | Exits 1 if a gated check scores lower than on the baseline run |
 | `uv run python -m eval ui` | MLflow dashboard at http://127.0.0.1:5000 |
 | `uv run python -m eval import-stories` | Drafts case files for new user stories; never overwrites an existing case |
+| `uv run python -m eval candidates` | Drafts a candidate case per answer that UAT participants voted on (core-008), into `candidates/`. Download the votes first with `deploy/gcp.py feedback`. A person reviews each draft, writes its facts and moves it into `golden/` |
 | `uv run pytest tests/test_tools.py eval/tests` | The shared-tools and harness tests |
 
 Each `run` is one MLflow parent run with a child run per rerun. Every case becomes a trace with its spans (for the baselines: one per pipeline stage and one per tool call, with the SQL as input), its check results and its expectations, all kept in `eval/mlflow/` (git-ignored).
@@ -36,6 +37,7 @@ Each `run` is one MLflow parent run with a child run per rerun. Every case becom
 | `harness/` | Case model and importer, fact checks, number matching, scorers, systems, answer contract, runner, isolation scans, the store reader |
 | `tests/` | Golden-set integrity, code checks on planted answers, the positive control on all 42 cases, isolation scans, an end-to-end MLflow run |
 | `mlflow/` | Runs, traces, spans and scores. Git-ignored |
+| `candidates/` | Draft cases from UAT thumbs up and down, waiting for review. Git-ignored; never loaded as cases |
 
 A case holds the question, the golden answer (the story's "Answer from the data"), the Given / When / Then, the must-not-say rule, its eval items and, where verified, **facts**: numbers with the SQL that recomputes them. Today 69 facts on 14 cases recompute exactly.
 

@@ -3,7 +3,7 @@
 **Spec ID**: `core-008-uat-feedback` (shared; owner: Michael; requested by the mentor, Dr. Admasu)
 **Feature Branch**: `feature/uat-feedback`
 **Created**: 2026-11-15
-**Status**: Draft v1. Built on the branch; not yet deployed.
+**Status**: Draft v2 (2026-11-19: per-answer votes, golden-set candidates, the mistakes notice). Built on the branch; not yet deployed.
 **Input**: The mentor asked for two kinds of feedback from people who try PharmAgentics: a quick "is PharmAgentics doing good, fine or bad this session?", and a questionnaire about the overall platform for the broader user.
 
 ## Context
@@ -11,6 +11,13 @@
 core-007 (UAT deployment) records what people do: timings, approvals, flagged claims. It does not record what they think. This spec adds two ways to ask. Both work for every role in both lanes (Briefing and Forecast), are stored the way core-007 stores UAT events (a pseudonymous participant ID, never a name or an email), and are read by an owner through a report, not through the web app.
 
 ## Clarifications
+
+### Session 2026-11-19
+
+- Q: Should people rate individual answers, not only the session? → A: Yes. Thumbs up or down, with an optional comment, on every brief (analyst and leadership view) and every Forecast explanation. Flagging a single claim as wrong (core-007 FR-025) comes next, not in this version.
+- Q: What happens to a downvote? → A: It becomes a draft golden-set candidate that a person reviews. Nothing joins the golden set, and no fix reaches production, without a person approving it. An upvoted answer becomes a regression candidate the same way.
+- Q: May the eval harness read UAT feedback? → A: Yes, owner-side only: `python -m eval candidates` reads a downloaded copy of the feedback folder. Agent code still never reads `eval/`, and the web app never imports the eval package.
+- Q: Should answers carry a notice that they can be wrong? → A: Yes, one line under every generated brief and Forecast explanation, in both views.
 
 ### Session 2026-11-15
 
@@ -85,6 +92,39 @@ The team or the mentor edits one file to reword, add or remove questions. A malf
 1. **Given** an edit that duplicates a question ID, uses an unknown type, drops the options of a choice question, or breaks the SUS list, **When** the tests run, **Then** they fail with the reason.
 2. **Given** a new version, **When** a participant who answered the old one sends again, **Then** their answers are stored under the new version, and the report shows responses by version.
 
+---
+
+### User Story 5 - Rate one answer: thumbs up or down (Priority: P1)
+
+Under every brief and every Forecast explanation, in the analyst and the leadership view, a participant clicks thumbs up or thumbs down and may say why. Clicking the other thumb changes the vote; the comment can be edited.
+
+**Why this priority**: A session rating says how the visit went; it does not say which answer was wrong. Per-answer votes are what can turn into test cases.
+
+**Independent Test**: As each persona, vote on an answer they can see, change the vote, and try to vote on one they cannot see.
+
+**Acceptance Scenarios**:
+
+1. **Given** a brief or Forecast explanation the participant can open, **When** they vote, **Then** one document per participant, answer and view is stored with the vote, the comment, the scope (lane, territory, week, question or window), the engine, the data version and the text they were shown; voting again replaces it.
+2. **Given** an answer the participant cannot open (a leader and an unapproved brief, or an unsubmitted Forecast run), **When** they vote on it, **Then** the app answers "not found" and stores nothing, so the vote cannot reveal that the answer exists.
+3. **Given** an earlier vote, **When** the participant opens the answer again, **Then** their vote and comment are shown.
+4. **Given** a vote that could not be saved, **When** the participant submits, **Then** the app says so.
+
+---
+
+### User Story 6 - Downvotes become golden-set candidates (Priority: P2)
+
+An owner downloads the feedback folder and runs `python -m eval candidates`. Each voted answer becomes a draft case file under `eval/candidates/` (git-ignored): downvoted answers to investigate, upvoted ones as regression candidates. A person reviews each draft, writes its facts with SQL, gives it an ID and moves it into `eval/golden/`, where `eval check` recomputes its facts.
+
+**Why this priority**: It turns use into tests, the first step toward a system that improves with use, while a person still decides what counts as correct.
+
+**Independent Test**: Store an up and a down vote, run the command, and check one draft per answer with the votes, the comments and an empty fact list; run it again and check an edited draft is not overwritten.
+
+**Acceptance Scenarios**:
+
+1. **Given** votes on an answer, **When** the command runs, **Then** one draft is written per answer, with the vote counts, every comment, the scope, the engine and the text that was shown; the draft has `status: candidate`, no ID and no facts.
+2. **Given** a draft a person has already edited, **When** the command runs again, **Then** it is left alone unless `--force` is given.
+3. **Given** the drafts, **When** `eval check` or `eval run` runs, **Then** they are not loaded: only files under `eval/golden/` are cases.
+
 ### Edge Cases
 
 - A participant with no role in either lane (so no PharmAgentics access) cannot rate or answer: refused, not stored.
@@ -93,6 +133,8 @@ The team or the mentor edits one file to reword, add or remove questions. A malf
 - A participant clears an answer by clicking it again: cleared answers are not sent.
 - The same participant rates in two browsers at once: both ratings are stored, each under its own session.
 - Written answers may contain personal details despite the warning: they are stored as typed and are readable only through the report; the report must not be posted publicly.
+- A thumbs-up does not mean an answer is correct: a regression candidate's expected values still come from the data, written by a person.
+- An answer re-run on the same scope keeps its ID; the stored vote keeps the text the participant saw, so a later change of answer does not change what was judged.
 
 ## Requirements *(mandatory)*
 
@@ -110,12 +152,19 @@ The team or the mentor edits one file to reword, add or remove questions. A malf
 - **FR-010**: Stored feedback MUST live in the same state store as other UAT state (local folder or Cloud Storage bucket) under a `feedback/` prefix, one document per rating and one per participant questionnaire. The web app MUST NOT expose any route that returns other participants' feedback.
 - **FR-011**: A report command MUST summarize ratings (by rating and by persona, with the notes), the SUS score, each question's mean or counts, the net promoter score and the written answers, in markdown, and MUST be able to write CSV files. A cloud command MUST download the bucket's feedback folder and run the same report.
 - **FR-012**: A malformed edit of the questionnaire file MUST fail the test suite.
+- **FR-013**: Any participant who can open a brief or Forecast explanation MUST be able to vote it up or down, with an optional comment of at most 500 characters, in the view they opened. A vote on an answer the participant cannot open MUST get "not found" and store nothing.
+- **FR-014**: The app MUST store one vote per participant, answer and view (a new vote replaces the old), holding the pseudonymous participant ID, roles, personas, lane, answer ID, view, vote, comment, scope, engine, data version, the text shown, a timestamp, the app version and the number of updates, and MUST let the participant read back their own vote and nobody else's.
+- **FR-015**: The report (FR-011) MUST count votes by lane, engine and view, and list every downvote with its comment.
+- **FR-016**: `python -m eval candidates --state-dir DIR` MUST write one draft case per voted answer under the git-ignored `eval/candidates/<lane>/`, MUST NOT overwrite an existing draft without `--force`, and MUST NOT write to `eval/golden/`. A draft MUST NOT carry facts or a reference answer: a person writes those.
+- **FR-017**: Every generated brief and Forecast explanation, in both views, MUST show one line saying PharmAgentics can make mistakes and that important figures should be checked (against the evidence for an analyst, with the Commercial Analyst for a leader).
 
 ### Key Entities
 
 - **Pulse**: one rating submission: time, session, pseudonymous participant, roles, personas, rating, note, workspace, optional reference, app version.
 - **Questionnaire**: a versioned list of sections and questions (the file).
 - **Survey response**: one per participant: time, questionnaire version, roles, personas, answers, SUS score, number of updates.
+- **Answer vote**: one per participant, answer and view: lane, answer ID, view, vote, comment, scope, engine, data version, the text shown, roles, personas, time, number of updates.
+- **Golden-set candidate**: a git-ignored draft case built from the votes on one answer, for a person to review.
 
 ## Success Criteria *(mandatory)*
 
@@ -133,8 +182,17 @@ The team or the mentor edits one file to reword, add or remove questions. A malf
 
 - The SUS is a published, widely used instrument. A mean of 68 is the commonly cited average across products and above 80 is usually read as excellent; the report states both as context, not as targets.
 - Statement wording says "PharmAgentics" where the standard says "the system", a common adaptation.
-- Feedback is for learning about the platform; it is not used to gate a merge or score an agent, and the eval harness never reads it.
+- Feedback is for learning about the platform; it is not used to gate a merge or score an agent. The eval harness reads it only to draft candidates (FR-016), from a copy the owner downloads.
 - Participants are the selected UAT users (core-007), so volumes are small; the report reads every document each time.
 - [NEEDS CLARIFICATION: the mentor's own questionnaire items, if he has them: the shipped questions are a draft to review (core-008 open item 1)]
 - [NEEDS CLARIFICATION: whether participants should see aggregate results, or only the owners (core-008 open item 2); today only owners and teammates with bucket access can]
-- Not in scope: asking for a rating after each brief or forecast run, email reminders, anonymous (unauthenticated) responses, and importing feedback into MLflow (core-007 User Story 6 owns that import and can read the same files).
+- Not in scope: flagging a single claim as wrong (next, core-007 FR-025), email reminders, anonymous (unauthenticated) responses, and importing feedback into MLflow (core-007 User Story 6 owns that import and can read the same files).
+
+## Later: learning from feedback (Phase 3, not built)
+
+The aim is a semi-autonomous loop: feedback drives proposed fixes and new tests; people only approve what is promoted to production. Before anything is built, these need deciding:
+
+- **Keeping the test honest.** If a downvoted question becomes a golden case and the lesson from it also goes into a knowledge base the agent reads, the score rises without the agent getting better. Cases that feed lessons must be kept apart from the cases that score. [NEEDS CLARIFICATION: how the golden set is split for feedback-driven lessons (core-008 open item 3)]
+- **What a lesson may hold.** Guidance and wording only: never a number (no digit comes from a model) and never answer-key material. The knowledge base lives outside `eval/`.
+- **Who approves.** A proposed fix runs the eval loop and must pass `eval gate`; a person approves promotion. A fix the system is not confident about goes to a person first.
+- **Storage.** Feedback lives as documents in the state bucket today. [NEEDS CLARIFICATION: whether and when feedback moves to Postgres (core-008 open item 4)]

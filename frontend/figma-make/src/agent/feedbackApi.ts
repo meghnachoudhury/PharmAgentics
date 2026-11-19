@@ -62,6 +62,23 @@ export async function sendPulse(body: { rating: Rating; comment?: string; where?
   if (!isObject(v) || typeof v.rating !== "string") throw new Error("The feedback service answered in an unexpected way.")
   return v as unknown as { rating: Rating; at: string }
 }
+// Votes on one answer (core-008 User Story 5): one per person, answer and view; a new vote replaces the old.
+export type Vote = "up" | "down"
+export type AnswerLane = "briefing" | "forecast"
+export type AnswerView = "analyst" | "leadership"
+export type MyVote = { vote: Vote | null; comment: string | null; at: string | null }
+function asVote(v: unknown): MyVote {
+  if (!isObject(v) || !("vote" in v)) throw new Error("The feedback service answered in an unexpected way.")
+  return v as unknown as MyVote
+}
+export async function getMyVote(lane: AnswerLane, ref: string, view: AnswerView): Promise<MyVote> {
+  const q = new URLSearchParams({ lane, ref, view })
+  return asVote(await api(`/api/feedback/vote?${q.toString()}`))
+}
+export async function sendVote(body: { lane: AnswerLane; ref: string; view: AnswerView; vote: Vote; comment?: string }): Promise<MyVote> {
+  return asVote(await api("/api/feedback/vote", post({ ...body, comment: body.comment || null })))
+}
+
 export async function getQuestionnaire(): Promise<Questionnaire> {
   const v: unknown = await api("/api/feedback/questionnaire")
   if (!isObject(v) || !Array.isArray(v.sections) || typeof v.version !== "number") throw new Error("The questionnaire is unavailable.")

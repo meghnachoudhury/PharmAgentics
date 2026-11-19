@@ -1,2 +1,5 @@
 # Local MLflow store: runs, reruns, traces, spans and scores. Read it through the MLflow UI.
 mlflow/
+
+# Draft golden-set candidates from UAT votes (core-008 FR-016). Reviewed by a person; only promoted cases are committed, in golden/.
+candidates/

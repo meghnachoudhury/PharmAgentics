@@ -149,3 +149,4 @@ uv run python src/pharmagentics/data/load_duckdb.py
 | "Ran on data version X, not this app's Y" | Your local data differs from the app's. Reload it from the same release, and see "Data version mismatch" below |
 | `keycloak` says your `.env.uat` differs | `env-pull` (take the team's) or `env-push` (if your change should become the team's) |
 | `401` from the worker | Your worker token is stale: `env-pull` |
+| UAT passwords a teammate shared do not work on the hosted app | Their `make_env.py` made new local passwords; only the shared copy is live. Everyone `env-pull`s and signs in with those. A new password goes live only after `env-push` and then `keycloak` |

@@ -49,6 +49,12 @@ def main() -> None:
     print(f"{ENV}: {len(added)} new value(s), {len(current) - len(added)} kept.")
     print("Sign-in accounts: uat-briefing-analyst, uat-briefing-director, uat-forecast-analyst, uat-forecast-manager;")
     print(f"passwords are the UAT_PASSWORD_* lines in {ENV.name}.")
+    new_passwords = [k for k in added if k.startswith("UAT_PASSWORD_")]
+    if new_passwords:  # how a teammate's passwords drift from the hosted ones: see deploy/README.md
+        print(f"\nNOTE: {len(new_passwords)} new sign-in password(s) were made here. They work on YOUR local stack only.\n"
+              "The hosted app uses the team's shared copy. To sign in there, take that copy instead (it replaces this file):\n"
+              "  uv run python deploy/gcp.py env-pull --project pharmagentics --account <your Google account>\n"
+              "Passwords made here go live only after `gcp.py env-push` and `gcp.py keycloak`, which changes them for everyone.")
 
 
 if __name__ == "__main__":

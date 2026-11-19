@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react"
 import { BrandMark, Icon } from "./agent/primitives"
-import { FeedbackProvider, PulseButton, QuestionnaireMenuItem, SignOutMenuItem, SurveyBanner } from "./Feedback"
+import { AnswerFeedback, FeedbackProvider, PulseButton, QuestionnaireMenuItem, SignOutMenuItem, SurveyBanner } from "./Feedback"
 import {
   getContext, getBriefing, getMe, getTriage, listPublished, markInsight, openBrief, reviewBrief, NotSignedIn,
   getAgentStatus, submitAgentJob, waitAgentJob, agentPlan, agentBrief,
@@ -208,6 +208,7 @@ function ForecastWorkspace({me, section}: {me: Me, section: "workbench" | "appro
         </div>
       )}
       <ForecastReport run={selected}/>
+      <AnswerFeedback lane="forecast" refId={selected.forecast_run_id} view={selected.view}/>
       {analyst && selected.view === "analyst" && selected.review_status === "pending_review" && <div className="rounded-2xl bg-sheet px-5 py-4 text-sm text-muted ring-1 ring-rule"><strong className="text-ink">Submitted for Brand Manager approval.</strong><p className="mt-1">This explanation is no longer editable. Sign in as <code>uat-forecast-manager</code> to approve, return, or reject it.</p></div>}
       {analyst && selected.view === "analyst" && section === "workbench" && (selected.review_status === "not_submitted" || selected.review_status === "returned") && <button disabled={busy} onClick={()=>void submit()} className="rounded-xl bg-navy px-4 py-3 text-sm font-semibold text-white disabled:bg-rule">Submit to Brand Manager</button>}
       {!analyst && selected.review_status === "pending_review" && <div className="rounded-2xl bg-white p-5 ring-1 ring-rule">
@@ -273,7 +274,7 @@ function InsightButton({briefId, view}: {briefId: string, view: "analyst" | "lea
 }
 
 function SummaryCard({brief, preview=false}: {brief: LeadershipBrief, preview?: boolean}) {
-  return <article className="overflow-hidden rounded-2xl bg-sheet shadow-sm ring-1 ring-rule pa-rise">
+  return <><article className="overflow-hidden rounded-2xl bg-sheet shadow-sm ring-1 ring-rule pa-rise">
     <div className="border-b border-rule px-6 py-5"><div className="flex flex-wrap items-center gap-2">
       <span className={`${chip} bg-humanbg text-human`}>{preview ? "Leadership preview" : "Executive summary"}</span>
       {brief.review_status==="approved" ? <span className={`${chip} bg-okbg text-ok`}>Approved by the Commercial Analyst · {labelTime(brief.reviewed_at)}</span> : <span className={REVIEW_CHIP[brief.review_status][0]}>{REVIEW_CHIP[brief.review_status][1]}</span>}
@@ -282,6 +283,7 @@ function SummaryCard({brief, preview=false}: {brief: LeadershipBrief, preview?: 
     <div className="px-6 py-6"><pre className="whitespace-pre-wrap break-words font-sans text-[14px] leading-[1.85] text-ink">{brief.summary}</pre></div>
     <div className="border-t border-rule px-6 py-4 text-xs text-muted">Every figure comes from the approved analyst brief. Evidence and source queries stay with the Commercial Analyst.</div>
   </article>
+  <AnswerFeedback lane="briefing" refId={brief.brief_id} view="leadership"/></>
 }
 
 function PublishedList({onOpen}: {onOpen: (id: string) => void}) {
@@ -438,6 +440,7 @@ function AnalystBrief({result, onChange}: {result: BriefingResult, onChange: (r:
       </section>
       <ReviewPanel result={result} onChange={onChange}/>
     </article>}
+    {mode==="analyst" && <AnswerFeedback lane="briefing" refId={result.brief_id} view="analyst"/>}
     {mode==="analyst" && result.flow && <FlowPanel flow={result.flow} triage={result.triage}/>}
     <InsightButton briefId={result.brief_id} view={mode}/>
     {evidenceId && <EvidenceDrawer result={result} selectedId={evidenceId} onClose={()=>setEvidenceId(null)}/>}
