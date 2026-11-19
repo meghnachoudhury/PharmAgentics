@@ -1,32 +1,39 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&display=swap");
 @import 'tailwindcss';
+
+/* Self-hosted variable fonts (public/fonts): IBM Plex Sans for the interface and data, Source Serif 4 for
+   titles and brief prose. One file per subset serves every weight. */
+@font-face { font-family: "IBM Plex Sans"; font-style: normal; font-weight: 100 700; font-display: swap; src: url("/fonts/ibm-plex-sans-latin.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "IBM Plex Sans"; font-style: normal; font-weight: 100 700; font-display: swap; src: url("/fonts/ibm-plex-sans-latin-ext.woff2") format("woff2"); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: "Source Serif 4"; font-style: normal; font-weight: 200 900; font-display: swap; src: url("/fonts/source-serif-4-latin.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Source Serif 4"; font-style: normal; font-weight: 200 900; font-display: swap; src: url("/fonts/source-serif-4-latin-ext.woff2") format("woff2"); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: "Source Serif 4"; font-style: italic; font-weight: 200 900; font-display: swap; src: url("/fonts/source-serif-4-italic-latin.woff2") format("woff2"); unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: "Source Serif 4"; font-style: italic; font-weight: 200 900; font-display: swap; src: url("/fonts/source-serif-4-italic-latin-ext.woff2") format("woff2"); unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C4, U+2113, U+2C60-2C7F, U+A720-A7FF; }
 
 @theme {
   --font-serif: "Source Serif 4", Georgia, serif;
-  --font-sans: "Inter", system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
-  /* Dark only. Near-black with Merck-teal accents; panels are frosted (see .bg-sheet below).
-     Text pairs are measured on the panel as rendered over the page and its glow: see the contrast note in
-     the commit; every pair clears WCAG AA 4.5:1. */
-  --color-paper: #060a09;                  /* the page, input wells */
-  --color-sheet: rgb(15 22 20 / 0.74);     /* frosted panels: cards, sidebar, header, menus */
-  --color-ink: #e8efec;                    /* body text */
-  --color-muted: #95a49e;                  /* secondary text */
-  --color-rule: #23302c;                   /* dividers, input borders, panel edges */
+  --font-sans: "IBM Plex Sans", system-ui, sans-serif;
+  --font-mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  /* Dark only. Restrained: neutrals carry the page; the logo's sage teal marks the one primary action,
+     the current selection and focus. Every text pair below clears WCAG AA 4.5:1 on paper and sheet. */
+  --color-paper: #0b0f0e;      /* the page, input wells */
+  --color-sheet: #121816;      /* panels and the sidebar: one flat, solid layer */
+  --color-ink: #e6ece9;        /* body text */
+  --color-muted: #94a39d;      /* secondary text */
+  --color-rule: #232c29;       /* the one border and divider colour */
   --color-warn: #c3cac6;
   --color-warnbg: #1a2220;
-  /* The one filled action per view: Merck teal family. White text on it */
-  --color-navy: #007a71;
-  --color-navyhover: #00857c;              /* Merck teal */
+  /* Primary action: sage teal from the mark (#487871). White text on both */
+  --color-navy: #3f6d66;
+  --color-navyhover: #487871;
   --color-onaccent: #ffffff;
   /* Leaders, human review */
   --color-human: #c4b5fd;
   --color-humanbg: #211c38;
-  /* Accent for icons, links, selected states; agentdeep is the lighter text tint */
-  --color-agent: #5cc9bc;
-  --color-agentdeep: #93ded3;
-  --color-agentbg: #0c2421;
-  /* Verified and successful states: soft blue, always with a check mark or a word, never colour alone */
+  /* Accent on dark: current selection, links, icons that carry state */
+  --color-agent: #8fc2b8;
+  --color-agentdeep: #a9d3ca;
+  --color-agentbg: #15211f;
+  /* Verified and successful states: soft blue, always with a word or a check mark */
   --color-ok: #8ab4f8;
   --color-okbg: #13213a;
   /* Data-health alerts, uncertainty, review required */
@@ -34,71 +41,75 @@
   --color-amberbg: #2a1f08;
   --color-amberline: #5c4513;
   --color-neg: #f87171;
-  /* Data classification (core-009), lowest to highest */
-  --color-lv-public: #a3b1ab;
-  --color-lv-proprietary: #8ab4f8;
-  --color-lv-confidential: #fbbf24;
-  --color-lv-sensitive: #f87171;
 }
 
 :root {
-  color-scheme: dark;                      /* native selects, scrollbars and pickers render dark */
-  accent-color: var(--color-agent);        /* radios and checkboxes */
+  color-scheme: dark;                   /* native selects, scrollbars and pickers render dark */
+  accent-color: var(--color-agent);     /* radios and checkboxes */
+  caret-color: var(--color-agent);
+  scrollbar-color: #2c3633 transparent;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
 @layer base {
   body {
-    /* Two faint teal glows give the frosted panels something to blur. */
-    background:
-      radial-gradient(56rem 38rem at 88% -12%, rgb(0 133 124 / 0.20), transparent 62%),
-      radial-gradient(48rem 34rem at -8% 108%, rgb(0 133 124 / 0.12), transparent 60%),
-      var(--color-paper);
+    background: radial-gradient(60rem 40rem at 92% -14%, rgb(72 120 113 / 0.10), transparent 60%), var(--color-paper);
     background-attachment: fixed;
     color: var(--color-ink);
     font-family: var(--font-sans);
+    font-size: 0.9375rem;
   }
-  h1, h2, h3 {
+  h1, h2 {
     font-family: var(--font-serif);
-    letter-spacing: -0.01em;
+    font-weight: 500;
+    letter-spacing: -0.015em;
     text-wrap: balance;
   }
   p { text-wrap: pretty; }
+  ::selection { background: rgb(143 194 184 / 0.28); color: var(--color-ink); }
+  :focus-visible { outline: 2px solid var(--color-agent); outline-offset: 2px; }
+  a { text-underline-offset: 0.2em; }
 }
 
-/* Frosted panels: every surface on bg-sheet blurs what lies beneath. Browsers without backdrop-filter
-   keep the 74%-opaque panel colour, which still clears contrast on its own. */
-@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
-  .bg-sheet {
-    -webkit-backdrop-filter: blur(18px) saturate(140%);
-    backdrop-filter: blur(18px) saturate(140%);
+@layer utilities {
+  /* Content is centred on the whole page, not on the space beside the sidebar. --rail is the width the
+     sidebar takes (set on the shell); when there is no room, content clears it by the gutter. */
+  .workspace-content {
+    max-width: 52rem;
+    margin-left: max(0px, calc((100vw - 52rem) / 2 - var(--rail, 0px)));
+    margin-right: auto;
+    padding-inline: 1.25rem;
+  }
+  /* Frosted glass only where something floats over the page: the sidebar while it hovers open, menus,
+     the phone drawer and toasts. Without backdrop-filter the 92%-opaque fill still reads. */
+  .glass {
+    background: rgb(18 24 22 / 0.92);
+  }
+  @supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+    .glass {
+      background: rgb(18 24 22 / 0.78);
+      -webkit-backdrop-filter: blur(16px) saturate(130%);
+      backdrop-filter: blur(16px) saturate(130%);
+    }
+  }
+  .pa-rise { animation: pa-rise 200ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .pa-slide { animation: pa-slide 200ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .pa-pulse { animation: pa-pulse 1.2s ease-in-out infinite; }
+  @media (prefers-reduced-motion: reduce) {
+    .pa-rise, .pa-slide, .pa-pulse { animation: none; }
   }
 }
 
 @keyframes pa-rise {
-  from { opacity: 0; transform: translateY(6px); }
+  from { opacity: 0; transform: translateY(4px); }
   to { opacity: 1; transform: none; }
 }
 @keyframes pa-slide {
-  from { transform: translateX(24px); opacity: 0; }
+  from { transform: translateX(-12px); opacity: 0; }
   to { transform: none; opacity: 1; }
 }
 @keyframes pa-pulse {
   0%, 100% { opacity: 0.35; }
   50% { opacity: 1; }
-}
-@layer utilities {
-  .workspace-content {
-    width: 100%;
-    max-width: 52rem;
-    margin-inline: auto;
-    padding-inline: 1.25rem;
-  }
-  .pa-rise { animation: pa-rise 260ms ease-out both; }
-  .pa-slide { animation: pa-slide 220ms ease-out both; }
-  .pa-pulse { animation: pa-pulse 1.2s ease-in-out infinite; }
-  @media (prefers-reduced-motion: reduce) {
-    .pa-rise, .pa-slide, .pa-pulse { animation: none; }
-  }
 }

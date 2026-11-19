@@ -104,7 +104,7 @@ export function AnswerFeedback({ lane, refId, view }: { lane: AnswerLane; refId:
   }
   const thumb = (v: Vote) => `grid h-9 w-9 place-items-center rounded-lg ring-1 transition disabled:opacity-60 ${vote === v ? (v === "up" ? "bg-okbg text-ok ring-ok/40" : "bg-amberbg text-amber ring-amber/40") : "text-muted ring-rule hover:bg-paper hover:text-ink"}`
   const noted = vote !== null && saved === comment.trim() && saved !== ""
-  return <div className="space-y-3 rounded-2xl bg-sheet px-5 py-4 ring-1 ring-rule">
+  return <div className="space-y-3 rounded-xl bg-sheet px-5 py-4 border border-rule">
     <p className="text-xs text-muted">PharmAgentics can make mistakes. Check important figures {view === "leadership" ? "with the Commercial Analyst" : "against the evidence"}.</p>
     <div className="flex flex-wrap items-center justify-between gap-3 border-t border-rule pt-3">
       <span className="text-sm text-ink">{vote ? "Thanks for rating this answer" : "Was this answer right?"}</span>
@@ -119,7 +119,7 @@ export function AnswerFeedback({ lane, refId, view }: { lane: AnswerLane; refId:
         placeholder={vote === "down" ? "What was wrong? (optional, no names please)" : "What worked? (optional, no names please)"}
         className="min-w-0 flex-1 rounded-xl border border-rule bg-paper p-2.5 text-sm" />
       <button type="button" disabled={busy || noted || !comment.trim()} onClick={() => void send(vote, comment)}
-        className="rounded-lg px-3 py-2 text-xs font-semibold text-agentdeep ring-1 ring-rule hover:bg-paper disabled:text-muted disabled:opacity-60">{noted ? "Comment saved" : "Send comment"}</button>
+        className="rounded-lg px-3 py-2 text-xs font-semibold text-agentdeep border border-rule hover:bg-paper disabled:text-muted disabled:opacity-60">{noted ? "Comment saved" : "Send comment"}</button>
     </div>}
     {error && <p role="alert" className="text-xs text-amber">{error}</p>}
     <SessionRating refId={refId} />
@@ -163,7 +163,7 @@ function SessionRating({ refId }: { refId: string }) {
       <textarea id={`pulse-note-${refId}`} value={comment} onChange={e => setComment(e.target.value)} maxLength={300} rows={2}
         placeholder={current === "good" ? "What is working? (optional)" : "What happened? (optional)"} className="min-w-0 flex-1 rounded-xl border border-rule bg-paper p-2.5 text-sm" />
       <div className="flex gap-2">
-        <button type="button" disabled={busy || !comment.trim()} onClick={() => void send(current, comment)} className="rounded-lg px-3 py-2 text-xs font-semibold text-agentdeep ring-1 ring-rule hover:bg-paper disabled:text-muted disabled:opacity-60">Send note</button>
+        <button type="button" disabled={busy || !comment.trim()} onClick={() => void send(current, comment)} className="rounded-lg px-3 py-2 text-xs font-semibold text-agentdeep border border-rule hover:bg-paper disabled:text-muted disabled:opacity-60">Send note</button>
         <button type="button" onClick={() => setEditing(false)} className="rounded-lg px-3 py-2 text-xs text-muted hover:text-ink">Done</button>
       </div>
     </div>}
@@ -243,7 +243,7 @@ function SurveyModal({ onClose, onSubmitted }: { onClose: () => void; onSubmitte
   }
 
   return <div className="fixed inset-0 z-50 flex justify-center overflow-y-auto overscroll-contain bg-black/60 px-3 py-6 backdrop-blur-sm">
-    <div role="dialog" aria-modal="true" aria-labelledby="survey-title" className="h-fit w-full max-w-2xl rounded-2xl bg-sheet shadow-xl ring-1 ring-rule pa-rise">
+    <div role="dialog" aria-modal="true" aria-labelledby="survey-title" className="h-fit w-full max-w-2xl rounded-xl bg-sheet shadow-xl border border-rule pa-rise">
       <div className="flex items-start justify-between gap-3 border-b border-rule px-6 py-4">
         <div><h2 id="survey-title" className="text-lg font-semibold">{q?.title ?? "Platform questionnaire"}</h2>{q && <p className="mt-1 text-sm text-muted">{q.intro}</p>}</div>
         <button type="button" onClick={onClose} aria-label="Close questionnaire" className="rounded-lg px-2 py-1 text-lg leading-none text-muted hover:bg-paper">×</button>
