@@ -23,6 +23,10 @@ P2 (Insights Manager), P4 (Marketer) and FM (Forecasting Manager) get no role.
 
 ## Clarifications
 
+### Session 2026-11-19
+
+- Q: The agent team on the local 4B model is slow and depends on a teammate's machine or a 15-minute cloud CPU run. What should run it? → A: **Claude Haiku 5.5 (`anthropic:claude-haiku-5-5`) through the Anthropic API, run by the app itself** (Michael). This reverses FR-016's "the web app never calls a model": a built-in worker inside the app takes agent jobs from the same queue and every result still passes the FR-027 traceability check, so no digit in a brief comes from the model. External workers and the cloud CPU host still work; the cloud host does not start while the built-in worker is online. About $0.02 a brief; the owner's Anthropic Console account pays, with a monthly spend cap set there. Only synthetic data and metric definitions reach the API (System Architecture §7).
+
 ### Session 2026-11-11
 
 - Q: What do leaders see? → A: The executive summary only, for now.
@@ -113,7 +117,7 @@ The app (sign-in, frontend and server) is reachable at a stable HTTPS address fo
 
 1. **Given** the deployed app after an idle period, **When** a user requests a briefing, **Then** it appears within the time in SC-004, including the cold start.
 2. **Given** the deployed app, **When** its contents are inspected, **Then** they contain no file from the eval package and no ground-truth file.
-3. **Given** the deployed app, **When** any request is served, **Then** no language model is called.
+3. **Given** the deployed app, **When** a request is served, **Then** no language model is called on the request's own path; only the built-in agent worker (FR-032) calls one, for a queued agent job.
 4. **Given** a full UAT month, **When** the billing report is read, **Then** the cost meets SC-003, and a budget alert would have fired before any charge above it.
 
 ---
@@ -223,7 +227,7 @@ The Forecast lane's roles are defined now so that the Forecast view can plug in 
 
 **Hosting and cost**
 
-- **FR-016**: The hosted web app MUST run only the deterministic scripted engine itself, plus committed agent snapshots (FR-027) and agent results posted by a worker (FR-028, FR-031). The web app MUST NOT call a language model; a model runs only in a worker, on a teammate's machine or in the cloud agent host (FR-031).
+- **FR-016**: The hosted web app MUST serve requests with the deterministic scripted engine, committed agent snapshots (FR-027) and agent results from a worker (FR-028, FR-031, FR-032). A request handler MUST NOT call a language model; a model runs only in a worker: on a teammate's machine, in the cloud agent host (FR-031), or in the app's built-in worker (FR-032, amended 2026-11-19).
 - **FR-028**: Agent jobs MUST go through a queue the app keeps: only the analyst role may submit; only a caller with the worker token may take or complete a job; the worker connects outbound only; one job runs at a time; a job not finished within its cap is marked failed. A posted result MUST pass the FR-027 traceability check on the app's data version before anyone sees it, and is labelled "agent output, experimental" with its model. The UI MUST show whether the agent host is online.
 - **FR-017**: The hosted app MUST serve the frontend and the server from the same address.
 - **FR-018**: The hosted app MUST contain no file from the eval package and no ground-truth file (shared Principle III). A check in the pipeline MUST fail if one is present.
@@ -240,6 +244,7 @@ The Forecast lane's roles are defined now so that the Forecast view can plug in 
 **Team operation**
 
 - **FR-031**: When an agent job waits and no worker is online, the app MUST start the cloud agent host: a Cloud Run job running the same worker and the same local model (Ollama, CPU only) in our own container, with no external model provider. The host MUST drain the queue and exit when idle, so it bills only while it works. It MUST NOT start while a teammate's machine is hosting, and MUST NOT start twice within a cooldown. The app MUST keep a monthly budget of the host's job-seconds, at most 80% of the Cloud Run free vCPU allowance, charge each cloud-run job and each start against it, and start nothing once it is used up. A running job MUST stay alive only while its worker heartbeats, and MUST fail after a hard time limit. The UI MUST say when the cloud host will start, that it is slower, and when its budget is used up. Posted results pass the FR-027 check like any other.
+- **FR-032**: When the app is configured with an Anthropic model (`PHARMAGENTICS_AGENT_MODEL=anthropic:<model>`) and `ANTHROPIC_API_KEY`, it MUST run a built-in worker that takes agent jobs from the same queue (FR-028), heartbeats while it works, and hands its result to the same acceptance path as a posted result, so the FR-027 traceability check applies unchanged. The key MUST come from the environment or a secret, never the image or the repository, and MUST never be logged. `PHARMAGENTICS_AGENT_IN_APP=0` turns the built-in worker off.
 - **FR-029**: The owner MUST be able to grant and revoke, per teammate Google account, a deployer role set that lets the teammate deploy the app and Keycloak, roll back, and read status, logs and the shared environment file (FR-030), with no long-lived key. The role set MUST NOT include billing, budgets, project deletion or granting access to others.
 - **FR-030**: The deployment's environment file (UAT passwords, session, client and worker secrets) MUST be shared in the project's secret store, never in the repository. A teammate with the FR-029 role set MUST be able to pull it into their own `deploy/.env.uat` with one command and push a changed one back. A Keycloak deploy MUST refuse to run from a local file that differs from the shared copy, so one teammate's stale file never overwrites another's passwords.
 

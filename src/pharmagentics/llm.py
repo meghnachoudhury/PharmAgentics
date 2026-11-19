@@ -2,10 +2,11 @@
 
     ollama:<model>   local Ollama (default; no API credits, nothing leaves the machine)
     gemini:<model>   Gemini Developer API; `gemini:` alone uses GEMINI_MODEL
+    anthropic:<model> Anthropic API, e.g. anthropic:claude-haiku-5-5 (the hosted agent team, 2026-11-19)
 
-The string comes from the caller or PHARMAGENTICS_AGENT_MODEL. GEMINI_API_KEY and GEMINI_MODEL are read
-from the environment or the repository's git-ignored .env. The key is never logged. Only synthetic data
-and metric definitions may go to Gemini (System Architecture §7).
+The string comes from the caller or PHARMAGENTICS_AGENT_MODEL. GEMINI_API_KEY, GEMINI_MODEL and
+ANTHROPIC_API_KEY are read from the environment or the repository's git-ignored .env. Keys are never logged.
+Only synthetic data and metric definitions may go to a hosted model (System Architecture §7).
 """
 from __future__ import annotations
 
@@ -19,6 +20,8 @@ DEFAULT_AGENT_MODEL = "ollama:qwen3:4b-instruct-2507-q4_K_M"
 OLLAMA_NUM_CTX = int(os.environ.get("PHARMAGENTICS_OLLAMA_NUM_CTX", "12288"))
 # A dead runner must fail one call, not hang the run.
 OLLAMA_TIMEOUT = float(os.environ.get("PHARMAGENTICS_OLLAMA_TIMEOUT", "300"))
+# Room for adaptive thinking plus a full answer; a capped turn would cut an answer off mid-sentence.
+ANTHROPIC_MAX_TOKENS = int(os.environ.get("PHARMAGENTICS_ANTHROPIC_MAX_TOKENS", "16000"))
 
 
 def load_env(path: Path = REPO_ROOT / ".env") -> None:
@@ -41,8 +44,8 @@ def model_spec(spec: str | None = None) -> str:
         model = os.environ.get("GEMINI_MODEL", "")
         if not model:
             raise ValueError("gemini: needs a model, in the string or in GEMINI_MODEL")
-    if provider not in ("ollama", "gemini") or not model:
-        raise ValueError(f"model string must be ollama:<model> or gemini:<model>, got {spec!r}")
+    if provider not in ("ollama", "gemini", "anthropic") or not model:
+        raise ValueError(f"model string must be ollama:<model>, gemini:<model> or anthropic:<model>, got {spec!r}")
     return f"{provider}:{model}"
 
 
@@ -59,6 +62,13 @@ def chat_client(spec: str | None = None):
         from ollama import AsyncClient
 
         return OllamaChatClient(model=model, client=AsyncClient(host=_ollama_host(), timeout=OLLAMA_TIMEOUT))
+    if provider == "anthropic":
+        from agent_framework.anthropic import AnthropicClient
+
+        key = os.environ.get("ANTHROPIC_API_KEY")
+        if not key:
+            raise ValueError("ANTHROPIC_API_KEY is not set (environment or .env)")
+        return AnthropicClient(api_key=key, model=model)
     from agent_framework.gemini import GeminiChatClient
 
     key = os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
@@ -90,8 +100,11 @@ def ollama_runtime(spec: str | None = None) -> dict:
 
 
 def chat_options(spec: str | None = None, temperature: float = 0.0) -> dict:
-    """Default options per provider: deterministic sampling, and a context window Ollama will not truncate."""
+    """Default options per provider: deterministic sampling, and a context window Ollama will not truncate.
+    Current Claude models reject a non-default temperature, so the Anthropic provider sends none."""
     provider = model_spec(spec).partition(":")[0]
+    if provider == "anthropic":
+        return {"max_tokens": ANTHROPIC_MAX_TOKENS}
     opts: dict = {"temperature": temperature}
     if provider == "ollama":
         opts["num_ctx"] = OLLAMA_NUM_CTX

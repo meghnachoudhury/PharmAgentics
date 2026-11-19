@@ -17,6 +17,7 @@ dev = [
 ]
 # The Briefing lane's fresh scripted baseline and, later, the agent.
 agent = [
+    "agent-framework-anthropic>=1.0.0b261112",
     "agent-framework-core>=1.24.0",
     "agent-framework-gemini>=1.0.0b261030",
     "agent-framework-ollama>=1.0.0b261030",
