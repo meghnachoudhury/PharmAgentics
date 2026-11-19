@@ -1,5 +1,5 @@
 # Local UAT stack (core-007): Keycloak + the PharmAgentics app, as on Cloud Run.
-#   uv run python deploy/make_env.py      # once: random secrets into deploy/.env.uat (git-ignored)
+#   uv run python deploy/make_env.py      # once: random service secrets + shared demo logins into deploy/.env.uat
 #   docker compose up --build
 #   open http://localhost:8080 and sign in as uat-briefing-analyst or uat-briefing-director
 # Keycloak keeps no database: the realm, roles and accounts are reimported at every start.

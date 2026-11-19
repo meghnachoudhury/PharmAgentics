@@ -27,6 +27,17 @@ def test_realm_in_repo_holds_no_secret_values():
     assert realm["registrationAllowed"] is False  # FR-012: no self-registration
 
 
+def test_versioned_demo_credentials_contain_only_the_four_named_uat_passwords():
+    values = {}
+    for line in (ROOT / "deploy" / "demo-credentials.env").read_text(encoding="utf-8").splitlines():
+        if "=" in line and not line.lstrip().startswith("#"):
+            key, value = line.split("=", 1)
+            values[key] = value
+    assert set(values) == {"UAT_PASSWORD_BRIEFING_ANALYST", "UAT_PASSWORD_BRIEFING_DIRECTOR",
+                           "UAT_PASSWORD_FORECAST_ANALYST", "UAT_PASSWORD_FORECAST_MANAGER"}
+    assert all(values.values())
+
+
 def test_realm_roles_match_the_policy():
     realm = json.loads((ROOT / "deploy" / "keycloak" / "realm-pharmagentics.json").read_text(encoding="utf-8"))
     policy = json.loads((ROOT / "src" / "pharmagentics" / "api" / "roles.json").read_text(encoding="utf-8"))
