@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "react"
 import { Toaster, toast } from "sonner"
 import { BrandMark, Icon, type IconName } from "./agent/primitives"
+import { TelemetryWorkspace } from "./Telemetry"
 import { AnswerFeedback, FeedbackProvider, ShareFeedbackLink, useFeedbackActions } from "./Feedback"
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem,
@@ -301,7 +302,7 @@ function ForecastWorkspace({me, section, onSection}: {me: Me, section: ForecastS
 const OPEN_KEY = "pa_sidebar_open"
 const readOpen = () => { try { return window.localStorage.getItem(OPEN_KEY) === "1" } catch { return false } }
 
-function SideNav({me, expanded, forecast, onBriefing, onForecast, onAnyClick}: {me: Me, expanded: boolean, forecast: boolean, onBriefing?: () => void, onForecast: () => void, onAnyClick?: () => void}) {
+function SideNav({me, expanded, forecast, telemetry, onBriefing, onForecast, onTelemetry, onAnyClick}: {me: Me, expanded: boolean, forecast: boolean, telemetry: boolean, onBriefing?: () => void, onForecast: () => void, onTelemetry: () => void, onAnyClick?: () => void}) {
   const row = (active: boolean) => `group flex w-full items-center gap-3 rounded-lg px-[10px] py-2.5 text-left text-sm transition-colors duration-150 ${active ? "bg-paper text-ink" : "text-muted hover:bg-paper/60 hover:text-ink"}`
   const label = (text: string) => <span className={expanded ? "truncate whitespace-nowrap pa-fade" : "sr-only"}>{text}</span>
   const item = (icon: IconName, text: string, active: boolean, go: () => void) =>
@@ -312,8 +313,9 @@ function SideNav({me, expanded, forecast, onBriefing, onForecast, onAnyClick}: {
       {expanded && <span className="pa-fade flex-1 truncate whitespace-nowrap font-serif text-[18px] font-medium">PharmAgentics</span>}
     </div>
     <nav className="mt-2 space-y-1 px-3" aria-label="Workspaces">
-      {onBriefing && item("briefings", "Weekly briefing", !forecast, onBriefing)}
-      {me.lanes.forecast?.available && item("trend", "Forecast explanation", forecast, onForecast)}
+      {onBriefing && item("briefings", "Weekly briefing", !forecast && !telemetry, onBriefing)}
+      {me.lanes.forecast?.available && item("trend", "Forecast explanation", forecast && !telemetry, onForecast)}
+      {item("layers", "Evaluation", telemetry, onTelemetry)}
     </nav>
     <div className="mt-auto space-y-2 px-3 pb-4">
       {me.auth_mode==="dev" && expanded && <p className="rounded-lg bg-amberbg px-2.5 py-1 text-[11px] text-amber">Development sign-in</p>}
@@ -325,6 +327,7 @@ function SideNav({me, expanded, forecast, onBriefing, onForecast, onAnyClick}: {
 function Shell({me, onBriefingHome, children, startInForecast=false}: {me: Me, onBriefingHome?: () => void, children: ReactNode, startInForecast?: boolean}) {
   const [mobileNav,setMobileNav] = useState(false)
   const [forecast,setForecast] = useState(startInForecast)
+  const [telemetry,setTelemetry] = useState(false)
   const [forecastSection,setForecastSection] = useState<ForecastSection>("workbench")
   const [open,setOpen] = useState(readOpen)
   const toggle = () => setOpen(o => { try { window.localStorage.setItem(OPEN_KEY, o ? "0" : "1") } catch { /* a convenience only */ } return !o })
@@ -334,16 +337,17 @@ function Shell({me, onBriefingHome, children, startInForecast=false}: {me: Me, o
     window.addEventListener("keydown", key)
     return () => window.removeEventListener("keydown", key)
   },[])
-  const goBriefing = onBriefingHome ? () => { setForecast(false); onBriefingHome() } : undefined
-  const goForecast = () => { setForecast(true); setForecastSection("workbench") }
+  const goBriefing = onBriefingHome ? () => { setTelemetry(false); setForecast(false); onBriefingHome() } : undefined
+  const goForecast = () => { setTelemetry(false); setForecast(true); setForecastSection("workbench") }
+  const goTelemetry = () => setTelemetry(true)
   const leader = !me.lanes.briefing?.views.includes("analyst") && !me.lanes.forecast?.views.includes("analyst")
   // --rail is the width the sidebar occupies; .workspace-content uses it to centre on the whole page (0 on phones).
   return <FeedbackProvider where={forecast ? "forecast" : "briefing"}><div className={`flex h-dvh overflow-hidden text-ink max-md:[--shift:0px] ${open ? "[--shift:0px]" : "[--shift:64px]"}`}>
     <aside aria-label="Sidebar" className={`hidden shrink-0 overflow-hidden border-r border-rule bg-sheet transition-[width] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] md:block ${open ? "w-[248px]" : "w-16"}`}>
-      <SideNav me={me} expanded={open} forecast={forecast} onBriefing={goBriefing} onForecast={goForecast}/>
+      <SideNav me={me} expanded={open} forecast={forecast} telemetry={telemetry} onBriefing={goBriefing} onForecast={goForecast} onTelemetry={goTelemetry}/>
     </aside>
     {mobileNav && <div className="fixed inset-0 z-40 flex md:hidden"><button aria-label="Close navigation" className="pa-fade absolute inset-0 bg-black/60" onClick={()=>setMobileNav(false)}/>
-      <div className="glass relative w-[280px] max-w-[85vw] overscroll-contain border-r border-rule pa-slide"><SideNav me={me} expanded forecast={forecast} onBriefing={goBriefing} onForecast={goForecast} onAnyClick={()=>setMobileNav(false)}/></div></div>}
+      <div className="glass relative w-[280px] max-w-[85vw] overscroll-contain border-r border-rule pa-slide"><SideNav me={me} expanded forecast={forecast} telemetry={telemetry} onBriefing={goBriefing} onForecast={goForecast} onTelemetry={goTelemetry} onAnyClick={()=>setMobileNav(false)}/></div></div>}
     <main className="flex min-w-0 flex-1 flex-col">
       <header className="flex h-16 shrink-0 items-center justify-between gap-3 border-b border-rule px-4 sm:px-5">
         <div className="flex min-w-0 items-center gap-2">
@@ -353,7 +357,7 @@ function Shell({me, onBriefingHome, children, startInForecast=false}: {me: Me, o
         </div>
         <AccountMenu me={me}/>
       </header>
-      <section className="min-h-0 flex-1 overflow-y-auto"><div hidden={forecast}>{children}</div>{forecast && <ForecastWorkspace key={forecastSection} me={me} section={forecastSection} onSection={setForecastSection}/>}</section>
+      <section className="min-h-0 flex-1 overflow-y-auto"><div hidden={forecast || telemetry}>{children}</div>{telemetry && <TelemetryWorkspace/>}{forecast && !telemetry && <ForecastWorkspace key={forecastSection} me={me} section={forecastSection} onSection={setForecastSection}/>}</section>
       <footer className="shrink-0 border-t border-rule px-5 py-2 text-center text-[11px] text-muted">PharmAgentics can make mistakes. Check important figures {leader ? "with the Commercial Analyst" : "against the evidence"}.</footer>
     </main>
     <Toaster theme="dark" position="bottom-right" toastOptions={{className: "glass !bg-transparent !text-ink !border !border-rule !font-sans !rounded-xl"}}/>
