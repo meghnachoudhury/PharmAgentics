@@ -14,11 +14,20 @@ The role-to-permission map is [`src/pharmagentics/api/roles.json`](../src/pharma
 ## Local
 
 ```powershell
-uv run python deploy/make_env.py     # once: random secrets and passwords in deploy/.env.uat (git-ignored)
+uv run python deploy/make_env.py     # once: random service secrets + tracked demo login passwords in deploy/.env.uat
 docker compose up --build            # Keycloak on :8081, app on :8080
 ```
 
-Open http://localhost:8080 and sign in as `uat-briefing-analyst` or `uat-briefing-director` (passwords: the `UAT_PASSWORD_*` lines in `deploy/.env.uat`). Keycloak's admin console is not used: accounts and roles are configuration, reloaded at every start.
+Open http://localhost:8080 and sign in with one of the shared logins below. Their passwords are in [`demo-credentials.env`](demo-credentials.env), which is tracked on purpose (toy project, synthetic data); `make_env.py` copies them into `.env.uat` and prints them, replacing any older local values. `.env.uat` remains git-ignored because it also holds local service secrets and the mentor's logins. Keycloak's admin console is not used: accounts and roles are configuration, reloaded at every start.
+
+| Sign-in account | Role(s) | Password line in `demo-credentials.env` |
+| :- | :- | :- |
+| `uat-briefing-analyst` | Commercial Analyst (P1) | `UAT_PASSWORD_BRIEFING_ANALYST` |
+| `uat-briefing-director` | Brand Director (P3) | `UAT_PASSWORD_BRIEFING_DIRECTOR` |
+| `uat-forecast-analyst` | Commercial Analytics Analyst (CA) | `UAT_PASSWORD_FORECAST_ANALYST` |
+| `uat-forecast-manager` | Brand Manager (BM) | `UAT_PASSWORD_FORECAST_MANAGER` |
+| `uat-both-analyst` | P1 and CA: both lanes, analyst view (the Keycloak version of `dev-both-analyst`) | `UAT_PASSWORD_BOTH_ANALYST` |
+| `uat-both-leader` | P3 and BM: both lanes, leadership view (the Keycloak version of `dev-both-leader`) | `UAT_PASSWORD_BOTH_LEADER` |
 
 Without Keycloak: `docker run --rm -p 8080:8080 -e PHARMAGENTICS_AUTH=dev pharmagentics:uat` gives a page of stand-in identities, one per role. Dev sign-in refuses to start on Cloud Run.
 
@@ -39,7 +48,7 @@ uv run python deploy/gcp.py status   --project <new-project-id>
 
 **Rollback.** `uv run python deploy/gcp.py rollback --project <id>` puts all traffic on the previous revision (no rebuild). `--service keycloak` does the same for Keycloak.
 
-**Adding a UAT participant.** Add a user to the realm file with `"value": "${UAT_PASSWORD_<NAME>}"` and one realm role, add `UAT_PASSWORD_<NAME>=...` to `deploy/.env.uat`, then run `deploy/gcp.py env-push` and `deploy/gcp.py keycloak`. The deploy refuses a placeholder with no value. Never commit a password.
+**Adding a UAT participant.** Add a user to the realm file with `"value": "${UAT_PASSWORD_<NAME>}"` and one realm role, add `UAT_PASSWORD_<NAME>=...` to `deploy/.env.uat`, then run `deploy/gcp.py env-push` and `deploy/gcp.py keycloak`. The deploy refuses a placeholder with no value. Only the six deliberately public toy-project logins in `demo-credentials.env` are versioned; never commit service or administrator secrets.
 
 ## Team access (FR-029, FR-030)
 

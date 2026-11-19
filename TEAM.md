@@ -12,12 +12,14 @@ How to use, host, run and deploy the PharmAgentics web app. For the design behin
 | `uat-briefing-director` | Brand Director (P3) | Executive summaries of approved briefs only; no evidence |
 | `uat-forecast-analyst` | Commercial Analytics Analyst (CA) | Forecast section (coming soon) |
 | `uat-forecast-manager` | Brand Manager (BM) | Forecast section (coming soon) |
+| `uat-both-analyst` | Commercial Analyst (P1) and Commercial Analytics Analyst (CA) | Both lanes in one sign-in, analyst view (same rights as `mentor-analyst`) |
+| `uat-both-leader` | Brand Director (P3) and Brand Manager (BM) | Both lanes in one sign-in, leadership view (same rights as `mentor-leader`) |
 | `mentor-analyst` | Commercial Analyst (P1) and Commercial Analytics Analyst (CA) | For the mentor, with edit rights: runs briefs, reviews the triage plan, approves or rejects, sees every number's source. Also previews the leadership view |
 | `mentor-leader` | Brand Director (P3) and Brand Manager (BM) | For the mentor, to try the leadership personas: executive summaries of approved briefs only, no evidence |
 
 The mentor needs two logins because one login cannot hold two roles in the same lane (the server gives the more restricted view): the Analyst and the Director are both Brand performance roles. Each mentor login also holds the matching Forecast role, so all four personas can be tried.
 
-Passwords are the `UAT_PASSWORD_*` lines in `deploy/.env.uat` (see setup below). Never commit that file or paste passwords into chat, issues or slides.
+The six `uat-*` passwords are shared on purpose (toy project, synthetic data): they are in [`deploy/demo-credentials.env`](deploy/demo-credentials.env), and `uv run python deploy/make_env.py` prints them. The mentor's passwords are the `UAT_PASSWORD_MENTOR_*` lines in `deploy/.env.uat` (see setup below). Never commit `.env.uat` or paste its secrets into chat, issues or slides.
 
 After the app has been idle, the first sign-in takes 15 to 30 seconds while the sign-in service wakes up. A "Starting the sign-in service" page retries by itself.
 
