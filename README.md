@@ -22,6 +22,24 @@ Both sit on the shared data layer and orchestration in `src/pharmagentics/`.
 
 **Team:** how to use, host, run and deploy the web app is in [TEAM.md](TEAM.md).
 
+## Hosted app and logins
+
+**App:** https://pharmagentics-app-18389319270.us-central1.run.app (synthetic data only; the first sign-in after a quiet spell takes 15 to 30 seconds while the sign-in service wakes up).
+
+| Login | Password | Role |
+| :- | :- | :- |
+| `uat-briefing-analyst` | `1kS0UoPCUFR9aqw4` | Commercial Analyst (P1), Weekly briefing |
+| `uat-briefing-director` | `J41a1R8lgkZUmkv2` | Brand Director (P3), Weekly briefing |
+| `uat-forecast-analyst` | `UHzTdiSH0hPIHmnC` | Commercial Analytics Analyst (CA), Forecast explanation |
+| `uat-forecast-manager` | `eIaf0-YtGvg7nPca` | Brand Manager (BM), Forecast explanation |
+| `uat-tester` | `BjpYK5HgqNCObxxL` | Test view: both lanes; "View as" in the account menu switches between Analyst (P1, CA) and Leadership (P3, BM) |
+
+The same passwords work on the local stack (`deploy/make_env.py`, then `docker compose up --build`); they come from [`deploy/demo-credentials.env`](deploy/demo-credentials.env). They are shared on purpose: this is a class project on synthetic data. The service secrets in `deploy/.env.uat` are not, so keep that file out of git.
+
+**Update, 2026-11-19:**
+
+> Sign-in on the hosted app is fixed (a Keycloak redeploy that day had put its client secret out of sync with the app). There are now five logins: the four role logins Sienna shared, plus `uat-tester`, which switches between the Analyst and Leadership views of both lanes from the account menu. The `mentor-*` logins are gone. Passwords are in the table above and in `deploy/demo-credentials.env`. If you ran `env-pull` on 2026-11-19, run `uv run python deploy/gcp.py env-pull --project pharmagentics --account <you> --force` to get the right worker token. Before `env-push` or `gcp.py keycloak`, please check with Michael: those replace the live secrets for everyone.
+
 ## Setup
 
 Install [uv](https://docs.astral.sh/uv/getting-started/installation/), then run
