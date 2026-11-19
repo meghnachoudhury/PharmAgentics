@@ -31,6 +31,11 @@
       "actions": ["read", "review"]
     }
   },
+  "test_role": {
+    "name": "tester",
+    "label": "Test view",
+    "_comment": "One test login (uat-tester) that is not a persona: it switches between the analyst view (P1, CA) and the leadership view (P3, BM) of both lanes, and then has exactly that role's rights. Its UAT events and feedback carry test: true."
+  },
   "lanes": {
     "briefing": {"available": true},
     "forecast": {"available": true}

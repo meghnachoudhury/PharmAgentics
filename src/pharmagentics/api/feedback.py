@@ -175,7 +175,7 @@ def _sid(request: Request) -> str:
 
 
 def _who(p: rbac.Principal, roles: list[rbac.Role]) -> dict:
-    return {"user": rbac.pseudonym(p.sub), "roles": [r.name for r in roles], "personas": [r.persona for r in roles]}
+    return {"user": rbac.pseudonym(p.sub), "roles": [r.name for r in roles], "personas": [r.persona for r in roles], **p.tag()}
 
 
 def _survey_key(user: str) -> str:

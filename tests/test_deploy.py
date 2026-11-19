@@ -15,8 +15,7 @@ spec.loader.exec_module(gcp)
 
 ENV = {"PHARMAGENTICS_OIDC_CLIENT_SECRET": "s3cret", "UAT_PASSWORD_BRIEFING_ANALYST": "a", "UAT_PASSWORD_BRIEFING_DIRECTOR": "d",
        "UAT_PASSWORD_FORECAST_ANALYST": "fa", "UAT_PASSWORD_FORECAST_MANAGER": "fm",
-       "UAT_PASSWORD_BOTH_ANALYST": "ba", "UAT_PASSWORD_BOTH_LEADER": "bl",
-       "UAT_PASSWORD_MENTOR_ANALYST": "ma", "UAT_PASSWORD_MENTOR_LEADER": "ml"}
+       "UAT_PASSWORD_TESTER": "t"}
 
 
 def test_realm_in_repo_holds_no_secret_values():
@@ -30,7 +29,7 @@ def test_realm_in_repo_holds_no_secret_values():
 
 SHARED_LOGINS = {"uat-briefing-analyst": "UAT_PASSWORD_BRIEFING_ANALYST", "uat-briefing-director": "UAT_PASSWORD_BRIEFING_DIRECTOR",
                  "uat-forecast-analyst": "UAT_PASSWORD_FORECAST_ANALYST", "uat-forecast-manager": "UAT_PASSWORD_FORECAST_MANAGER",
-                 "uat-both-analyst": "UAT_PASSWORD_BOTH_ANALYST", "uat-both-leader": "UAT_PASSWORD_BOTH_LEADER"}
+                 "uat-tester": "UAT_PASSWORD_TESTER"}
 
 
 def test_versioned_demo_credentials_contain_only_the_shared_uat_passwords():
@@ -39,7 +38,7 @@ def test_versioned_demo_credentials_contain_only_the_shared_uat_passwords():
         if "=" in line and not line.lstrip().startswith("#"):
             key, value = line.split("=", 1)
             values[key] = value
-    assert set(values) == set(SHARED_LOGINS.values())  # never a service secret or the mentor's logins
+    assert set(values) == set(SHARED_LOGINS.values())  # never a service secret
     assert all(values.values())
 
 
@@ -50,18 +49,17 @@ def test_each_shared_password_belongs_to_its_realm_account():
         assert users[account]["credentials"][0]["value"] == "${" + key + "}"
 
 
-@pytest.mark.parametrize("account,roles", [("uat-both-analyst", {"briefing-analyst", "forecast-analyst"}),
-                                           ("uat-both-leader", {"briefing-director", "forecast-manager"})])
-def test_both_lane_logins_hold_one_role_per_lane(account, roles):
+def test_the_realm_has_exactly_the_five_logins_and_the_tester_holds_only_the_test_role():
     realm = json.loads((ROOT / "deploy" / "keycloak" / "realm-pharmagentics.json").read_text(encoding="utf-8"))
-    user = next(u for u in realm["users"] if u["username"] == account)
-    assert set(user["realmRoles"]) == roles
+    users = {u["username"]: u for u in realm["users"]}
+    assert set(users) == set(SHARED_LOGINS)
+    assert users["uat-tester"]["realmRoles"] == ["tester"]
 
 
 def test_realm_roles_match_the_policy():
     realm = json.loads((ROOT / "deploy" / "keycloak" / "realm-pharmagentics.json").read_text(encoding="utf-8"))
     policy = json.loads((ROOT / "src" / "pharmagentics" / "api" / "roles.json").read_text(encoding="utf-8"))
-    assert {r["name"] for r in realm["roles"]["realm"]} == set(policy["roles"])
+    assert {r["name"] for r in realm["roles"]["realm"]} == set(policy["roles"]) | {policy["test_role"]["name"]}
 
 
 def test_render_realm_fills_every_placeholder():

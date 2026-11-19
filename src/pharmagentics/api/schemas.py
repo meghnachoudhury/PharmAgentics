@@ -85,6 +85,13 @@ class ReleaseContext(BaseModel):
     engine: Literal["scripted"] = "scripted"
 
 
+class ViewAs(BaseModel):
+    """The test login's choice: the analyst roles (P1, CA) or the leadership roles (P3, BM) of both lanes."""
+    model_config = ConfigDict(extra="forbid")
+
+    view: Literal["analyst", "leadership"]
+
+
 class ReviewRequest(BaseModel):
     """The analyst's decision on one brief (core-007 FR-010). A rejection needs a reason."""
     model_config = ConfigDict(extra="forbid")

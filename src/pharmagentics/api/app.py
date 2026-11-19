@@ -20,7 +20,7 @@ import secrets
 import time
 from pathlib import Path
 
-from fastapi import Depends, FastAPI, Header, HTTPException, Query, Response
+from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request, Response
 from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
@@ -28,7 +28,7 @@ from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
 from . import auth, cloud, feedback, forecast, jobs, rbac, service, store, views
-from .schemas import (AgentJobRequest, BriefingQuery, InsightMark, ReleaseContext, ReviewRequest, WorkerPoll,
+from .schemas import (AgentJobRequest, BriefingQuery, InsightMark, ReleaseContext, ReviewRequest, ViewAs, WorkerPoll,
                       WorkerResult)
 
 logger = logging.getLogger(__name__)
@@ -80,7 +80,7 @@ def _no_store(response: Response) -> None:
 
 
 def _who(p: rbac.Principal, role: rbac.Role) -> dict:
-    return {"user": rbac.pseudonym(p.sub), "role": role.name, "persona": role.persona}
+    return {"user": rbac.pseudonym(p.sub), "role": role.name, "persona": role.persona, **p.tag()}
 
 
 @app.get("/api/health", tags=["app"])
@@ -94,7 +94,17 @@ def me(response: Response, p: rbac.Principal = Depends(rbac.require_user)) -> di
     _no_store(response)
     lanes = {r.lane: {"role": r.name, "persona": r.persona, "label": r.label, "views": list(r.views),
                       "actions": list(r.actions), "available": rbac.lane_available(r.lane)} for r in p.lanes}
-    return {"name": p.name, "auth_mode": auth.mode(), "lanes": lanes}
+    return {"name": p.name, "auth_mode": auth.mode(), "lanes": lanes,
+            "tester": p.is_tester, "view_as": p.view_as if p.is_tester else None}
+
+
+@app.post("/api/me/view-as", tags=["app"])
+def view_as(body: ViewAs, request: Request, response: Response, p: rbac.Principal = Depends(rbac.require_user)) -> dict:
+    """The test login switches between the analyst roles (P1, CA) and the leadership roles (P3, BM) of both lanes."""
+    if not p.is_tester:
+        raise HTTPException(status_code=403, detail="Only the test login can switch views.")
+    request.session["user"] = {**request.session["user"], "view_as": body.view}
+    return me(response, rbac.principal(request))
 
 
 @app.get("/api/briefing/context", tags=["briefing"], response_model=ReleaseContext)

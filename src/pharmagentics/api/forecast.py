@@ -146,7 +146,7 @@ async def context(response: Response, who=Forecast) -> dict:
 
 
 def _who(p: rbac.Principal, role: rbac.Role) -> dict:
-    return {"user": rbac.pseudonym(p.sub), "role": role.name, "persona": role.persona}
+    return {"user": rbac.pseudonym(p.sub), "role": role.name, "persona": role.persona, **p.tag()}
 
 
 def _record(run_id: str) -> dict:

@@ -40,6 +40,15 @@ def roles() -> dict[str, Role]:
             for name, r in policy()["roles"].items()}
 
 
+def test_role() -> str | None:
+    """The realm role of the test login, which switches between the analyst and the leadership roles."""
+    return (policy().get("test_role") or {}).get("name")
+
+
+def known_role_names() -> set[str]:
+    return set(roles()) | ({test_role()} - {None})
+
+
 def lane_available(lane: str) -> bool:
     return bool(policy()["lanes"].get(lane, {}).get("available"))
 
@@ -49,12 +58,28 @@ class Principal:
     sub: str
     name: str
     role_names: tuple[str, ...]
+    view_as: str = ANALYST  # the test login only: which side of each lane it is looking at
+
+    @property
+    def is_tester(self) -> bool:
+        return test_role() in self.role_names
 
     def role(self, lane: str) -> Role | None:
         """The user's role in a lane. Roles not in the policy are ignored; if a user holds two roles
-        in one lane by mistake, the more restricted one (fewer views) applies."""
+        in one lane by mistake, the more restricted one (fewer views) applies. The test login gets the
+        lane's analyst role or its leadership role, whichever it has chosen to view as."""
+        if self.is_tester:
+            lane_roles = [r for r in roles().values() if r.lane == lane]
+            if not lane_roles:
+                return None
+            pick = max if self.view_as == ANALYST else min
+            return pick(lane_roles, key=lambda r: (len(r.views), r.name))
         known = [r for n, r in roles().items() if n in self.role_names and r.lane == lane]
         return min(known, key=lambda r: (len(r.views), r.name)) if known else None
+
+    def tag(self) -> dict:
+        """Marks events and feedback from the test login so UAT results can leave them out."""
+        return {"test": True} if self.is_tester else {}
 
     @property
     def lanes(self) -> list[Role]:
@@ -65,7 +90,8 @@ def principal(request: Request) -> Principal | None:
     user = request.session.get("user")
     if not user:
         return None
-    return Principal(user["sub"], user.get("name", ""), tuple(user.get("roles", [])))
+    view_as = LEADERSHIP if user.get("view_as") == LEADERSHIP else ANALYST
+    return Principal(user["sub"], user.get("name", ""), tuple(user.get("roles", [])), view_as)
 
 
 def require_user(request: Request) -> Principal:

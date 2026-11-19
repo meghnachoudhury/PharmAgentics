@@ -106,16 +106,29 @@ def test_forecast_roles_do_not_cross_lanes():
         assert client.post("/api/briefing/query", json=VALID).status_code == 403
 
 
-@pytest.mark.parametrize("user,expected", [
-    ("dev-both-analyst", {"briefing": ("P1", ["analyst", "leadership"]), "forecast": ("CA", ["analyst", "leadership"])}),
-    ("dev-both-leader", {"briefing": ("P3", ["leadership"]), "forecast": ("BM", ["leadership"])}),
-])
-def test_development_logins_see_both_lanes_with_one_role_each(user, expected):
-    client = signed_in(user)
-    lanes = client.get("/api/me").json()["lanes"]
-    assert {lane: (r["persona"], r["views"]) for lane, r in lanes.items()} == expected
+def test_test_login_switches_between_the_analyst_and_the_leadership_roles_of_both_lanes():
+    client = signed_in("dev-tester")
+    me = client.get("/api/me").json()
+    assert me["tester"] is True and me["view_as"] == "analyst"
+    assert {lane: r["persona"] for lane, r in me["lanes"].items()} == {"briefing": "P1", "forecast": "CA"}
     assert client.get("/api/forecast/runs").status_code == 200
-    assert client.get("/api/briefing/published").status_code == 200
+
+    me = client.post("/api/me/view-as", json={"view": "leadership"}).json()
+    assert me["view_as"] == "leadership"
+    assert {lane: (r["persona"], r["views"]) for lane, r in me["lanes"].items()} == {
+        "briefing": ("P3", ["leadership"]), "forecast": ("BM", ["leadership"])}
+    assert client.post("/api/briefing/query", json=VALID).status_code == 403  # now exactly the Brand Director's rights
+    assert client.get("/api/me").json()["view_as"] == "leadership"  # kept in the session
+
+    client.post("/api/me/view-as", json={"view": "analyst"})
+    assert client.get("/api/me").json()["lanes"]["briefing"]["persona"] == "P1"
+
+
+def test_only_the_test_login_can_switch_views():
+    client = signed_in("dev-analyst")
+    assert client.get("/api/me").json()["tester"] is False
+    assert client.post("/api/me/view-as", json={"view": "leadership"}).status_code == 403
+    assert client.get("/api/me").json()["lanes"]["briefing"]["persona"] == "P1"
 
 
 def test_dev_sign_in_is_refused_on_cloud_run(monkeypatch):

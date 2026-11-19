@@ -23,14 +23,12 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 DEV_USERS = {
-    # Both use cases in one sign-in, for development (like mentor-analyst and mentor-leader in the Keycloak realm).
-    # One role per lane: a second role in the same lane would be ignored (rbac.Principal.role).
-    "dev-both-analyst": ("Dev Commercial Analyst (both lanes)", ["briefing-analyst", "forecast-analyst"]),
-    "dev-both-leader": ("Dev Leader (both lanes)", ["briefing-director", "forecast-manager"]),
-    "dev-analyst":("Dev Commercial Analyst", ["briefing-analyst"]),
+    "dev-analyst": ("Dev Commercial Analyst", ["briefing-analyst"]),
     "dev-director": ("Dev Brand Director", ["briefing-director"]),
     "dev-forecast-analyst": ("Dev Commercial Analyst", ["forecast-analyst"]),
     "dev-forecast-manager": ("Dev Brand Manager", ["forecast-manager"]),
+    # Like uat-tester in the Keycloak realm: both lanes, switching between the analyst and the leadership view.
+    "dev-tester": ("Dev test view", ["tester"]),
     "dev-norole": ("Dev user with no role", []),
 }
 
@@ -69,7 +67,7 @@ def _client():
 
 
 def _set_user(request: Request, sub: str, name: str, roles: list[str]) -> None:
-    known = set(rbac.roles())
+    known = rbac.known_role_names()
     request.session.clear()
     request.session["user"] = {"sub": sub, "name": name, "roles": [r for r in roles if r in known]}
 
