@@ -27,7 +27,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
-from . import auth, cloud, feedback, forecast, jobs, rbac, service, store, views
+from . import auth, classification, cloud, feedback, forecast, jobs, rbac, service, store, views
 from .schemas import (AgentJobRequest, BriefingQuery, InsightMark, ReleaseContext, ReviewRequest, ViewAs, WorkerPoll,
                       WorkerResult)
 
@@ -69,6 +69,7 @@ app.add_middleware(
 )
 app.include_router(auth.router)
 app.include_router(feedback.router)  # UAT feedback (core-008)
+app.include_router(classification.router)  # data classification labels (core-009)
 app.include_router(forecast.router)  # Forecast lane scaffold (Alvin and Sienna)
 
 Briefing = Depends(rbac.require_briefing)

@@ -1,0 +1,27 @@
+{
+  "_comment": "Data classification per tab and view (core-009). Version 1 is labels only: nothing here changes access, which core-007 (roles.json) still decides. The values are placeholders that mirror today's access, for Meghna to set (core-009 open item 1). Levels run lowest to highest. Every tab or view the web app shows needs a key here, and every role in roles.json needs a clearance; the tests check both.",
+  "version": "2026-11-19",
+  "levels": [
+    {"id": "public", "label": "Public", "description": "Can be shared outside the company."},
+    {"id": "proprietary", "label": "Proprietary", "description": "Internal business information; not for outside parties."},
+    {"id": "confidential", "label": "Confidential", "description": "Detailed data and its sources; for the people who work with it."},
+    {"id": "sensitive", "label": "Sensitive", "description": "The most restricted data; strictly need to know."}
+  ],
+  "tabs": {
+    "briefing.new": "confidential",
+    "briefing.approved": "proprietary",
+    "briefing.view.analyst": "confidential",
+    "briefing.view.leadership": "proprietary",
+    "forecast.new": "confidential",
+    "forecast.review": "proprietary",
+    "forecast.approved": "proprietary",
+    "forecast.view.analyst": "confidential",
+    "forecast.view.leadership": "proprietary"
+  },
+  "clearance": {
+    "briefing-analyst": "confidential",
+    "briefing-director": "proprietary",
+    "forecast-analyst": "confidential",
+    "forecast-manager": "proprietary"
+  }
+}

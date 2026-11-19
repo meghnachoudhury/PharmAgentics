@@ -46,6 +46,7 @@ venv/
 htmlcov/
 build/
 dist/
+node_modules/
 
 # ---- Generated runtime artifacts (rebuild from seed or run) ----
 snapshots/

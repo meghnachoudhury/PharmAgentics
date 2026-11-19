@@ -9,6 +9,7 @@ def test_frontend_contains_only_supported_feature_modules():
     assert SRC.is_dir()
     assert sorted(p.relative_to(SRC).as_posix() for p in SRC.rglob("*") if p.is_file()) == [
         "App.tsx", "Feedback.tsx", "agent/briefingApi.ts", "agent/feedbackApi.ts", "agent/forecastApi.ts", "agent/primitives.tsx",
+        "components/ui/dropdown-menu.tsx",
         "index.css", "main.tsx", "vite-env.d.ts"
     ]
 

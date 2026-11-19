@@ -1,50 +1,78 @@
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:wght@400;500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&display=swap");
 @import 'tailwindcss';
 
 @theme {
   --font-serif: "Source Serif 4", Georgia, serif;
   --font-sans: "Inter", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
-  /* Dark only (2026-11-19): near-black surfaces, light text, green accents.
-     Every text/background pair below clears WCAG AA (4.5:1) on paper and sheet. */
-  --color-paper: #0a0c0b;   /* the page, input wells */
-  --color-sheet: #131715;   /* cards, sidebar, header, menus */
-  --color-ink: #e6ebe8;     /* body text */
-  --color-muted: #8f9a94;   /* secondary text */
-  --color-rule: #27302b;    /* borders and dividers */
+  /* Dark only. Near-black with Merck-teal accents; panels are frosted (see .bg-sheet below).
+     Text pairs are measured on the panel as rendered over the page and its glow: see the contrast note in
+     the commit; every pair clears WCAG AA 4.5:1. */
+  --color-paper: #060a09;                  /* the page, input wells */
+  --color-sheet: rgb(15 22 20 / 0.74);     /* frosted panels: cards, sidebar, header, menus */
+  --color-ink: #e8efec;                    /* body text */
+  --color-muted: #95a49e;                  /* secondary text */
+  --color-rule: #23302c;                   /* dividers, input borders, panel edges */
   --color-warn: #c3cac6;
-  --color-warnbg: #1c2320;
-  /* Primary controls: green buttons, selected tabs; text on them is onaccent */
-  --color-navy: #22c55e;
-  --color-onaccent: #04140a;
-  /* Human review, leaders */
-  --color-human: #9db8ff;
-  --color-humanbg: #18213a;
-  /* Accent: icons, links, agent chips. agentdeep is lighter for text and hover */
-  --color-agent: #4ade80;
-  --color-agentdeep: #86efac;
-  --color-agentbg: #11261a;
-  /* Verified results and successful states: teal, so "verified" is not mistaken for the accent */
-  --color-ok: #2dd4bf;
-  --color-okbg: #0d2a26;
+  --color-warnbg: #1a2220;
+  /* The one filled action per view: Merck teal family. White text on it */
+  --color-navy: #007a71;
+  --color-navyhover: #00857c;              /* Merck teal */
+  --color-onaccent: #ffffff;
+  /* Leaders, human review */
+  --color-human: #c4b5fd;
+  --color-humanbg: #211c38;
+  /* Accent for icons, links, selected states; agentdeep is the lighter text tint */
+  --color-agent: #5cc9bc;
+  --color-agentdeep: #93ded3;
+  --color-agentbg: #0c2421;
+  /* Verified and successful states: soft blue, always with a check mark or a word, never colour alone */
+  --color-ok: #8ab4f8;
+  --color-okbg: #13213a;
   /* Data-health alerts, uncertainty, review required */
   --color-amber: #fbbf24;
   --color-amberbg: #2a1f08;
   --color-amberline: #5c4513;
   --color-neg: #f87171;
+  /* Data classification (core-009), lowest to highest */
+  --color-lv-public: #a3b1ab;
+  --color-lv-proprietary: #8ab4f8;
+  --color-lv-confidential: #fbbf24;
+  --color-lv-sensitive: #f87171;
 }
 
 :root {
-  color-scheme: dark;  /* native selects, scrollbars and date pickers render dark */
-  accent-color: var(--color-agent);  /* radios and checkboxes */
+  color-scheme: dark;                      /* native selects, scrollbars and pickers render dark */
+  accent-color: var(--color-agent);        /* radios and checkboxes */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 @layer base {
   body {
-    background: var(--color-paper);
+    /* Two faint teal glows give the frosted panels something to blur. */
+    background:
+      radial-gradient(56rem 38rem at 88% -12%, rgb(0 133 124 / 0.20), transparent 62%),
+      radial-gradient(48rem 34rem at -8% 108%, rgb(0 133 124 / 0.12), transparent 60%),
+      var(--color-paper);
+    background-attachment: fixed;
     color: var(--color-ink);
     font-family: var(--font-sans);
-    -webkit-font-smoothing: antialiased;
+  }
+  h1, h2, h3 {
+    font-family: var(--font-serif);
+    letter-spacing: -0.01em;
+    text-wrap: balance;
+  }
+  p { text-wrap: pretty; }
+}
+
+/* Frosted panels: every surface on bg-sheet blurs what lies beneath. Browsers without backdrop-filter
+   keep the 74%-opaque panel colour, which still clears contrast on its own. */
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .bg-sheet {
+    -webkit-backdrop-filter: blur(18px) saturate(140%);
+    backdrop-filter: blur(18px) saturate(140%);
   }
 }
 
@@ -63,7 +91,7 @@
 @layer utilities {
   .workspace-content {
     width: 100%;
-    max-width: 48rem;
+    max-width: 52rem;
     margin-inline: auto;
     padding-inline: 1.25rem;
   }

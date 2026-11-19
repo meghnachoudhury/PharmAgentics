@@ -29,7 +29,8 @@ A `core` spec records what each lane needs from the shared part. It does not spe
 | [core-005](core-005-run-orchestrator/spec.md) | Run orchestrator | 1 to 7, both lanes | EV-8.5; FE-21, FE-26 | P1-Q6, P2-Q6, CA-Q6 | core-002 to core-004 | 009 (orchestrator part) |
 | [core-006](core-006-eval-harness-tracing/spec.md) | Eval harness and tracing | Cross-cutting | all EV; FE-30 and the shared harness for FE | all 42 (dev anchor cases) | core-001, then all | 010-eval-harness-tracing |
 | [core-007](core-007-rbac-uat-deployment/spec.md) | Role-based access and UAT deployment (Google Cloud, Keycloak, UAT tracking in MLflow) | Cross-cutting (serving) | EV-9.3, EV-9.4; FE-30 | P1-Q2, P1-Q4, P3-Q1, P3-Q6; CA, BM (roles only) | core-006, brief-005 | new (2026-11-11) |
-| [core-008](core-008-uat-feedback/spec.md) | UAT feedback: a session rating (good, fine, bad) and a platform questionnaire (SUS plus platform questions), with a report | Cross-cutting (UAT) | none (not scored) | none | core-007 | new (2026-11-15) |
+| [core-008](core-008-uat-feedback/spec.md) | UAT feedback: a session rating under each answer, thumbs up or down per answer, golden-set candidates from votes, a platform questionnaire (SUS), with a report | Cross-cutting (UAT) | none (not scored) | none | core-007 | new (2026-11-15) |
+| [core-009](core-009-data-classification/spec.md) | Data classification per tab (public, proprietary, confidential, sensitive): labels now, enforcement by role later (Meghna) | Cross-cutting (serving) | none (not scored) | none | core-007 | new (2026-11-19) |
 | [brief-001](brief-001-competitive-intelligence/spec.md) | Competitive intelligence | 3a | EV-3.1 to EV-3.4 | P1-Q3, P1-Q5, P3-Q1, P3-Q2 | core-002, core-003 | 004-competitive-intelligence |
 | [brief-002](brief-002-triage-investigation/spec.md) | Triage, manager and specialists (Phase A built 2026-11-11: code triage, P1 plan review, stage flow; Phase B, build 3, next) | 4a | EV-2.2, EV-4.1 to EV-4.5, EV-5.1, EV-5.2, EV-5.4, EV-7.2 | P2-Q1 to P2-Q4, P3-Q4, P4-Q1, P4-Q2, P4-Q4, P4-Q5 | brief-001, core-004 | 006-triage-investigation |
 | [brief-003](brief-003-narrative-renderer/spec.md) | Narrative and renderer | 5 | EV-1.1 to EV-1.3, EV-7.1 to EV-7.5, EV-8.5 | P1-Q6, P3-Q3, P3-Q5, P3-Q6, P4-Q3, P4-Q6 | brief-002 | 007-narrative-renderer |
@@ -75,6 +76,7 @@ Markers `[NEEDS CLARIFICATION: …]` stay in the spec that owns them, at most th
 | core-004 | Agent framework (A3); one tool-record shape (S9). The aggregation floor it applies is held in core-002 |
 | core-005 | Proposal amendment (S2); runtime handoff (S1) |
 | core-006 | Rerun count (Eval 15); rubric anchors (Eval 13); shared vocabulary (S10) |
+| core-009 | Open items 1 (level per tab, clearance per role) and 2 (how levels combine with role and view checks): Meghna |
 | core-007 | Forecast role-to-view mapping, CA analyst and BM leader (Alvin and Sienna confirm). Open items 1 (approval: analyst alone in UAT) and 2 (agent output: committed snapshots) closed 2026-11-11 |
 | brief-001 | Business impact (A4); multiple-testing control (A5) |
 | brief-002 | Triage junction (A1); plan-review default (A10) |

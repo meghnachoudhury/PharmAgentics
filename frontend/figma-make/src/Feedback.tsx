@@ -1,6 +1,8 @@
-// UAT feedback (core-008): a one-click "how is this session" rating, and the platform questionnaire.
-// The server stores both under a pseudonymous ID; this file only collects them and shows what has been given.
+// UAT feedback (core-008): under every generated answer, thumbs up or down and the session rating
+// (good, fine, bad); and the platform questionnaire, opened from the sidebar or the account menu.
+// The server stores everything under a pseudonymous ID; this file only collects it and shows what has been given.
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react"
+import { toast } from "sonner"
 import {
   getFeedbackStatus, getMyVote, getMySurvey, getQuestionnaire, sendPulse, sendSurvey, sendVote,
   type AnswerLane, type AnswerView, type Answers, type FeedbackStatus, type PulseWhere, type QItem, type Questionnaire,
@@ -22,8 +24,6 @@ function Face({ kind, className = "h-5 w-5" }: { kind: Rating; className?: strin
 
 type Ctx = {
   status: FeedbackStatus | null
-  pulseOpen: boolean
-  togglePulse: () => void
   openSurvey: () => void
   signOut: () => void
   setPulse: (p: { rating: Rating; at: string }) => void
@@ -35,107 +35,48 @@ function useFeedback(): Ctx {
   if (!c) throw new Error("Feedback controls must be used inside FeedbackProvider")
   return c
 }
+// For the account menu: open the questionnaire, sign out, and whether the questionnaire is done.
+export function useFeedbackActions() {
+  const f = useFeedback()
+  return { openSurvey: f.openSurvey, signOut: f.signOut, surveyDone: Boolean(f.status?.survey.submitted_at) }
+}
 
 export function FeedbackProvider({ where, children }: { where: PulseWhere; children: ReactNode }) {
   const [status, setStatus] = useState<FeedbackStatus | null>(null)
-  const [pulseOpen, setPulseOpen] = useState(false)
   const [surveyOpen, setSurveyOpen] = useState(false)
-  const [leaving, setLeaving] = useState(false)
-
   const refresh = useCallback(() => { getFeedbackStatus().then(setStatus).catch(() => setStatus(null)) }, [])
   useEffect(() => { refresh() }, [refresh])
-  useEffect(() => {
-    if (!pulseOpen && !leaving) return
-    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") { setPulseOpen(false); setLeaving(false) } }
-    document.addEventListener("keydown", esc)
-    return () => document.removeEventListener("keydown", esc)
-  }, [pulseOpen, leaving])
-
-  const leave = () => window.location.assign("/auth/logout")
   const ctx = useMemo<Ctx>(() => ({
-    status, pulseOpen, where,
-    togglePulse: () => setPulseOpen(o => !o),
-    openSurvey: () => { setPulseOpen(false); setSurveyOpen(true) },
-    // Ask once before signing out; if the rating is already given, or the service is down, just sign out.
-    signOut: () => { if (!status || status.pulse) leave(); else { setPulseOpen(false); setLeaving(true) } },
+    status, where,
+    openSurvey: () => setSurveyOpen(true),
+    signOut: () => window.location.assign("/auth/logout"),  // never asks for a rating (core-008 FR-003)
     setPulse: p => setStatus(s => s ? { ...s, pulse: p } : s),
-  }), [status, pulseOpen, where])
-
+  }), [status, where])
   return <FeedbackCtx.Provider value={ctx}>
     {children}
-    {pulseOpen && <>
-      <button aria-label="Close" className="fixed inset-0 z-40 cursor-default" onClick={() => setPulseOpen(false)} />
-      <div role="dialog" aria-label="Rate this session" className="fixed right-4 top-14 z-50 w-[22rem] max-w-[calc(100vw-2rem)] rounded-2xl bg-sheet p-4 shadow-xl ring-1 ring-rule pa-rise">
-        <p className="text-sm font-semibold">How is PharmAgentics doing this session?</p>
-        <p className="mt-0.5 text-xs text-muted">One click. You can change it any time.</p>
-        <PulseForm />
-      </div>
-    </>}
-    {leaving && <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 px-4">
-      <div role="dialog" aria-modal="true" aria-label="Before you go" className="w-full max-w-sm rounded-2xl bg-sheet p-5 shadow-xl ring-1 ring-rule pa-rise">
-        <p className="text-base font-semibold">Before you go</p>
-        <p className="mt-1 text-sm text-muted">How was PharmAgentics this session?</p>
-        <PulseForm />
-        <div className="mt-4 flex items-center justify-between gap-3">
-          <button type="button" onClick={() => setLeaving(false)} className="text-xs text-muted hover:underline">Stay signed in</button>
-          <button type="button" onClick={leave} className="rounded-xl bg-navy px-4 py-2 text-sm font-semibold text-onaccent hover:bg-agentdeep">{status?.pulse ? "Sign out" : "Skip and sign out"}</button>
-        </div>
-      </div>
-    </div>}
     {surveyOpen && <SurveyModal onClose={() => setSurveyOpen(false)} onSubmitted={refresh} />}
   </FeedbackCtx.Provider>
 }
 
-// One click sends the rating; a note is optional and replaces the rating's comment (the last rating counts).
-function PulseForm() {
+// The questionnaire invitation, quietly, at the foot of the sidebar: a dot until it is answered.
+export function ShareFeedbackLink({ expanded, onOpen }: { expanded: boolean; onOpen?: () => void }) {
   const f = useFeedback()
-  const current = f.status?.pulse?.rating ?? null
-  const [comment, setComment] = useState("")
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [noted, setNoted] = useState(false)
-  const send = async (rating: Rating, withNote: boolean) => {
-    setBusy(true); setError(null)
-    try { f.setPulse(await sendPulse({ rating, comment: withNote ? comment.trim() || undefined : undefined, where: f.where })); setNoted(withNote) }
-    catch (e) { setError(message(e)) }
-    finally { setBusy(false) }
-  }
-  return <div className="mt-3">
-    <div role="radiogroup" aria-label="Session rating" className="grid grid-cols-3 gap-2">
-      {RATINGS.map(r => <button key={r} type="button" role="radio" aria-checked={current === r} disabled={busy} onClick={() => void send(r, false)}
-        className={`flex flex-col items-center gap-1 rounded-xl px-2 py-3 text-sm font-medium ring-1 transition ${current === r ? `${BG[r]} ${TONE[r]} ring-current` : "text-ink ring-rule hover:bg-paper"} disabled:opacity-60`}>
-        <Face kind={r} className={`h-7 w-7 ${current === r ? "" : TONE[r]}`} />{LABEL[r]}
-      </button>)}
-    </div>
-    {current && <div className="mt-3 space-y-2">
-      <label className="block text-xs font-medium text-muted" htmlFor="pulse-note">{current === "good" ? "What is working? (optional)" : "What happened? (optional)"}</label>
-      <textarea id="pulse-note" value={comment} onChange={e => { setComment(e.target.value); setNoted(false) }} maxLength={300} rows={2}
-        placeholder="No names or personal details, please" className="w-full rounded-xl border border-rule bg-paper p-2.5 text-sm" />
-      <div className="flex items-center justify-between gap-2">
-        <span className="text-[11px] text-muted">{noted ? "Thank you. Note saved." : `${comment.length}/300`}</span>
-        <button type="button" disabled={busy || !comment.trim()} onClick={() => void send(current, true)}
-          className="rounded-lg px-3 py-1.5 text-xs font-semibold text-agentdeep ring-1 ring-rule hover:bg-paper disabled:text-muted disabled:opacity-60">Send note</button>
-      </div>
-    </div>}
-    {error && <p role="alert" className="mt-2 text-xs text-amber">{error}</p>}
-  </div>
-}
-
-export function PulseButton() {
-  const f = useFeedback()
-  const r = f.status?.pulse?.rating ?? null
-  return <button type="button" onClick={f.togglePulse} aria-haspopup="dialog" aria-expanded={f.pulseOpen}
-    className="flex items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs font-medium ring-1 ring-rule hover:bg-paper">
-    <Face kind={r ?? "fine"} className={`h-4 w-4 ${r ? TONE[r] : "text-muted"}`} />
-    <span className="hidden text-ink sm:inline">{r ? `This session: ${LABEL[r]}` : "Rate this session"}</span>
+  const pending = Boolean(f.status && !f.status.survey.submitted_at)
+  return <button type="button" onClick={() => { onOpen?.(); f.openSurvey() }} title="Share feedback about PharmAgentics"
+    className="relative flex w-full items-center gap-3 rounded-xl px-[10px] py-2 text-left text-xs text-muted transition hover:bg-paper/60 hover:text-ink">
+    <span className="relative shrink-0">
+      <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z" /></svg>
+      {pending && <span aria-hidden="true" className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-agent ring-2 ring-sheet" />}
+    </span>
+    <span className={expanded ? "whitespace-nowrap" : "sr-only"}>Share feedback{pending ? " (5 minutes)" : ""}</span>
   </button>
 }
 
-// --- one answer: the mistakes notice and thumbs up or down (core-008 User Story 5, FR-017) ------------
+// --- under one answer: the mistakes notice, thumbs up or down, and the session rating -------------
 
 const THUMB = "M7 10v12M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"
 function Thumb({ down = false }: { down?: boolean }) {
-  return <svg viewBox="0 0 24 24" className={`h-4 w-4 ${down ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={THUMB} /></svg>
+  return <svg viewBox="0 0 24 24" className={`h-4 w-4 ${down ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={THUMB} /></svg>
 }
 
 export function AnswerFeedback({ lane, refId, view }: { lane: AnswerLane; refId: string; view: AnswerView }) {
@@ -153,22 +94,26 @@ export function AnswerFeedback({ lane, refId, view }: { lane: AnswerLane; refId:
   }, [lane, refId, view])
   const send = async (v: Vote, note: string) => {
     setBusy(true); setError(null)
-    try { const r = await sendVote({ lane, ref: refId, view, vote: v, comment: note.trim() || undefined }); setVote(r.vote); setSaved(r.comment ?? ""); setComment(r.comment ?? "") }
+    try {
+      const r = await sendVote({ lane, ref: refId, view, vote: v, comment: note.trim() || undefined })
+      setVote(r.vote); setSaved(r.comment ?? ""); setComment(r.comment ?? "")
+      toast.success(note.trim() ? "Comment saved. Thank you." : "Thanks for rating this answer.")
+    }
     catch (e) { setError(message(e)) }
     finally { setBusy(false) }
   }
-  const thumb = (v: Vote) => `grid h-8 w-8 place-items-center rounded-lg ring-1 transition disabled:opacity-60 ${vote === v ? (v === "up" ? "bg-okbg text-ok ring-ok/40" : "bg-amberbg text-amber ring-amber/40") : "text-muted ring-rule hover:bg-paper hover:text-ink"}`
+  const thumb = (v: Vote) => `grid h-9 w-9 place-items-center rounded-lg ring-1 transition disabled:opacity-60 ${vote === v ? (v === "up" ? "bg-okbg text-ok ring-ok/40" : "bg-amberbg text-amber ring-amber/40") : "text-muted ring-rule hover:bg-paper hover:text-ink"}`
   const noted = vote !== null && saved === comment.trim() && saved !== ""
-  return <div className="rounded-2xl bg-sheet px-5 py-3 ring-1 ring-rule">
-    <div className="flex flex-wrap items-center justify-between gap-3">
-      <p className="text-xs text-muted">PharmAgentics can make mistakes. Check important figures {view === "leadership" ? "with the Commercial Analyst" : "against the evidence"}.</p>
+  return <div className="space-y-3 rounded-2xl bg-sheet px-5 py-4 ring-1 ring-rule">
+    <p className="text-xs text-muted">PharmAgentics can make mistakes. Check important figures {view === "leadership" ? "with the Commercial Analyst" : "against the evidence"}.</p>
+    <div className="flex flex-wrap items-center justify-between gap-3 border-t border-rule pt-3">
+      <span className="text-sm text-ink">{vote ? "Thanks for rating this answer" : "Was this answer right?"}</span>
       <div role="group" aria-label="Rate this answer" className="flex items-center gap-2">
-        <span className="text-xs text-muted">{vote ? "Thanks for rating" : "Was this answer right?"}</span>
         <button type="button" aria-pressed={vote === "up"} aria-label="Thumbs up" title="Good answer" disabled={busy || vote === "up"} onClick={() => void send("up", "")} className={thumb("up")}><Thumb /></button>
         <button type="button" aria-pressed={vote === "down"} aria-label="Thumbs down" title="Something is wrong" disabled={busy || vote === "down"} onClick={() => void send("down", "")} className={thumb("down")}><Thumb down /></button>
       </div>
     </div>
-    {vote && <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-start">
+    {vote && <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
       <label className="sr-only" htmlFor={`vote-note-${refId}-${view}`}>{vote === "down" ? "What was wrong?" : "What worked?"}</label>
       <textarea id={`vote-note-${refId}-${view}`} value={comment} onChange={e => setComment(e.target.value)} maxLength={500} rows={2}
         placeholder={vote === "down" ? "What was wrong? (optional, no names please)" : "What worked? (optional, no names please)"}
@@ -176,39 +121,53 @@ export function AnswerFeedback({ lane, refId, view }: { lane: AnswerLane; refId:
       <button type="button" disabled={busy || noted || !comment.trim()} onClick={() => void send(vote, comment)}
         className="rounded-lg px-3 py-2 text-xs font-semibold text-agentdeep ring-1 ring-rule hover:bg-paper disabled:text-muted disabled:opacity-60">{noted ? "Comment saved" : "Send comment"}</button>
     </div>}
-    {error && <p role="alert" className="mt-2 text-xs text-amber">{error}</p>}
+    {error && <p role="alert" className="text-xs text-amber">{error}</p>}
+    <SessionRating refId={refId} />
   </div>
 }
 
-const menuItem = "mt-2 block w-full rounded-xl px-3 py-2 text-left text-sm font-medium text-ink ring-1 ring-rule hover:bg-sheet"
-
-export function QuestionnaireMenuItem({ onDone }: { onDone: () => void }) {
+// How the session is going, asked next to the work it is about (core-008 FR-003). Shrinks once given.
+function SessionRating({ refId }: { refId: string }) {
   const f = useFeedback()
-  const submitted = f.status?.survey.submitted_at
-  return <button type="button" role="menuitem" onClick={() => { onDone(); f.openSurvey() }} className={menuItem}>
-    Platform questionnaire<span className="block text-[11px] font-normal text-muted">{submitted ? "Submitted. Open to update your answers" : "About five minutes"}</span>
-  </button>
-}
-
-export function SignOutMenuItem() {
-  const f = useFeedback()
-  return <button type="button" role="menuitem" onClick={f.signOut} className={`${menuItem} bg-paper text-center`}>Sign out</button>
-}
-
-const DISMISS_KEY = "pa_survey_banner_dismissed"
-const dismissedBefore = () => { try { return window.localStorage.getItem(DISMISS_KEY) === "1" } catch { return false } }
-
-export function SurveyBanner() {
-  const f = useFeedback()
-  const [dismissed, setDismissed] = useState(dismissedBefore)
-  if (!f.status || f.status.survey.submitted_at || dismissed) return null
-  const dismiss = () => { setDismissed(true); try { window.localStorage.setItem(DISMISS_KEY, "1") } catch { /* a convenience only */ } }
-  return <div role="region" aria-label="Questionnaire invitation" className="flex flex-wrap items-center justify-between gap-2 border-b border-rule bg-agentbg px-5 py-2 text-xs text-agentdeep">
-    <span><strong className="font-semibold">Help us improve PharmAgentics.</strong> A five-minute questionnaire about the whole platform.</span>
-    <span className="flex items-center gap-2">
-      <button type="button" onClick={f.openSurvey} className="rounded-lg bg-navy px-3 py-1 font-semibold text-onaccent hover:bg-agentdeep">Open it</button>
-      <button type="button" onClick={dismiss} className="rounded-lg px-2 py-1 hover:underline">Not now</button>
-    </span>
+  const current = f.status?.pulse?.rating ?? null
+  const [editing, setEditing] = useState(false)
+  const [comment, setComment] = useState("")
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  if (!f.status) return null  // the feedback service is unavailable: say nothing rather than offer a broken control
+  const send = async (rating: Rating, note?: string) => {
+    setBusy(true); setError(null)
+    try {
+      f.setPulse(await sendPulse({ rating, comment: note?.trim() || undefined, where: f.where, ref: refId }))
+      toast.success(note?.trim() ? "Note saved. Thank you." : `Session rated ${LABEL[rating].toLowerCase()}. Thank you.`)
+      if (note) { setComment(""); setEditing(false) }
+    }
+    catch (e) { setError(message(e)) }
+    finally { setBusy(false) }
+  }
+  if (current && !editing) return <div className="flex flex-wrap items-center justify-between gap-2 border-t border-rule pt-3 text-xs text-muted">
+    <span className="flex items-center gap-1.5"><Face kind={current} className={`h-4 w-4 ${TONE[current]}`} />This session: <span className="text-ink">{LABEL[current]}</span></span>
+    <button type="button" onClick={() => setEditing(true)} className="text-agentdeep underline-offset-4 hover:underline">Change or add a note</button>
+  </div>
+  return <div className="space-y-2 border-t border-rule pt-3">
+    <div className="flex flex-wrap items-center justify-between gap-3">
+      <span className="text-sm text-ink">How is PharmAgentics working for you this session?</span>
+      <div role="radiogroup" aria-label="Session rating" className="flex gap-1.5">
+        {RATINGS.map(r => <button key={r} type="button" role="radio" aria-checked={current === r} disabled={busy} onClick={() => void send(r)}
+          className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium ring-1 transition disabled:opacity-60 ${current === r ? `${BG[r]} ${TONE[r]} ring-current` : "text-ink ring-rule hover:bg-paper"}`}>
+          <Face kind={r} className={`h-4 w-4 ${current === r ? "" : TONE[r]}`} />{LABEL[r]}</button>)}
+      </div>
+    </div>
+    {current && <div className="flex flex-col gap-2 sm:flex-row sm:items-start">
+      <label className="sr-only" htmlFor={`pulse-note-${refId}`}>{current === "good" ? "What is working?" : "What happened?"}</label>
+      <textarea id={`pulse-note-${refId}`} value={comment} onChange={e => setComment(e.target.value)} maxLength={300} rows={2}
+        placeholder={current === "good" ? "What is working? (optional)" : "What happened? (optional)"} className="min-w-0 flex-1 rounded-xl border border-rule bg-paper p-2.5 text-sm" />
+      <div className="flex gap-2">
+        <button type="button" disabled={busy || !comment.trim()} onClick={() => void send(current, comment)} className="rounded-lg px-3 py-2 text-xs font-semibold text-agentdeep ring-1 ring-rule hover:bg-paper disabled:text-muted disabled:opacity-60">Send note</button>
+        <button type="button" onClick={() => setEditing(false)} className="rounded-lg px-3 py-2 text-xs text-muted hover:text-ink">Done</button>
+      </div>
+    </div>}
+    {error && <p role="alert" className="text-xs text-amber">{error}</p>}
   </div>
 }
 
@@ -278,12 +237,12 @@ function SurveyModal({ onClose, onSubmitted }: { onClose: () => void; onSubmitte
   const submit = async () => {
     if (!q) return
     setBusy(true); setError(null)
-    try { await sendSurvey(q.version, answers); setDone(true); onSubmitted() }
+    try { await sendSurvey(q.version, answers); setDone(true); onSubmitted(); toast.success("Questionnaire saved. Thank you.") }
     catch (e) { setError(message(e)) }
     finally { setBusy(false) }
   }
 
-  return <div className="fixed inset-0 z-50 flex justify-center overflow-y-auto bg-black/60 px-3 py-6">
+  return <div className="fixed inset-0 z-50 flex justify-center overflow-y-auto overscroll-contain bg-black/60 px-3 py-6 backdrop-blur-sm">
     <div role="dialog" aria-modal="true" aria-labelledby="survey-title" className="h-fit w-full max-w-2xl rounded-2xl bg-sheet shadow-xl ring-1 ring-rule pa-rise">
       <div className="flex items-start justify-between gap-3 border-b border-rule px-6 py-4">
         <div><h2 id="survey-title" className="text-lg font-semibold">{q?.title ?? "Platform questionnaire"}</h2>{q && <p className="mt-1 text-sm text-muted">{q.intro}</p>}</div>
@@ -292,13 +251,13 @@ function SurveyModal({ onClose, onSubmitted }: { onClose: () => void; onSubmitte
       {loadError && <div role="alert" className="m-6 rounded-xl bg-amberbg p-4 text-sm text-amber">{loadError}<button type="button" onClick={load} className="mt-2 block underline">Try again</button></div>}
       {!q && !loadError && <p role="status" className="px-6 py-8 text-sm text-muted">Loading the questionnaire…</p>}
       {q && done && <div className="px-6 py-10 text-center"><p className="text-lg font-semibold">Thank you.</p>
-        <p className="mt-1 text-sm text-muted">Your answers are saved. You can reopen the questionnaire from your account menu to change them.</p>
-        <button type="button" onClick={onClose} className="mt-5 rounded-xl bg-navy px-5 py-2.5 text-sm font-semibold text-onaccent hover:bg-agentdeep">Close</button></div>}
+        <p className="mt-1 text-sm text-muted">Your answers are saved. You can reopen the questionnaire from the sidebar or your account menu to change them.</p>
+        <button type="button" onClick={onClose} className="mt-5 rounded-xl bg-navy px-5 py-2.5 text-sm font-semibold text-onaccent hover:bg-navyhover">Close</button></div>}
       {q && !done && <>
         <div className="space-y-7 px-6 py-5">
           {updating && <p className="rounded-xl bg-agentbg px-3 py-2 text-xs text-agentdeep">You answered this before. Your earlier answers are filled in; change anything and send again to replace them.</p>}
           {q.sections.map(section => <section key={section.id} className="space-y-5">
-            <h3 className="border-b border-rule pb-1.5 text-[11px] font-semibold uppercase tracking-widest text-muted">{section.title}</h3>
+            <h3 className="border-b border-rule pb-1.5 font-sans text-[11px] font-semibold uppercase tracking-[0.05em] text-muted">{section.title}</h3>
             {section.items.map(item => <Question key={item.id} item={item} scale={q.scale.agree5} value={answers[item.id]} onChange={v => set(item.id, v)} />)}
           </section>)}
         </div>
@@ -306,7 +265,7 @@ function SurveyModal({ onClose, onSubmitted }: { onClose: () => void; onSubmitte
           <span className="text-xs text-muted">{count} of {total} answered. Every question is optional.</span>
           <span className="flex items-center gap-3">
             {error && <span role="alert" className="max-w-[18rem] text-xs text-amber">{error}{error.includes("changed") && <button type="button" onClick={load} className="ml-1 underline">Reload</button>}</span>}
-            <button type="button" disabled={busy || count === 0} onClick={() => void submit()} className="rounded-xl bg-navy px-5 py-2.5 text-sm font-semibold text-onaccent hover:bg-agentdeep disabled:bg-rule disabled:text-muted">{busy ? "Sending…" : updating ? "Send updated answers" : "Send"}</button>
+            <button type="button" disabled={busy || count === 0} onClick={() => void submit()} className="rounded-xl bg-navy px-5 py-2.5 text-sm font-semibold text-onaccent hover:bg-navyhover disabled:bg-rule disabled:text-muted">{busy ? "Sending…" : updating ? "Send updated answers" : "Send"}</button>
           </span>
         </div>
       </>}

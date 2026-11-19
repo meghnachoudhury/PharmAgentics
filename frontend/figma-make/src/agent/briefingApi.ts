@@ -136,7 +136,12 @@ export type LaneRole = {
   actions: string[]
   available: boolean
 }
-export type Me = { name: string; auth_mode: "oidc" | "dev"; lanes: { briefing?: LaneRole; forecast?: LaneRole } }
+export type ViewAs = "analyst" | "leadership"
+// tester: the test login, which switches between the analyst and the leadership roles of both lanes (view_as).
+export type Me = { name: string; auth_mode: "oidc" | "dev"; lanes: { briefing?: LaneRole; forecast?: LaneRole }; tester?: boolean; view_as?: ViewAs | null }
+// Data classification per tab and view (core-009): labels only, from src/pharmagentics/api/classification.json.
+export type ClassLevel = { id: string; label: string; description: string }
+export type Classification = { version: string; levels: ClassLevel[]; tabs: Record<string, string>; clearance: Record<string, string> }
 export type BriefingQuery = {
   intent: "weekly_brief"
   brand_id: string
@@ -183,6 +188,16 @@ export async function getMe(): Promise<Me> {
   if (typeof v.name !== "string" || (v.auth_mode !== "oidc" && v.auth_mode !== "dev")) throw new Error("The backend identity contract is incompatible with this frontend.")
   expectObject(v.lanes)
   return v as unknown as Me
+}
+export async function setViewAs(view: ViewAs): Promise<Me> {
+  return await api("/api/me/view-as", post({ view }))
+}
+export async function getClassification(): Promise<Classification> {
+  const v: unknown = await api("/api/classification")
+  expectObject(v)
+  if (!Array.isArray(v.levels)) throw new Error("The backend classification contract is incompatible with this frontend.")
+  expectObject(v.tabs)
+  return v as unknown as Classification
 }
 export async function getContext(): Promise<ReleaseContext> {
   const v: unknown = await api("/api/briefing/context")

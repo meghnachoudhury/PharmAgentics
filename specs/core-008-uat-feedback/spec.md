@@ -3,7 +3,7 @@
 **Spec ID**: `core-008-uat-feedback` (shared; owner: Michael; requested by the mentor, Dr. Admasu)
 **Feature Branch**: `feature/uat-feedback`
 **Created**: 2026-11-15
-**Status**: Draft v2 (2026-11-19: per-answer votes, golden-set candidates, the mistakes notice). Built on the branch; not yet deployed.
+**Status**: Draft v3 (2026-11-19: per-answer votes, golden-set candidates, the mistakes notice; the session rating moved under each answer). Built on the branch; not yet deployed.
 **Input**: The mentor asked for two kinds of feedback from people who try PharmAgentics: a quick "is PharmAgentics doing good, fine or bad this session?", and a questionnaire about the overall platform for the broader user.
 
 ## Context
@@ -14,6 +14,8 @@ core-007 (UAT deployment) records what people do: timings, approvals, flagged cl
 
 ### Session 2026-11-19
 
+- Q: Where is the session rating asked? → A: Under each generated brief and Forecast explanation, next to the thumbs, because it is about the agent workflows. It is no longer in the page header, and signing out no longer asks for it. Once given, it shrinks to "This session: Good · change". This replaces the 2026-11-15 answer below.
+- Q: Where is the questionnaire offered? → A: A quiet "Share feedback" link at the foot of the sidebar (marked until answered) and the account menu. The banner across the top is removed.
 - Q: Should people rate individual answers, not only the session? → A: Yes. Thumbs up or down, with an optional comment, on every brief (analyst and leadership view) and every Forecast explanation. Flagging a single claim as wrong (core-007 FR-025) comes next, not in this version.
 - Q: What happens to a downvote? → A: It becomes a draft golden-set candidate that a person reviews. Nothing joins the golden set, and no fix reaches production, without a person approving it. An upvoted answer becomes a regression candidate the same way.
 - Q: May the eval harness read UAT feedback? → A: Yes, owner-side only: `python -m eval candidates` reads a downloaded copy of the feedback folder. Agent code still never reads `eval/`, and the web app never imports the eval package.
@@ -30,7 +32,7 @@ core-007 (UAT deployment) records what people do: timings, approvals, flagged cl
 
 ### User Story 1 - Rate the session in one click (Priority: P1)
 
-A participant clicks Good, Fine or Bad in the page header. They may add a note saying why. If they sign out without having rated, the app asks once ("before you go") and lets them skip.
+Under a generated brief or Forecast explanation, a participant clicks Good, Fine or Bad for the session so far. They may add a note saying why. Signing out never asks for a rating.
 
 **Why this priority**: It is the lowest-effort signal and the one the mentor asked for first.
 
@@ -40,7 +42,7 @@ A participant clicks Good, Fine or Bad in the page header. They may add a note s
 
 1. **Given** a signed-in participant, **When** they click Good, **Then** one rating is stored with their role, a pseudonymous ID and the workspace they were in, and the header shows "This session: Good".
 2. **Given** a rating, **When** they change it or add a note, **Then** the new submission is stored, and the report counts the session once, by its last rating.
-3. **Given** a participant who has not rated, **When** they click Sign out, **Then** a prompt asks for a rating and offers "Skip and sign out"; if they have rated, they sign out straight away.
+3. **Given** a participant, rated or not, **When** they click Sign out, **Then** they are signed out straight away, with no prompt.
 4. **Given** a rating that could not be saved, **When** the participant submits, **Then** the app says so; it never shows "Thank you" for something that was lost.
 5. **Given** a leader (Brand Director or Brand Manager), **When** they rate, **Then** it works the same; no persona is excluded.
 
@@ -48,7 +50,7 @@ A participant clicks Good, Fine or Bad in the page header. They may add a note s
 
 ### User Story 2 - Answer the platform questionnaire (Priority: P1)
 
-From their account menu (or a dismissible banner), a participant opens a questionnaire about the whole platform, answers what they like, and sends it. Reopening it later shows their earlier answers so they can change them.
+From their account menu or the "Share feedback" link in the sidebar, a participant opens a questionnaire about the whole platform, answers what they like, and sends it. Reopening it later shows their earlier answers so they can change them.
 
 **Why this priority**: The mentor's second request; it gives a standard usability score and the written reasons behind it.
 
@@ -142,7 +144,7 @@ An owner downloads the feedback folder and runs `python -m eval candidates`. Eac
 
 - **FR-001**: Any signed-in participant holding a role in either lane MUST be able to submit a session rating of good, fine or bad, with an optional note of at most 300 characters and the workspace they were in. Everyone else MUST be refused before validation (401 signed out, 403 no role).
 - **FR-002**: A session is one sign-in. The report MUST count each session once, by its last rating, and MUST keep every submission in the stored history.
-- **FR-003**: The page header MUST offer the rating at all times, and signing out without a rating MUST ask once and allow skipping.
+- **FR-003**: Every generated brief and Forecast explanation MUST offer the session rating beside the per-answer vote, showing the current rating once given and allowing a change. Signing out MUST NOT ask for a rating.
 - **FR-004**: The platform questionnaire MUST be defined in one versioned file with question types (agreement 1 to 5, recommend 0 to 10, choice, multiple choice, text), served by the API, and validated on submit: known questions, the right kind of value, allowed options, text length limits. Blank answers MUST be dropped, and a submission with no answers MUST be refused.
 - **FR-005**: The questionnaire MUST include the ten System Usability Scale statements. The SUS score MUST be computed by code (positive statements score the answer minus 1, negative ones 5 minus the answer, summed and multiplied by 2.5) and stored only when all ten were answered.
 - **FR-006**: A participant MUST have at most one stored questionnaire (sending again replaces it) and MUST be able to read back their own answers and nobody else's.
