@@ -76,11 +76,12 @@
 }
 
 @layer utilities {
-  /* Content is centred on the whole page, not on the space beside the sidebar. --rail is the width the
-     sidebar takes (set on the shell); when there is no room, content clears it by the gutter. */
+  /* With the sidebar open, content is centred in the space beside it. With only the narrow rail showing,
+     it is centred on the whole page: --shift (set on the shell) is the rail's width then, 0 otherwise.
+     Margin percentages refer to the content area's own width, so this follows any window size. */
   .workspace-content {
     max-width: 52rem;
-    margin-left: max(0px, calc((100vw - 52rem) / 2 - var(--rail, 0px)));
+    margin-left: max(0px, calc((100% - 52rem) / 2 - var(--shift, 0px) / 2));
     margin-right: auto;
     padding-inline: 1.25rem;
     /* re-centres smoothly, in step with the sidebar's own width change */

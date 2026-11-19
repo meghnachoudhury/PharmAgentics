@@ -46,7 +46,9 @@ def main(argv: list[str] | None = None) -> int:
     backend = store.LocalBackend(a.state_dir)
     pulses, surveys = feedback.load_feedback(backend)
     votes = feedback.load_votes(backend)
-    report = feedback.to_markdown(feedback.summarize(pulses, surveys, q, votes), q)
+    summary = feedback.summarize(pulses, surveys, q, votes)
+    summary["comments"] = feedback.load_comments(backend)
+    report = feedback.to_markdown(summary, q)
     if a.out:
         a.out.parent.mkdir(parents=True, exist_ok=True)
         a.out.write_text(report, encoding="utf-8")

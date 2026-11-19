@@ -14,6 +14,8 @@ core-007 (UAT deployment) records what people do: timings, approvals, flagged cl
 
 ### Session 2026-11-19
 
+- Q (later the same day): Which answers ask for the session rating? → A: Only answers from the agent team (Briefing agent engine, Forecast agent mode); the question names the agent team. Scripted answers keep the thumbs and the notice.
+- Q: Can people suggest things for the platform outside the questionnaire? → A: Yes: a "Suggest an improvement" box in the sidebar's feedback menu, free text with a topic, kept like the rest of the feedback (FR-018).
 - Q: Where is the session rating asked? → A: Under each generated brief and Forecast explanation, next to the thumbs, because it is about the agent workflows. It is no longer in the page header, and signing out no longer asks for it. Once given, it shrinks to "This session: Good · change". This replaces the 2026-11-15 answer below.
 - Q: Where is the questionnaire offered? → A: A quiet "Share feedback" link at the foot of the sidebar (marked until answered) and the account menu. The banner across the top is removed.
 - Q: Should people rate individual answers, not only the session? → A: Yes. Thumbs up or down, with an optional comment, on every brief (analyst and leadership view) and every Forecast explanation. Flagging a single claim as wrong (core-007 FR-025) comes next, not in this version.
@@ -159,6 +161,7 @@ An owner downloads the feedback folder and runs `python -m eval candidates`. Eac
 - **FR-015**: The report (FR-011) MUST count votes by lane, engine and view, and list every downvote with its comment.
 - **FR-016**: `python -m eval candidates --state-dir DIR` MUST write one draft case per voted answer under the git-ignored `eval/candidates/<lane>/`, MUST NOT overwrite an existing draft without `--force`, and MUST NOT write to `eval/golden/`. A draft MUST NOT carry facts or a reference answer: a person writes those.
 - **FR-017**: Every generated brief and Forecast explanation, in both views, MUST show one line saying PharmAgentics can make mistakes and that important figures should be checked (against the evidence for an analyst, with the Commercial Analyst for a leader).
+- **FR-018**: Any participant with a role MUST be able to send a free-text suggestion for the platform (1 to 1000 characters, a topic of briefing, forecast, agent, design or other) from the sidebar; each is stored under `feedback/comment/` with the pseudonymous ID and listed in the report. The session rating (FR-003) appears only under agent-team answers.
 
 ### Key Entities
 

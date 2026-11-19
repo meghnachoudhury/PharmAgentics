@@ -113,7 +113,7 @@ function ViewAsSwitch({me}: {me: Me}) {
 }
 
 function AccountMenu({me}: {me: Me}) {
-  const {openSurvey, signOut, surveyDone} = useFeedbackActions()
+  const {openSurvey, openSuggest, signOut, surveyDone} = useFeedbackActions()
   const role = roleLabel(me)
   return <DropdownMenu>
     <DropdownMenuTrigger aria-label={`Account: ${me.tester ? "test view, " : ""}${role}`} className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm text-ink outline-none transition hover:bg-paper">
@@ -129,6 +129,7 @@ function AccountMenu({me}: {me: Me}) {
       </div>})}</div>
       {me.tester && <ViewAsSwitch me={me}/>}
       <DropdownMenuSeparator/>
+      <DropdownMenuItem onSelect={openSuggest}>Suggest an improvement</DropdownMenuItem>
       <DropdownMenuItem onSelect={openSurvey}><span className="flex-1">Platform questionnaire</span><span className="text-[11px] text-muted">{surveyDone ? "Update" : "5 min"}</span></DropdownMenuItem>
       <DropdownMenuItem onSelect={signOut}>Sign out</DropdownMenuItem>
     </DropdownMenuContent>
@@ -267,7 +268,7 @@ function ForecastWorkspace({me, section, onSection}: {me: Me, section: ForecastS
         {canPreview && <ViewToggle value={selected.view} busy={busy} onChange={view => void open(selected.forecast_run_id, view)}/>}
       </div>
       <ForecastReport run={selected}/>
-      <AnswerFeedback lane="forecast" refId={selected.forecast_run_id} view={selected.view}/>
+      <AnswerFeedback lane="forecast" refId={selected.forecast_run_id} view={selected.view} agent={!!selected.report.investigator_mode && !/scripted/i.test(selected.report.investigator_mode)}/>
       {analyst && selected.view === "analyst" && selected.review_status === "pending_review" && <p className="text-sm text-muted"><span className="text-ink">Submitted for Brand Manager approval.</span> It can no longer be edited; the Brand Manager can approve, return or reject it.</p>}
       {analyst && selected.view === "analyst" && section === "workbench" && (selected.review_status === "not_submitted" || selected.review_status === "returned") && <div className="flex justify-end"><button disabled={busy} onClick={()=>void submit()} className={BTN}>Submit to Brand Manager</button></div>}
       {!analyst && selected.review_status === "pending_review" && <section className={`${PANEL} p-5`}>
@@ -337,7 +338,7 @@ function Shell({me, onBriefingHome, children, startInForecast=false}: {me: Me, o
   const goForecast = () => { setForecast(true); setForecastSection("workbench") }
   const leader = !me.lanes.briefing?.views.includes("analyst") && !me.lanes.forecast?.views.includes("analyst")
   // --rail is the width the sidebar occupies; .workspace-content uses it to centre on the whole page (0 on phones).
-  return <FeedbackProvider where={forecast ? "forecast" : "briefing"}><div className={`flex h-dvh overflow-hidden text-ink max-md:[--rail:0px] ${open ? "[--rail:248px]" : "[--rail:64px]"}`}>
+  return <FeedbackProvider where={forecast ? "forecast" : "briefing"}><div className={`flex h-dvh overflow-hidden text-ink max-md:[--shift:0px] ${open ? "[--shift:0px]" : "[--shift:64px]"}`}>
     <aside aria-label="Sidebar" className={`hidden shrink-0 overflow-hidden border-r border-rule bg-sheet transition-[width] duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] md:block ${open ? "w-[248px]" : "w-16"}`}>
       <SideNav me={me} expanded={open} forecast={forecast} onBriefing={goBriefing} onForecast={goForecast}/>
     </aside>
@@ -390,7 +391,7 @@ function SummaryCard({brief, preview=false}: {brief: LeadershipBrief, preview?: 
     <div className="px-6 py-6"><pre className="max-w-[68ch] whitespace-pre-wrap break-words font-serif text-[16px] leading-[1.7] text-ink">{brief.summary}</pre></div>
     <div className="border-t border-rule px-6 py-4 text-xs text-muted">Every figure comes from the approved analyst brief. Evidence and source queries stay with the Commercial Analyst.</div>
   </article>
-  <AnswerFeedback lane="briefing" refId={brief.brief_id} view="leadership"/></>
+  <AnswerFeedback lane="briefing" refId={brief.brief_id} view="leadership" agent={brief.engine==="agent"}/></>
 }
 
 // A short, warm start to each workspace, from the viewer's own clock.
@@ -584,7 +585,7 @@ function AnalystBrief({result, onChange}: {result: BriefingResult, onChange: (r:
       </section>
       <ReviewPanel result={result} onChange={onChange}/>
     </article>}
-    {mode==="analyst" && <AnswerFeedback lane="briefing" refId={result.brief_id} view="analyst"/>}
+    {mode==="analyst" && <AnswerFeedback lane="briefing" refId={result.brief_id} view="analyst" agent={result.engine==="agent"}/>}
     {mode==="analyst" && result.flow && <FlowPanel flow={result.flow} triage={result.triage}/>}
     <InsightButton briefId={result.brief_id} view={mode}/>
     {evidenceId && <EvidenceDrawer result={result} selectedId={evidenceId} onClose={()=>setEvidenceId(null)}/>}

@@ -109,7 +109,7 @@ export type Stage = {
 export type LeadershipBrief = {
   brief_id: string
   view: "leadership"
-  engine: "scripted"
+  engine: "scripted" | "agent"
   system: string
   brand_id: string
   territory_id: string

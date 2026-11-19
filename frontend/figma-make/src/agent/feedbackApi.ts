@@ -79,6 +79,12 @@ export async function sendVote(body: { lane: AnswerLane; ref: string; view: Answ
   return asVote(await api("/api/feedback/vote", post({ ...body, comment: body.comment || null })))
 }
 
+// A free-text suggestion for the platform (core-008 FR-018).
+export type CommentTopic = "briefing" | "forecast" | "agent" | "design" | "other"
+export async function sendComment(text: string, topic: CommentTopic): Promise<{ saved_at: string }> {
+  return await api("/api/feedback/comment", post({ text, topic }))
+}
+
 export async function getQuestionnaire(): Promise<Questionnaire> {
   const v: unknown = await api("/api/feedback/questionnaire")
   if (!isObject(v) || !Array.isArray(v.sections) || typeof v.version !== "number") throw new Error("The questionnaire is unavailable.")

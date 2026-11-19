@@ -30,6 +30,7 @@ QUESTIONNAIRE_FILE = Path(__file__).with_name("questionnaire.json")
 RATINGS = ("good", "fine", "bad")
 ITEM_TYPES = {"agree5", "nps", "choice", "multi", "text"}
 PULSE_PREFIX, SURVEY_PREFIX, RESPONSE_PREFIX = "feedback/pulse/", "feedback/survey/", "feedback/response/"
+COMMENT_PREFIX = "feedback/comment/"  # free-text suggestions for the platform (core-008 FR-018)
 
 
 # --- the questionnaire file -----------------------------------------------------------------------
@@ -113,6 +114,21 @@ def sus_score(q: dict, answers: dict[str, Any]) -> float | None:
 
 
 # --- requests -------------------------------------------------------------------------------------
+
+class CommentIn(BaseModel):
+    """A suggestion about the platform, from anywhere in the app."""
+    model_config = ConfigDict(extra="forbid")
+
+    text: str = Field(min_length=1, max_length=1000)
+    topic: Literal["briefing", "forecast", "agent", "design", "other"] = "other"
+
+    @field_validator("text")
+    @classmethod
+    def not_blank(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("Write a suggestion first.")
+        return value.strip()
+
 
 class PulseIn(BaseModel):
     model_config = ConfigDict(extra="forbid")
@@ -210,6 +226,18 @@ def status(request: Request, response: Response, who=Depends(participant)) -> di
     return {"pulse": request.session.get("pulse"),
             "survey": {"submitted_at": mine["ts"] if mine else None, "version": mine["version"] if mine else None},
             "questionnaire_version": questionnaire()["version"]}
+
+
+@router.post("/comment")
+def comment(body: CommentIn, response: Response, who=Depends(participant)) -> dict:
+    """A free-text suggestion for the platform. Every one is kept; nobody else can read it in the app."""
+    _no_store(response)
+    p, roles = who
+    ts = store.now()
+    doc = {"kind": "comment", "id": secrets.token_hex(4), "ts": ts, **_who(p, roles), "topic": body.topic,
+           "text": body.text, "app_version": os.environ.get("PHARMAGENTICS_VERSION", "dev")}
+    _write(f"{COMMENT_PREFIX}{ts[:10]}/{ts.replace(':', '')}-{doc['id']}.json", doc)
+    return {"saved_at": ts}
 
 
 @router.post("/pulse")
@@ -345,6 +373,11 @@ def _role_order(key: str) -> tuple[int, int, str]:
     return (len(parts), min((PERSONA_ORDER.index(x) if x in PERSONA_ORDER else 99) for x in parts), key)
 
 
+def load_comments(backend) -> list[dict]:
+    """Every platform suggestion in a state backend, oldest first."""
+    return sorted((json.loads(t) for k in backend.keys(COMMENT_PREFIX) if (t := backend.read(k))), key=lambda d: d["ts"])
+
+
 def load_votes(backend) -> list[dict]:
     """Every per-answer vote in a state backend (one document per participant, answer and view)."""
     return [json.loads(t) for k in backend.keys(RESPONSE_PREFIX) if (t := backend.read(k))]
@@ -425,6 +458,10 @@ def to_markdown(summary: dict, q: dict) -> str:
                   *(f"| {role} | {c['good']} | {c['fine']} | {c['bad']} |" for role, c in sorted(pulse["by_role"].items(), key=lambda kv: _role_order(kv[0]))), ""]
         if pulse["comments"]:
             lines += ["Comments:", "", *(f"- {c['ts']} · {c['role']} · {c['rating']} · {c['where']}: {c['comment']}" for c in pulse["comments"]), ""]
+    if summary.get("comments") is not None:
+        c = summary["comments"]
+        lines += ["## Suggestions for the platform", ""]
+        lines += ([f"- {d['ts'][:16]} · {_role_key(d)} · {d['topic']}: {d['text']}" for d in c] or ["No suggestions yet."]) + [""]
     if "answers" in summary:
         a = summary["answers"]
         lines += ["## Votes on answers: thumbs up or down", ""]
