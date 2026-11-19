@@ -17,5 +17,5 @@ export function Icon({name,className="h-4 w-4"}:{name:keyof typeof PATHS,classNa
 const MARK={sm:["h-9 w-9 rounded-xl","h-5 w-5"],lg:["h-14 w-14 rounded-2xl","h-7 w-7"]} as const
 export function BrandMark({size="sm"}:{size?:keyof typeof MARK}){
  const [box,icon]=MARK[size]
- return <span className={`grid shrink-0 place-items-center bg-linear-to-br from-agent to-agentdeep text-white shadow-sm ${box}`}><Icon name="layers" className={icon}/></span>
+ return <span className={`grid shrink-0 place-items-center bg-linear-to-br from-agent to-agentdeep text-onaccent shadow-sm ${box}`}><Icon name="layers" className={icon}/></span>
 }

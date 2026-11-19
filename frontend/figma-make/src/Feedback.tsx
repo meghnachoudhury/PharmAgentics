@@ -65,20 +65,20 @@ export function FeedbackProvider({ where, children }: { where: PulseWhere; child
     {children}
     {pulseOpen && <>
       <button aria-label="Close" className="fixed inset-0 z-40 cursor-default" onClick={() => setPulseOpen(false)} />
-      <div role="dialog" aria-label="Rate this session" className="fixed right-4 top-14 z-50 w-[22rem] max-w-[calc(100vw-2rem)] rounded-2xl bg-white p-4 shadow-xl ring-1 ring-rule pa-rise">
+      <div role="dialog" aria-label="Rate this session" className="fixed right-4 top-14 z-50 w-[22rem] max-w-[calc(100vw-2rem)] rounded-2xl bg-sheet p-4 shadow-xl ring-1 ring-rule pa-rise">
         <p className="text-sm font-semibold">How is PharmAgentics doing this session?</p>
         <p className="mt-0.5 text-xs text-muted">One click. You can change it any time.</p>
         <PulseForm />
       </div>
     </>}
-    {leaving && <div className="fixed inset-0 z-50 grid place-items-center bg-ink/30 px-4">
-      <div role="dialog" aria-modal="true" aria-label="Before you go" className="w-full max-w-sm rounded-2xl bg-white p-5 shadow-xl ring-1 ring-rule pa-rise">
+    {leaving && <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 px-4">
+      <div role="dialog" aria-modal="true" aria-label="Before you go" className="w-full max-w-sm rounded-2xl bg-sheet p-5 shadow-xl ring-1 ring-rule pa-rise">
         <p className="text-base font-semibold">Before you go</p>
         <p className="mt-1 text-sm text-muted">How was PharmAgentics this session?</p>
         <PulseForm />
         <div className="mt-4 flex items-center justify-between gap-3">
           <button type="button" onClick={() => setLeaving(false)} className="text-xs text-muted hover:underline">Stay signed in</button>
-          <button type="button" onClick={leave} className="rounded-xl bg-navy px-4 py-2 text-sm font-semibold text-white hover:bg-agentdeep">{status?.pulse ? "Sign out" : "Skip and sign out"}</button>
+          <button type="button" onClick={leave} className="rounded-xl bg-navy px-4 py-2 text-sm font-semibold text-onaccent hover:bg-agentdeep">{status?.pulse ? "Sign out" : "Skip and sign out"}</button>
         </div>
       </div>
     </div>}
@@ -206,7 +206,7 @@ export function SurveyBanner() {
   return <div role="region" aria-label="Questionnaire invitation" className="flex flex-wrap items-center justify-between gap-2 border-b border-rule bg-agentbg px-5 py-2 text-xs text-agentdeep">
     <span><strong className="font-semibold">Help us improve PharmAgentics.</strong> A five-minute questionnaire about the whole platform.</span>
     <span className="flex items-center gap-2">
-      <button type="button" onClick={f.openSurvey} className="rounded-lg bg-navy px-3 py-1 font-semibold text-white hover:bg-agentdeep">Open it</button>
+      <button type="button" onClick={f.openSurvey} className="rounded-lg bg-navy px-3 py-1 font-semibold text-onaccent hover:bg-agentdeep">Open it</button>
       <button type="button" onClick={dismiss} className="rounded-lg px-2 py-1 hover:underline">Not now</button>
     </span>
   </div>
@@ -216,7 +216,7 @@ export function SurveyBanner() {
 
 function Question({ item, scale, value, onChange }: { item: QItem; scale: string[]; value: unknown; onChange: (v: number | string | string[] | undefined) => void }) {
   const legend = <legend className="text-sm font-medium leading-snug">{item.text}</legend>
-  const chip = (on: boolean) => `rounded-lg px-2 py-2 text-xs font-medium ring-1 transition ${on ? "bg-navy text-white ring-navy" : "text-ink ring-rule hover:bg-paper"}`
+  const chip = (on: boolean) => `rounded-lg px-2 py-2 text-xs font-medium ring-1 transition ${on ? "bg-navy text-onaccent ring-navy" : "text-ink ring-rule hover:bg-paper"}`
   if (item.type === "agree5") return <fieldset className="space-y-2">{legend}
     <div role="radiogroup" aria-label={item.text} className="grid grid-cols-5 gap-1.5">
       {[1, 2, 3, 4, 5].map(n => <button key={n} type="button" role="radio" aria-checked={value === n} title={scale[n - 1]} onClick={() => onChange(value === n ? undefined : n)} className={chip(value === n)}>{n}</button>)}
@@ -283,8 +283,8 @@ function SurveyModal({ onClose, onSubmitted }: { onClose: () => void; onSubmitte
     finally { setBusy(false) }
   }
 
-  return <div className="fixed inset-0 z-50 flex justify-center overflow-y-auto bg-ink/30 px-3 py-6">
-    <div role="dialog" aria-modal="true" aria-labelledby="survey-title" className="h-fit w-full max-w-2xl rounded-2xl bg-white shadow-xl ring-1 ring-rule pa-rise">
+  return <div className="fixed inset-0 z-50 flex justify-center overflow-y-auto bg-black/60 px-3 py-6">
+    <div role="dialog" aria-modal="true" aria-labelledby="survey-title" className="h-fit w-full max-w-2xl rounded-2xl bg-sheet shadow-xl ring-1 ring-rule pa-rise">
       <div className="flex items-start justify-between gap-3 border-b border-rule px-6 py-4">
         <div><h2 id="survey-title" className="text-lg font-semibold">{q?.title ?? "Platform questionnaire"}</h2>{q && <p className="mt-1 text-sm text-muted">{q.intro}</p>}</div>
         <button type="button" onClick={onClose} aria-label="Close questionnaire" className="rounded-lg px-2 py-1 text-lg leading-none text-muted hover:bg-paper">×</button>
@@ -293,7 +293,7 @@ function SurveyModal({ onClose, onSubmitted }: { onClose: () => void; onSubmitte
       {!q && !loadError && <p role="status" className="px-6 py-8 text-sm text-muted">Loading the questionnaire…</p>}
       {q && done && <div className="px-6 py-10 text-center"><p className="text-lg font-semibold">Thank you.</p>
         <p className="mt-1 text-sm text-muted">Your answers are saved. You can reopen the questionnaire from your account menu to change them.</p>
-        <button type="button" onClick={onClose} className="mt-5 rounded-xl bg-navy px-5 py-2.5 text-sm font-semibold text-white hover:bg-agentdeep">Close</button></div>}
+        <button type="button" onClick={onClose} className="mt-5 rounded-xl bg-navy px-5 py-2.5 text-sm font-semibold text-onaccent hover:bg-agentdeep">Close</button></div>}
       {q && !done && <>
         <div className="space-y-7 px-6 py-5">
           {updating && <p className="rounded-xl bg-agentbg px-3 py-2 text-xs text-agentdeep">You answered this before. Your earlier answers are filled in; change anything and send again to replace them.</p>}
@@ -302,11 +302,11 @@ function SurveyModal({ onClose, onSubmitted }: { onClose: () => void; onSubmitte
             {section.items.map(item => <Question key={item.id} item={item} scale={q.scale.agree5} value={answers[item.id]} onChange={v => set(item.id, v)} />)}
           </section>)}
         </div>
-        <div className="sticky bottom-0 flex flex-wrap items-center justify-between gap-3 rounded-b-2xl border-t border-rule bg-white px-6 py-3">
+        <div className="sticky bottom-0 flex flex-wrap items-center justify-between gap-3 rounded-b-2xl border-t border-rule bg-sheet px-6 py-3">
           <span className="text-xs text-muted">{count} of {total} answered. Every question is optional.</span>
           <span className="flex items-center gap-3">
             {error && <span role="alert" className="max-w-[18rem] text-xs text-amber">{error}{error.includes("changed") && <button type="button" onClick={load} className="ml-1 underline">Reload</button>}</span>}
-            <button type="button" disabled={busy || count === 0} onClick={() => void submit()} className="rounded-xl bg-navy px-5 py-2.5 text-sm font-semibold text-white hover:bg-agentdeep disabled:bg-rule disabled:text-muted">{busy ? "Sending…" : updating ? "Send updated answers" : "Send"}</button>
+            <button type="button" disabled={busy || count === 0} onClick={() => void submit()} className="rounded-xl bg-navy px-5 py-2.5 text-sm font-semibold text-onaccent hover:bg-agentdeep disabled:bg-rule disabled:text-muted">{busy ? "Sending…" : updating ? "Send updated answers" : "Send"}</button>
           </span>
         </div>
       </>}

@@ -5,32 +5,38 @@
   --font-serif: "Source Serif 4", Georgia, serif;
   --font-sans: "Inter", system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, monospace;
-  /* Warm ivory workspace */
-  --color-paper: #f7f5f0;
-  --color-sheet: #ffffff;
-  --color-ink: #111214;
-  --color-muted: #6b6e75;
-  --color-rule: #e6e3dc;
-  --color-accent: #111214;
-  --color-warn: #3a3c41;
-  --color-warnbg: #eeeff1;
-  /* Deep navy: sidebar, navigation and major chrome */
-  --color-navy: #0f172a;
-  /* Human review */
-  --color-human: #1e3a8a;
-  --color-humanbg: #e8eefb;
-  /* Agent interactions and primary controls */
-  --color-agent: #475569;
-  --color-agentdeep: #243247;
-  --color-agentbg: #edf1f5;
-  /* Verified results and successful states */
-  --color-ok: #0f766e;
-  --color-okbg: #e7f4f1;
+  /* Dark only (2026-11-19): near-black surfaces, light text, green accents.
+     Every text/background pair below clears WCAG AA (4.5:1) on paper and sheet. */
+  --color-paper: #0a0c0b;   /* the page, input wells */
+  --color-sheet: #131715;   /* cards, sidebar, header, menus */
+  --color-ink: #e6ebe8;     /* body text */
+  --color-muted: #8f9a94;   /* secondary text */
+  --color-rule: #27302b;    /* borders and dividers */
+  --color-warn: #c3cac6;
+  --color-warnbg: #1c2320;
+  /* Primary controls: green buttons, selected tabs; text on them is onaccent */
+  --color-navy: #22c55e;
+  --color-onaccent: #04140a;
+  /* Human review, leaders */
+  --color-human: #9db8ff;
+  --color-humanbg: #18213a;
+  /* Accent: icons, links, agent chips. agentdeep is lighter for text and hover */
+  --color-agent: #4ade80;
+  --color-agentdeep: #86efac;
+  --color-agentbg: #11261a;
+  /* Verified results and successful states: teal, so "verified" is not mistaken for the accent */
+  --color-ok: #2dd4bf;
+  --color-okbg: #0d2a26;
   /* Data-health alerts, uncertainty, review required */
-  --color-amber: #b45309;
-  --color-amberbg: #fdf6e7;
-  --color-amberline: #f3d58a;
-  --color-neg: #b91c1c;
+  --color-amber: #fbbf24;
+  --color-amberbg: #2a1f08;
+  --color-amberline: #5c4513;
+  --color-neg: #f87171;
+}
+
+:root {
+  color-scheme: dark;  /* native selects, scrollbars and date pickers render dark */
+  accent-color: var(--color-agent);  /* radios and checkboxes */
 }
 
 @layer base {
