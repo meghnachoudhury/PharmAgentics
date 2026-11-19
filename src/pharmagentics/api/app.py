@@ -17,6 +17,7 @@ import hmac
 import logging
 import os
 import secrets
+from contextlib import asynccontextmanager
 import time
 from pathlib import Path
 
@@ -27,7 +28,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
-from . import auth, classification, cloud, feedback, forecast, jobs, rbac, service, store, views
+from . import agent_host, auth, classification, cloud, feedback, forecast, jobs, rbac, service, store, views
 from .schemas import (AgentJobRequest, BriefingQuery, InsightMark, ReleaseContext, ReviewRequest, ViewAs, WorkerPoll,
                       WorkerResult)
 
@@ -48,7 +49,17 @@ if not _secret:
         raise RuntimeError("PHARMAGENTICS_SESSION_SECRET must be set on Cloud Run.")
     _secret = secrets.token_urlsafe(32)  # local only: sessions end when the process restarts
 
+@asynccontextmanager
+async def _lifespan(_app: FastAPI):
+    """Start the built-in agent worker when an Anthropic model is configured (core-007 FR-032)."""
+    if agent_host.start(accept_result):
+        logger.info("Agent jobs run in this app on %s", agent_host.model())
+    yield
+    agent_host.stop()
+
+
 app = FastAPI(
+    lifespan=_lifespan,
     title="PharmAgentics API",
     version="0.2.0",
     description="The Briefing and Forecast lanes over the governed data, with role-based views (core-007).",
@@ -221,7 +232,7 @@ def _job_view(job: dict) -> dict:
     worker = job.get("worker")
     out["host_kind"] = None
     if worker:
-        out["host_kind"] = "cloud_cpu" if worker == "cloud" else "teammate"
+        out["host_kind"] = {"cloud": "cloud_cpu", agent_host.NAME: "builtin"}.get(worker, "teammate")
     if job["status"] == "done" and job["kind"] == "triage":
         out["result"] = job["result"]
     elif job["status"] == "done" and job["kind"] == "brief":
@@ -240,7 +251,9 @@ def _wake_cloud_host() -> None:
 def agent_status(response: Response, who=Briefing) -> dict:
     _no_store(response)
     _wake_cloud_host()
-    return {**jobs.status(), "configured": bool(os.environ.get("PHARMAGENTICS_WORKER_TOKEN")), "cloud": cloud.status()}
+    builtin = agent_host.model()
+    return {**jobs.status(), "configured": bool(builtin or os.environ.get("PHARMAGENTICS_WORKER_TOKEN")),
+            "builtin": {"model": builtin} if builtin else None, "cloud": cloud.status()}
 
 
 @app.post("/api/agent/jobs", tags=["briefing"])
@@ -313,36 +326,45 @@ def _charge_cloud(job: dict) -> None:
         cloud.record_job_seconds(time.time() - job["started_ts"])
 
 
-@app.post("/api/worker/jobs/{job_id}", tags=["briefing"], dependencies=[Depends(_worker)])
-async def worker_result(job_id: str, posted: WorkerResult) -> dict:
+def accept_result(job_id: str, ok: bool, result: dict | None, error: str | None) -> dict:
+    """A worker's result, posted over HTTP or from the built-in worker (FR-032): the same checks either way.
+    Raises KeyError when no job with that ID is running."""
     job = jobs.get(job_id)
     if job is None or job["status"] != "running":
-        raise HTTPException(status_code=404, detail="No running job with that ID.")
-    if not posted.ok:
-        _charge_cloud(jobs.complete(job_id, False, None, posted.error))
+        raise KeyError(job_id)
+    if not ok:
+        _charge_cloud(jobs.complete(job_id, False, None, error))
         return {"status": "failed"}
     query = BriefingQuery.model_validate(job["payload"]["query"])
     try:
         if job["kind"] == "triage":
-            plan = posted.result or {}
+            plan = result or {}
             if plan.get("state") != "OUT_OF_SCOPE":
                 service._traceable(plan.get("claims", []), plan.get("evidence", []))
             plan.update(brand_id=query.brand_id, territory_id=query.territory_id, week_start=query.week_start.isoformat())
             _charge_cloud(jobs.complete(job_id, True, plan, None))
         else:
-            result = await run_in_threadpool(service.accept_agent_brief, query, posted.result or {})
-            record = store.save_brief(result.model_dump(mode="json"), by=job["by"])
+            brief = service.accept_agent_brief(query, result or {})
+            record = store.save_brief(brief.model_dump(mode="json"), by=job["by"])
             _charge_cloud(jobs.complete(job_id, True, {"brief_id": record["brief_id"]}, None))
             store.record_event("requested", user=job["by"], role="briefing-analyst", persona="P1",
-                               brief_id=record["brief_id"], engine="agent", system=result.system,
-                               data_version=result.data_version, week_start=str(result.week_start),
-                               territory_id=result.territory_id, triage_default=(result.triage or {}).get("default"),
-                               agent_seconds=((posted.result or {}).get("envelope") or {}).get("trajectory", {}).get("seconds"))
+                               brief_id=record["brief_id"], engine="agent", system=brief.system,
+                               data_version=brief.data_version, week_start=str(brief.week_start),
+                               territory_id=brief.territory_id, triage_default=(brief.triage or {}).get("default"),
+                               agent_seconds=((result or {}).get("envelope") or {}).get("trajectory", {}).get("seconds"))
     except Exception as exc:  # noqa: BLE001 - an untraceable or malformed result fails the job, visibly
         logger.warning("Agent result refused: %s", exc)
         _charge_cloud(jobs.complete(job_id, False, None, f"The agent's result did not pass the traceability check: {exc}"))
         return {"status": "failed"}
     return {"status": "done"}
+
+
+@app.post("/api/worker/jobs/{job_id}", tags=["briefing"], dependencies=[Depends(_worker)])
+async def worker_result(job_id: str, posted: WorkerResult) -> dict:
+    try:
+        return await run_in_threadpool(accept_result, job_id, posted.ok, posted.result, posted.error)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="No running job with that ID.") from exc
 
 
 # Same-origin UI (core-007 FR-017). Mounted last so every /api and /auth route above wins.

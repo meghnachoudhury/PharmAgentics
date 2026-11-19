@@ -72,6 +72,20 @@ uv run python deploy/gcp.py env-pull --project pharmagentics --account <your Goo
 
 After that, every command in this README works for them with `--account <their account>`. If they change a password or add a participant, they run `env-push` before `keycloak`. `keycloak` refuses to deploy from a local `.env.uat` that differs from the shared copy, so a stale file cannot overwrite someone else's passwords; `env-pull --force` takes the shared copy.
 
+## The agent team on Claude Haiku (core-007 FR-032)
+
+Since 2026-11-19 the app can run the agent team itself on Claude Haiku 5.5, with no worker or host machine:
+
+```powershell
+# local stack: put ANTHROPIC_API_KEY=... in the repository's git-ignored .env; compose.yaml passes it in
+docker compose up --build
+# Cloud Run: store the key once (never printed, readable by the app only), then redeploy the app
+uv run python deploy/gcp.py anthropic-key --project pharmagentics --account <you>
+uv run python deploy/gcp.py app --project pharmagentics --account <you>
+```
+
+A brief takes about a minute and costs about $0.02. Every result still passes the traceability check. With the key in Secret Manager, `gcp.py app` deploys with 1 GiB and `--no-cpu-throttling`, because the worker thread runs between requests; the instance is then billed for as long as it is up, and still scales to zero when idle. Set a monthly spend limit in the Anthropic Console. Without the key, everything below still applies.
+
 ## Live agent runs on your PC (core-007 FR-028)
 
 The app never runs a model. When an analyst picks **Agent team**, the app queues the job; a worker on your PC takes it, runs build 3 (manager, Data Forensics, Driver Investigator) on Ollama, and posts the result. The app admits a brief only if every number in it is a claim with evidence on the app's data version.

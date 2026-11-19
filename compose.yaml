@@ -41,6 +41,10 @@ services:
       FEAGENT_MODE: auto
       OLLAMA_HOST: http://host.docker.internal:11434
       OLLAMA_MODEL: qwen3:4b-instruct-2507-q4_K_M
+      # Agent team on Claude Haiku, run by the app itself (core-007 FR-032). The key comes from the repo-root .env
+      # (git-ignored; Compose reads it for ${...}) and is never baked into the image. Unset key: agent jobs wait.
+      PHARMAGENTICS_AGENT_MODEL: ${PHARMAGENTICS_AGENT_MODEL:-anthropic:claude-haiku-5-5}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
     volumes:
       - app-state:/state
     ports: ["8080:8080"]

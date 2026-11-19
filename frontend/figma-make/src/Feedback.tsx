@@ -4,9 +4,9 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react"
 import { toast } from "sonner"
 import {
-  getFeedbackStatus, getMyVote, getMySurvey, getQuestionnaire, sendPulse, sendSurvey, sendVote,
+  getFeedbackStatus, getMyVote, getMySurvey, getQuestionnaire, sendComment, sendPulse, sendSurvey, sendVote,
   type AnswerLane, type AnswerView, type Answers, type FeedbackStatus, type PulseWhere, type QItem, type Questionnaire,
-  type Rating, type Vote,
+  type CommentTopic, type Rating, type Vote,
 } from "./agent/feedbackApi"
 
 const message = (e: unknown) => e instanceof Error ? e.message : String(e)
@@ -25,6 +25,7 @@ function Face({ kind, className = "h-5 w-5" }: { kind: Rating; className?: strin
 type Ctx = {
   status: FeedbackStatus | null
   openSurvey: () => void
+  openSuggest: () => void
   signOut: () => void
   setPulse: (p: { rating: Rating; at: string }) => void
   where: PulseWhere
@@ -38,23 +39,26 @@ function useFeedback(): Ctx {
 // For the account menu: open the questionnaire, sign out, and whether the questionnaire is done.
 export function useFeedbackActions() {
   const f = useFeedback()
-  return { openSurvey: f.openSurvey, signOut: f.signOut, surveyDone: Boolean(f.status?.survey.submitted_at) }
+  return { openSurvey: f.openSurvey, openSuggest: f.openSuggest, signOut: f.signOut, surveyDone: Boolean(f.status?.survey.submitted_at) }
 }
 
 export function FeedbackProvider({ where, children }: { where: PulseWhere; children: ReactNode }) {
   const [status, setStatus] = useState<FeedbackStatus | null>(null)
   const [surveyOpen, setSurveyOpen] = useState(false)
+  const [suggestOpen, setSuggestOpen] = useState(false)
   const refresh = useCallback(() => { getFeedbackStatus().then(setStatus).catch(() => setStatus(null)) }, [])
   useEffect(() => { refresh() }, [refresh])
   const ctx = useMemo<Ctx>(() => ({
     status, where,
-    openSurvey: () => setSurveyOpen(true),
+    openSurvey: () => { setSuggestOpen(false); setSurveyOpen(true) },
+    openSuggest: () => setSuggestOpen(true),
     signOut: () => window.location.assign("/auth/logout"),  // never asks for a rating (core-008 FR-003)
     setPulse: p => setStatus(s => s ? { ...s, pulse: p } : s),
   }), [status, where])
   return <FeedbackCtx.Provider value={ctx}>
     {children}
     {surveyOpen && <SurveyModal onClose={() => setSurveyOpen(false)} onSubmitted={refresh} />}
+    {suggestOpen && <SuggestModal onClose={() => setSuggestOpen(false)} onSurvey={() => { setSuggestOpen(false); setSurveyOpen(true) }} surveyDone={Boolean(status?.survey.submitted_at)} />}
   </FeedbackCtx.Provider>
 }
 
@@ -62,13 +66,13 @@ export function FeedbackProvider({ where, children }: { where: PulseWhere; child
 export function ShareFeedbackLink({ expanded, onOpen }: { expanded: boolean; onOpen?: () => void }) {
   const f = useFeedback()
   const pending = Boolean(f.status && !f.status.survey.submitted_at)
-  return <button type="button" onClick={() => { onOpen?.(); f.openSurvey() }} title="Share feedback about PharmAgentics"
+  return <button type="button" onClick={() => { onOpen?.(); f.openSuggest() }} title="Suggest an improvement or take the questionnaire"
     className="relative flex w-full items-center gap-3 rounded-xl px-[10px] py-2 text-left text-xs text-muted transition hover:bg-paper/60 hover:text-ink">
     <span className="relative shrink-0">
       <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12Z" /></svg>
       {pending && <span aria-hidden="true" className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-agent ring-2 ring-sheet" />}
     </span>
-    <span className={expanded ? "whitespace-nowrap" : "sr-only"}>Share feedback{pending ? " (5 minutes)" : ""}</span>
+    <span className={expanded ? "whitespace-nowrap" : "sr-only"}>Share feedback</span>
   </button>
 }
 
@@ -79,7 +83,7 @@ function Thumb({ down = false }: { down?: boolean }) {
   return <svg viewBox="0 0 24 24" className={`h-4 w-4 ${down ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={THUMB} /></svg>
 }
 
-export function AnswerFeedback({ lane, refId, view }: { lane: AnswerLane; refId: string; view: AnswerView }) {
+export function AnswerFeedback({ lane, refId, view, agent = false }: { lane: AnswerLane; refId: string; view: AnswerView; agent?: boolean }) {
   const [vote, setVote] = useState<Vote | null>(null)
   const [comment, setComment] = useState("")
   const [saved, setSaved] = useState("")
@@ -122,7 +126,7 @@ export function AnswerFeedback({ lane, refId, view }: { lane: AnswerLane; refId:
         className="rounded-lg px-3 py-2 text-xs font-semibold text-agentdeep border border-rule hover:bg-paper disabled:text-muted disabled:opacity-60">{noted ? "Comment saved" : "Send comment"}</button>
     </div>}
     {error && <p role="alert" className="text-xs text-amber">{error}</p>}
-    <SessionRating refId={refId} />
+    {agent && <SessionRating refId={refId} />}
   </div>
 }
 
@@ -151,7 +155,7 @@ function SessionRating({ refId }: { refId: string }) {
   </div>
   return <div className="space-y-2 border-t border-rule pt-3">
     <div className="flex flex-wrap items-center justify-between gap-3">
-      <span className="text-sm text-ink">How is PharmAgentics working for you this session?</span>
+      <span className="text-sm text-ink">How is the agent team working for you this session?</span>
       <div role="radiogroup" aria-label="Session rating" className="flex gap-1.5">
         {RATINGS.map(r => <button key={r} type="button" role="radio" aria-checked={current === r} disabled={busy} onClick={() => void send(r)}
           className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium ring-1 transition disabled:opacity-60 ${current === r ? `${BG[r]} ${TONE[r]} ring-current` : "text-ink ring-rule hover:bg-paper"}`}>
@@ -168,6 +172,49 @@ function SessionRating({ refId }: { refId: string }) {
       </div>
     </div>}
     {error && <p role="alert" className="text-xs text-amber">{error}</p>}
+  </div>
+}
+
+// --- a suggestion for the platform (FR-018) ---------------------------------------------------------
+
+const TOPICS: [CommentTopic, string][] = [["briefing", "Weekly briefing"], ["forecast", "Forecast explanation"], ["agent", "The agent team"], ["design", "Look and feel"], ["other", "Something else"]]
+
+function SuggestModal({ onClose, onSurvey, surveyDone }: { onClose: () => void; onSurvey: () => void; surveyDone: boolean }) {
+  const [text, setText] = useState("")
+  const [topic, setTopic] = useState<CommentTopic>("other")
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  useEffect(() => {
+    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") onClose() }
+    document.addEventListener("keydown", esc)
+    return () => document.removeEventListener("keydown", esc)
+  }, [onClose])
+  const send = async () => {
+    setBusy(true); setError(null)
+    try { await sendComment(text.trim(), topic); toast.success("Thank you. Your suggestion is saved."); onClose() }
+    catch (e) { setError(message(e)) }
+    finally { setBusy(false) }
+  }
+  return <div className="pa-fade fixed inset-0 z-50 grid place-items-center overscroll-contain bg-black/60 px-4">
+    <div role="dialog" aria-modal="true" aria-labelledby="suggest-title" className="pa-rise w-full max-w-lg rounded-xl border border-rule bg-sheet shadow-2xl shadow-black/50">
+      <div className="flex items-start justify-between gap-3 border-b border-rule px-6 py-4">
+        <div><h2 id="suggest-title" className="text-lg">Suggest an improvement</h2><p className="mt-1 text-sm text-muted">What should we work on next? Anything goes, big or small.</p></div>
+        <button type="button" onClick={onClose} aria-label="Close" className="rounded-lg px-2 py-1 text-lg leading-none text-muted hover:bg-paper">×</button>
+      </div>
+      <div className="space-y-4 px-6 py-5">
+        <label className="flex flex-col gap-1.5 text-xs font-medium text-muted">About
+          <select value={topic} onChange={e => setTopic(e.target.value as CommentTopic)} className="rounded-lg border border-rule bg-paper px-3 py-2.5 text-sm text-ink">{TOPICS.map(([v, l]) => <option key={v} value={v}>{l}</option>)}</select>
+        </label>
+        <label className="flex flex-col gap-1.5 text-xs font-medium text-muted">Your suggestion
+          <textarea autoFocus value={text} onChange={e => setText(e.target.value)} maxLength={1000} rows={4} placeholder="No names or personal details, please" className="rounded-lg border border-rule bg-paper p-3 text-sm text-ink" />
+        </label>
+        {error && <p role="alert" className="text-xs text-amber">{error}</p>}
+      </div>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-rule px-6 py-3">
+        <button type="button" onClick={onSurvey} className="text-xs text-agentdeep underline-offset-4 hover:underline">{surveyDone ? "Update your questionnaire answers" : "Or take the five-minute questionnaire"}</button>
+        <button type="button" disabled={busy || !text.trim()} onClick={() => void send()} className="rounded-lg bg-navy px-4 py-2 text-sm font-medium text-onaccent transition-[background-color,transform] duration-150 hover:bg-navyhover active:scale-[0.98] disabled:bg-rule disabled:text-muted">{busy ? "Sending…" : "Send"}</button>
+      </div>
+    </div>
   </div>
 }
 

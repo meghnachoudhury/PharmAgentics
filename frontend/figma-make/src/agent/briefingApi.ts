@@ -82,13 +82,13 @@ export type TriagePlan = {
 }
 export type TriageDecision = { plan_id: string; stories: string[] }
 export type CloudHost = { enabled: boolean; seconds_left: number; starting: boolean; error: string | null; eta_minutes: number | null; cpu: boolean }
-export type AgentStatus = { cloud?: CloudHost; online: boolean; configured: boolean; model: string | null; hosts?: { name: string; model: string | null }[]; queued: number; running: number; last_seen_seconds: number | null }
+export type AgentStatus = { cloud?: CloudHost; builtin?: { model: string } | null; online: boolean; configured: boolean; model: string | null; hosts?: { name: string; model: string | null }[]; queued: number; running: number; last_seen_seconds: number | null }
 export type AgentJob = {
   id: string
   kind: "triage" | "brief"
   status: "queued" | "running" | "done" | "failed"
   error: string | null
-  host_kind?: "cloud_cpu" | "teammate" | null
+  host_kind?: "cloud_cpu" | "teammate" | "builtin" | null
   result?: unknown
 }
 export type TriageRecord = {
@@ -109,7 +109,7 @@ export type Stage = {
 export type LeadershipBrief = {
   brief_id: string
   view: "leadership"
-  engine: "scripted"
+  engine: "scripted" | "agent"
   system: string
   brand_id: string
   territory_id: string

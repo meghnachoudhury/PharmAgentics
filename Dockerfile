@@ -2,7 +2,7 @@
 # No language model, no eval/ package, no ground truth. Build: docker build -t pharmagentics .
 # Run: docker run --rm -p 8080:8080 pharmagentics  ->  http://localhost:8080
 
-# ---- 1. Frontend: Vite build of Meghna's UI ----
+# ---- 1. Frontend: Vite build of the web UI ----
 FROM node:22-slim AS ui
 WORKDIR /ui
 RUN corepack enable
@@ -15,19 +15,19 @@ ENV VITE_PHARMAGENTICS_API_BASE_URL=.
 RUN pnpm exec tsc --noEmit -p tsconfig.app.json \
  && pnpm exec vite build --config vite.config.standalone.ts
 
-# ---- 2. Runtime: Python 3.12, base deps + api group only ----
+# ---- 2. Runtime: Python 3.12, base deps + the api and agent groups (the agent runs in the app, FR-032) ----
 FROM python:3.12-slim
 COPY --from=ghcr.io/astral-sh/uv:0.12.15 /uv /usr/local/bin/uv
 WORKDIR /app
 ENV UV_LINK_MODE=copy UV_COMPILE_BYTECODE=1 UV_PYTHON_DOWNLOADS=never
 COPY pyproject.toml uv.lock .python-version README.md ./
-RUN uv sync --locked --no-default-groups --group api --no-install-project
+RUN uv sync --locked --no-default-groups --group api --group agent --no-install-project
 COPY src/ src/
 COPY sql/ sql/
 COPY data/agent_visible/ data/agent_visible/
-COPY agents/brand-briefing/briefing_baseline/ agents/brand-briefing/briefing_baseline/
+COPY agents/brand-briefing/ agents/brand-briefing/
 COPY agents/forecast-explanation/feagent/ agents/forecast-explanation/feagent/
-RUN uv sync --locked --no-default-groups --group api \
+RUN uv sync --locked --no-default-groups --group api --group agent \
  && uv run --no-sync python src/pharmagentics/data/load_duckdb.py \
  && uv run --no-sync python src/pharmagentics/data/check_duckdb.py
 COPY --from=ui /ui/dist /app/ui

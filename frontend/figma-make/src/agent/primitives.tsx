@@ -10,8 +10,7 @@ const PATHS={
   layers:"M12 3l9 5-9 5-9-5zM3 13l9 5 9-5M3 17l9 5 9-5",
   chevronRight:"M9 6l6 6-6 6",
   check:"M5 12.5l4.5 4.5L19 7.5",
-  pin:"M9 4h6l-1 6 3 3H7l3-3zM12 13v7",
-  unpin:"M9 4h6l-1 6 3 3H7l3-3zM12 13v7M4 4l16 16",
+  panel:"M4 5h16v14H4zM9.5 5v14",
   trend:"M4 17l5-5 4 3 7-8M15 7h5v5",
   user:"M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4.5 20a7.5 7.5 0 0 1 15 0"
 } as const

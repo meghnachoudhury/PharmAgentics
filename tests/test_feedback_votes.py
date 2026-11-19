@@ -173,3 +173,26 @@ def test_candidates_are_not_golden_cases():
     from eval.harness import candidates
     from eval.harness.paths import GOLDEN_DIR
     assert GOLDEN_DIR not in candidates.CANDIDATES_DIR.parents and candidates.CANDIDATES_DIR != GOLDEN_DIR
+
+
+# --- platform suggestions (FR-018) ------------------------------------------------------------------
+
+def test_any_role_can_leave_a_suggestion_and_the_report_lists_it(tmp_path):
+    r = signed_in("dev-director").post("/api/feedback/comment", json={"text": "  Add a CSV export.  ", "topic": "briefing"})
+    assert r.status_code == 200 and r.headers["cache-control"] == "no-store"
+    (doc,) = [json.loads(p.read_text(encoding="utf-8")) for p in (tmp_path / "feedback" / "comment").rglob("*.json")]
+    assert doc["text"] == "Add a CSV export." and doc["topic"] == "briefing" and doc["personas"] == ["P3"]
+    assert "dev-director" not in json.dumps(doc)
+    summary = feedback.summarize([], [], Q)
+    summary["comments"] = feedback.load_comments(store.LocalBackend(tmp_path))
+    assert "Add a CSV export." in feedback.to_markdown(summary, Q)
+
+
+@pytest.mark.parametrize("body", [{"text": "   "}, {"text": ""}, {"text": "x" * 1001}, {"text": "ok", "topic": "mars"}, {"text": "ok", "extra": 1}])
+def test_a_bad_suggestion_is_refused(body):
+    assert signed_in("dev-analyst").post("/api/feedback/comment", json=body).status_code == 422
+
+
+def test_suggestions_need_a_signed_in_role():
+    assert TestClient(app).post("/api/feedback/comment", json={"text": "hi"}).status_code == 401
+    assert signed_in("dev-norole").post("/api/feedback/comment", json={"text": "hi"}).status_code == 403

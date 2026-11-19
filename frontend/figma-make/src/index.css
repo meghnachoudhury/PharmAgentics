@@ -15,9 +15,9 @@
   --font-mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
   /* Dark only. Restrained: neutrals carry the page; the logo's sage teal marks the one primary action,
      the current selection and focus. Every text pair below clears WCAG AA 4.5:1 on paper and sheet. */
-  --color-paper: #0b0f0e;      /* the page, input wells */
-  --color-sheet: #121816;      /* panels and the sidebar: one flat, solid layer */
-  --color-ink: #e6ece9;        /* body text */
+  --color-paper: #0b100f;      /* the page, input wells: near-black, leaning sage */
+  --color-sheet: #131a18;      /* panels and the sidebar: one flat, solid layer */
+  --color-ink: #e9efe9;        /* body text, a touch warm */
   --color-muted: #94a39d;      /* secondary text */
   --color-rule: #232c29;       /* the one border and divider colour */
   --color-warn: #c3cac6;
@@ -54,7 +54,10 @@
 
 @layer base {
   body {
-    background: radial-gradient(60rem 40rem at 92% -14%, rgb(72 120 113 / 0.10), transparent 60%), var(--color-paper);
+    background:
+      radial-gradient(60rem 40rem at 92% -14%, rgb(72 120 113 / 0.14), transparent 60%),
+      radial-gradient(44rem 30rem at 4% 112%, rgb(72 120 113 / 0.07), transparent 60%),
+      var(--color-paper);
     background-attachment: fixed;
     color: var(--color-ink);
     font-family: var(--font-sans);
@@ -73,14 +76,32 @@
 }
 
 @layer utilities {
-  /* Content is centred on the whole page, not on the space beside the sidebar. --rail is the width the
-     sidebar takes (set on the shell); when there is no room, content clears it by the gutter. */
+  /* With the sidebar open, content is centred in the space beside it. With only the narrow rail showing,
+     it is centred on the whole page: --shift (set on the shell) is the rail's width then, 0 otherwise.
+     Margin percentages refer to the content area's own width, so this follows any window size. */
   .workspace-content {
     max-width: 52rem;
-    margin-left: max(0px, calc((100vw - 52rem) / 2 - var(--rail, 0px)));
+    margin-left: max(0px, calc((100% - 52rem) / 2 - var(--shift, 0px) / 2));
     margin-right: auto;
     padding-inline: 1.25rem;
+    /* re-centres smoothly, in step with the sidebar's own width change */
+    transition: margin-left 300ms cubic-bezier(0.16, 1, 0.3, 1);
   }
+  /* Motion: state only, 150-300 ms, exponential ease-out from a visible default. */
+  .pa-fade { animation: pa-fade 220ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .pa-tabbar { transition: left 280ms cubic-bezier(0.16, 1, 0.3, 1), width 280ms cubic-bezier(0.16, 1, 0.3, 1); }
+  .pa-stagger > * { animation: pa-rise 260ms cubic-bezier(0.16, 1, 0.3, 1) both; }
+  .pa-stagger > *:nth-child(2) { animation-delay: 40ms; }
+  .pa-stagger > *:nth-child(3) { animation-delay: 80ms; }
+  .pa-stagger > *:nth-child(4) { animation-delay: 120ms; }
+  .pa-stagger > *:nth-child(n+5) { animation-delay: 160ms; }
+  /* Loading placeholder: a slow sheen across a neutral block, never a spinner in the content. */
+  .pa-skeleton {
+    background: linear-gradient(90deg, var(--color-rule) 0%, #2c3833 50%, var(--color-rule) 100%) 0 0 / 200% 100%;
+    animation: pa-sheen 1.4s ease-in-out infinite;
+    border-radius: 0.375rem;
+  }
+  .pa-draw path { stroke-dasharray: 24; stroke-dashoffset: 24; animation: pa-draw 420ms 80ms cubic-bezier(0.16, 1, 0.3, 1) forwards; }
   /* Frosted glass only where something floats over the page: the sidebar while it hovers open, menus,
      the phone drawer and toasts. Without backdrop-filter the 92%-opaque fill still reads. */
   .glass {
@@ -97,8 +118,22 @@
   .pa-slide { animation: pa-slide 200ms cubic-bezier(0.16, 1, 0.3, 1) both; }
   .pa-pulse { animation: pa-pulse 1.2s ease-in-out infinite; }
   @media (prefers-reduced-motion: reduce) {
-    .pa-rise, .pa-slide, .pa-pulse { animation: none; }
+    .pa-rise, .pa-slide, .pa-pulse, .pa-fade, .pa-stagger > *, .pa-skeleton { animation: none; }
+    .pa-draw path { animation: none; stroke-dashoffset: 0; }
+    .workspace-content, .pa-tabbar { transition: none; }
   }
+}
+
+@keyframes pa-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes pa-sheen {
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
+}
+@keyframes pa-draw {
+  to { stroke-dashoffset: 0; }
 }
 
 @keyframes pa-rise {

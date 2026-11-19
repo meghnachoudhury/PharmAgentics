@@ -12,6 +12,7 @@ Every gcloud call passes --project, so the global gcloud config is never changed
   uv run python deploy/gcp.py team     --project ID [--member EMAIL ...] [--viewer EMAIL ...] [--remove EMAIL ...]   # owner only
   uv run python deploy/gcp.py env-pull --project ID [--force]               # shared deploy/.env.uat -> local
   uv run python deploy/gcp.py env-push --project ID                         # local deploy/.env.uat -> shared
+  uv run python deploy/gcp.py anthropic-key --project ID                    # .env's ANTHROPIC_API_KEY -> app secret (FR-032)
 
 What it creates (us-central1): an Artifact Registry repo that keeps 2 images per name; a
 Cloud Storage bucket for approvals and UAT events; five secrets (session secret, OIDC client
@@ -44,7 +45,8 @@ REPO = "pharmagentics"
 APP, KC = "pharmagentics-app", "pharmagentics-keycloak"
 SA = {"app": "pa-app", "kc": "pa-keycloak", "deployer": "pa-deployer", "agent": "pa-agent"}
 SECRETS = {"session": "pa-session-secret", "client": "pa-oidc-client-secret", "realm": "pa-keycloak-realm",
-           "worker": "pa-worker-token"}
+           "worker": "pa-worker-token", "anthropic": "pa-anthropic-key"}
+AGENT_MODEL = "anthropic:claude-haiku-5-5"  # the app's built-in agent worker (core-007 FR-032)
 APIS = ["run.googleapis.com", "artifactregistry.googleapis.com", "secretmanager.googleapis.com",
         "iam.googleapis.com", "iamcredentials.googleapis.com", "sts.googleapis.com",
         "cloudresourcemanager.googleapis.com", "billingbudgets.googleapis.com", "storage.googleapis.com"]
@@ -324,18 +326,41 @@ def app(c: Ctx, image: str | None = None) -> None:
         docker("build", "--build-arg", f"PHARMAGENTICS_VERSION={git_sha()}", "-t", image, str(ROOT))
         content_check(image)
         docker("push", image)
+    # FR-032: with the Anthropic key in Secret Manager (gcp.py anthropic-key), the app runs the agent team itself.
+    # Its worker thread works between requests, so the CPU must not be throttled outside them; that bills the
+    # instance for as long as it is up (it still scales to zero when idle).
+    builtin = c.ok("secrets", "describe", SECRETS["anthropic"])
     c.gc("run", "deploy", APP, f"--image={image}", f"--region={c.region}", f"--service-account={c.sa('app')}",
-         "--allow-unauthenticated", "--port=8080", "--cpu=1", "--memory=512Mi", "--min-instances=0",
-         "--max-instances=1",  # the agent job queue's index lives in memory (core-007 FR-028)
+         "--allow-unauthenticated", "--port=8080", "--cpu=1", f"--memory={'1Gi' if builtin else '512Mi'}",
+         "--min-instances=0", "--max-instances=1",  # the agent job queue's index lives in memory (core-007 FR-028)
          "--cpu-boost", "--timeout=120", "--concurrency=40",
+         "--no-cpu-throttling" if builtin else "--cpu-throttling",
          "--set-env-vars=" + ",".join([
              "PHARMAGENTICS_AUTH=oidc", f"PHARMAGENTICS_OIDC_ISSUER={c.url(KC)}/realms/pharmagentics",
              "PHARMAGENTICS_OIDC_CLIENT_ID=pharmagentics-app", f"PHARMAGENTICS_STATE_BUCKET={c.bucket}",
-             *cloud_env(c)]),
+             *([f"PHARMAGENTICS_AGENT_MODEL={AGENT_MODEL}"] if builtin else []), *cloud_env(c)]),
          f"--set-secrets=PHARMAGENTICS_SESSION_SECRET={SECRETS['session']}:latest,"
          f"PHARMAGENTICS_OIDC_CLIENT_SECRET={SECRETS['client']}:latest,"
-         f"PHARMAGENTICS_WORKER_TOKEN={SECRETS['worker']}:latest")
-    print(f"\nApp: {c.url(APP)}")
+         f"PHARMAGENTICS_WORKER_TOKEN={SECRETS['worker']}:latest"
+         + (f",ANTHROPIC_API_KEY={SECRETS['anthropic']}:latest" if builtin else ""))
+    print(f"\nApp: {c.url(APP)}" + (f"  (agent team on {AGENT_MODEL})" if builtin else ""))
+
+
+def anthropic_key(c: Ctx) -> None:
+    """Store ANTHROPIC_API_KEY from the repository's git-ignored .env as a secret only the app can read (FR-032).
+    The value is never printed. Run `gcp.py app` afterwards so the app picks it up."""
+    key = ""
+    env = ROOT / ".env"
+    if env.is_file():
+        for line in env.read_text(encoding="utf-8").splitlines():
+            if line.startswith("ANTHROPIC_API_KEY="):
+                key = line.split("=", 1)[1].strip().strip('"').strip("'")
+    if not key:
+        sys.exit("No ANTHROPIC_API_KEY line in the repository's .env.")
+    put_secret(c, SECRETS["anthropic"], key)
+    c.gc("secrets", "add-iam-policy-binding", SECRETS["anthropic"], f"--member=serviceAccount:{c.sa('app')}",
+         "--role=roles/secretmanager.secretAccessor")
+    print(f"Stored as {SECRETS['anthropic']}, readable by the app only. Now run: gcp.py app")
 
 
 def content_check(image: str) -> None:
@@ -431,7 +456,7 @@ def env_pull(c: Ctx, force: bool) -> None:
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("command", choices=["setup", "keycloak", "app", "agent", "feedback", "status", "rollback", "github-vars",
-                                       "team", "env-push", "env-pull"])
+                                       "team", "env-push", "env-pull", "anthropic-key"])
     p.add_argument("--project", required=True)
     p.add_argument("--account", help="gcloud account to use (e.g. mwc2150@columbia.edu); the active account is not changed")
     p.add_argument("--region", default="us-central1")
@@ -468,6 +493,8 @@ def main() -> None:
         env_push(c)
     elif a.command == "env-pull":
         env_pull(c, a.force)
+    elif a.command == "anthropic-key":
+        anthropic_key(c)
     else:
         for k, v in github_vars(c).items():
             print(f"{k}={v}")
