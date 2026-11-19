@@ -106,6 +106,18 @@ def test_forecast_roles_do_not_cross_lanes():
         assert client.post("/api/briefing/query", json=VALID).status_code == 403
 
 
+@pytest.mark.parametrize("user,expected", [
+    ("dev-both-analyst", {"briefing": ("P1", ["analyst", "leadership"]), "forecast": ("CA", ["analyst", "leadership"])}),
+    ("dev-both-leader", {"briefing": ("P3", ["leadership"]), "forecast": ("BM", ["leadership"])}),
+])
+def test_development_logins_see_both_lanes_with_one_role_each(user, expected):
+    client = signed_in(user)
+    lanes = client.get("/api/me").json()["lanes"]
+    assert {lane: (r["persona"], r["views"]) for lane, r in lanes.items()} == expected
+    assert client.get("/api/forecast/runs").status_code == 200
+    assert client.get("/api/briefing/published").status_code == 200
+
+
 def test_dev_sign_in_is_refused_on_cloud_run(monkeypatch):
     monkeypatch.setenv("K_SERVICE", "pharmagentics")
     with pytest.raises(RuntimeError):

@@ -23,7 +23,11 @@ router = APIRouter()
 logger = logging.getLogger(__name__)
 
 DEV_USERS = {
-    "dev-analyst": ("Dev Commercial Analyst", ["briefing-analyst"]),
+    # Both use cases in one sign-in, for development (like mentor-analyst and mentor-leader in the Keycloak realm).
+    # One role per lane: a second role in the same lane would be ignored (rbac.Principal.role).
+    "dev-both-analyst": ("Dev Commercial Analyst (both lanes)", ["briefing-analyst", "forecast-analyst"]),
+    "dev-both-leader": ("Dev Leader (both lanes)", ["briefing-director", "forecast-manager"]),
+    "dev-analyst":("Dev Commercial Analyst", ["briefing-analyst"]),
     "dev-director": ("Dev Brand Director", ["briefing-director"]),
     "dev-forecast-analyst": ("Dev Commercial Analyst", ["forecast-analyst"]),
     "dev-forecast-manager": ("Dev Brand Manager", ["forecast-manager"]),
