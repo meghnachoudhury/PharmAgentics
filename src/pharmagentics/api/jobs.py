@@ -80,6 +80,13 @@ def _expire(now: float) -> None:
             _save(job)
 
 
+def all_jobs() -> list[dict]:
+    with _lock:
+        _load()
+        _expire(time.time())
+        return [dict(j) for j in _jobs.values()]
+
+
 def heartbeat(model: str | None, worker: str) -> None:
     """A worker busy on a job says it is alive (it does not poll while it runs one)."""
     with _lock:

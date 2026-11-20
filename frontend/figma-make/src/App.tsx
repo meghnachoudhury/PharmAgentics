@@ -353,7 +353,7 @@ function Shell({me, onBriefingHome, children, startInForecast=false}: {me: Me, o
         <div className="flex min-w-0 items-center gap-2">
           <button type="button" onClick={toggleNav} aria-expanded={open} aria-label={open ? "Collapse the sidebar" : "Expand the sidebar"} title={`${open ? "Collapse" : "Expand"} the sidebar (Ctrl+B)`}
             className="grid h-9 w-9 place-items-center rounded-lg text-muted transition-colors hover:bg-paper hover:text-ink"><Icon name="panel" className="h-5 w-5"/></button>
-          <h1 key={forecast ? "f" : "b"} className="pa-fade truncate text-base sm:text-lg">{forecast ? "Forecast explanation" : "Weekly briefing"}</h1>
+          <h1 key={telemetry ? "t" : forecast ? "f" : "b"} className="pa-fade truncate text-base sm:text-lg">{telemetry ? "Evaluation" : forecast ? "Forecast explanation" : "Weekly briefing"}</h1>
         </div>
         <AccountMenu me={me}/>
       </header>

@@ -43,7 +43,7 @@ uv run python deploy/gcp.py status   --project <new-project-id>
 
 `setup` creates, in `us-central1`: the project (if new) and its billing link; an Artifact Registry repository that keeps the two newest images per name; a Cloud Storage bucket for approvals and UAT events; five secrets (session secret, OIDC client secret, rendered realm, worker token, and the shared `.env.uat` for the team), each with one active version (free tier: 6); three service accounts (app runtime, Keycloak runtime, GitHub deployer); Workload Identity Federation for GitHub Actions on `main` only; and a $1 budget with alerts at 1%, 50% and 100%. It prints four `gh variable set` lines: set them to turn on automatic deploys.
 
-**Automatic deploys.** After the `DuckDB data foundation` checks pass on a push to `main` (tests, golden set, API, image build and content check), [`deploy-uat.yml`](../.github/workflows/deploy-uat.yml) builds the app image, checks again that it holds no `eval/`, `SoT/`, `.env` or ground-truth file, pushes it and deploys it. Only the image changes. Keycloak is never deployed from CI.
+**Automatic deploys.** After the `DuckDB data foundation` checks pass on a push to `main` (tests, golden set, API, image build and content check), [`deploy-uat.yml`](../.github/workflows/deploy-uat.yml) builds the app image, checks again that it holds no `eval/`, `SoT/`, `.env` or ground-truth file, pushes it and deploys it. Only the image changes. Keycloak is never deployed from CI. Turned on 2026-11-19 (the four repository variables are set), so every merge to `main` goes live in about five minutes; a manual `gcp.py app` from a branch lasts only until the next merge. `gh workflow run deploy-uat.yml` redeploys `main` by hand.
 
 **Rollback.** `uv run python deploy/gcp.py rollback --project <id>` puts all traffic on the previous revision (no rebuild). `--service keycloak` does the same for Keycloak.
 
@@ -98,6 +98,20 @@ uv run python agents/brand-briefing/run_worker.py --app http://localhost:8080
 ```
 
 The token comes from `PHARMAGENTICS_WORKER_TOKEN` in `deploy/.env.uat` (also a secret on Cloud Run). The worker polls every 10 s, outbound only; nothing on your PC is reachable from the internet. One job runs at a time. When the worker is stopped, the UI shows "host offline" and requests wait. Do not run evals while hosting: one 6 GB GPU serves one model run at a time.
+
+## Evaluation page and MLflow
+
+The app's **Evaluation** page (all five logins, each seeing only their own lanes) shows two things, as aggregates only:
+
+- **In use:** requests per week, scripted response time and agent time to result (median, p95), review decisions, answer votes, session ratings, the SUS score and the cloud agent budget. Computed from the bucket's events, jobs and feedback, refreshed every 5 minutes. The test login is left out and only counted.
+- **Golden-set scores:** the latest run of each system and control, from the local MLflow store. The image never holds `eval/`, so the scores travel as a snapshot.
+
+```powershell
+uv run python deploy/gcp.py telemetry --project pharmagentics --account <you>   # local MLflow -> bucket; live within 5 minutes
+uv run python deploy/gcp.py uat       --project pharmagentics --account <you>   # bucket -> local MLflow (experiment pharmagentics-uat)
+```
+
+`gcp.py app` runs `telemetry` after every deploy. CI deploys from `main` have no MLflow store, so they keep the bucket copy (or the copy committed in `src/pharmagentics/api/telemetry.json`); push a fresh one with `gcp.py telemetry` after an eval run.
 
 ## UAT feedback (core-008)
 

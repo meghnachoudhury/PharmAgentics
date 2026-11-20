@@ -2,7 +2,7 @@
 
 The image never holds eval/ or the MLflow store (.dockerignore), so the cloud app reads this snapshot instead:
 src/pharmagentics/api/telemetry.json. It holds run-level scores only: no case text, no answers, no golden facts.
-Re-export before each deploy:  uv run python -m eval.harness.telemetry_export
+`deploy/gcp.py telemetry` (run by every `gcp.py app`) uploads a fresh copy to the state bucket, which the app prefers.
 """
 from __future__ import annotations
 
@@ -57,5 +57,8 @@ def export(out: Path = OUT, uri: str | None = None) -> dict:
 
 
 if __name__ == "__main__":
-    s = export()
-    print(f"Wrote {OUT} ({len(s['runs'])} runs, {len(s['latest'])} system/lane pairs)")
+    import sys
+
+    target = Path(sys.argv[1]) if len(sys.argv) > 1 else OUT
+    s = export(target)
+    print(f"Wrote {target} ({len(s['runs'])} runs, {len(s['latest'])} system/lane pairs)")

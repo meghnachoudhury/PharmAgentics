@@ -302,15 +302,3 @@ export async function waitAgentJob(id: string, onUpdate: (j: AgentJob) => void):
 }
 export function agentPlan(job: AgentJob): TriagePlan { return checkPlan(job.result) }
 export function agentBrief(job: AgentJob): BriefingResult { return checkAnalyst(job.result) }
-
-// Golden-set scores per system, from the exported MLflow snapshot (GET /api/telemetry). Run-level scores only.
-export type TelemetryRun = { run_id: string, started: string, minutes: number | null, system: string, model: string | null,
-  lane: string, control: boolean, cases: number, reruns: number, judge: string, code_version: string, data_version: string,
-  metrics: Record<string, number>, judge_metrics: Record<string, number> }
-export type Telemetry = { exported: string | null, note: string, latest: TelemetryRun[], runs: TelemetryRun[] }
-export async function getTelemetry(): Promise<Telemetry> {
-  const v: unknown = await api("/api/telemetry")
-  expectObject(v)
-  if (!Array.isArray(v.latest) || !Array.isArray(v.runs)) throw new Error("The backend telemetry contract is incompatible with this frontend.")
-  return v as unknown as Telemetry
-}
