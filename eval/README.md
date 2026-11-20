@@ -22,6 +22,8 @@ All from the repository root, after `uv sync` and building the database (`uv run
 | `uv run python -m eval ui` | MLflow dashboard at http://127.0.0.1:5000 |
 | `uv run python -m eval import-stories` | Drafts case files for new user stories; never overwrites an existing case |
 | `uv run python -m eval candidates` | Drafts a candidate case per answer that UAT participants voted on (core-008), into `candidates/`. Download the votes first with `deploy/gcp.py feedback`. A person reviews each draft, writes its facts and moves it into `golden/` |
+| `uv run python -m eval export-telemetry` | Writes the run-level golden-set scores the hosted app's Evaluation page shows (`src/pharmagentics/api/telemetry.json`; no case text, no answers). `deploy/gcp.py telemetry` uploads a fresh copy without a redeploy |
+| `uv run python -m eval import-uat` | Logs the hosted app's live use (requests, response times, reviews, votes, ratings; test login left out) to the separate experiment `pharmagentics-uat`. Download first with `deploy/gcp.py uat`, which runs this for you |
 | `uv run pytest tests/test_tools.py eval/tests` | The shared-tools and harness tests |
 
 Each `run` is one MLflow parent run with a child run per rerun. Every case becomes a trace with its spans (for the baselines: one per pipeline stage and one per tool call, with the SQL as input), its check results and its expectations, all kept in `eval/mlflow/` (git-ignored).

@@ -7,6 +7,8 @@ Every gcloud call passes --project, so the global gcloud config is never changed
   uv run python deploy/gcp.py app      --project ID                        # manual app deploy (CI does this on main)
   uv run python deploy/gcp.py agent    --project ID                        # the cloud CPU agent host (a Cloud Run job)
   uv run python deploy/gcp.py feedback --project ID                        # download UAT feedback and print the report
+  uv run python deploy/gcp.py telemetry --project ID                       # golden-set scores from local MLflow -> the app
+  uv run python deploy/gcp.py uat      --project ID                        # live use from the bucket -> local MLflow
   uv run python deploy/gcp.py status   --project ID
   uv run python deploy/gcp.py rollback --project ID [--service app|keycloak]
   uv run python deploy/gcp.py team     --project ID [--member EMAIL ...] [--viewer EMAIL ...] [--remove EMAIL ...]   # owner only
@@ -275,6 +277,27 @@ def feedback(c: Ctx) -> None:
     print(out.read_text(encoding="utf-8"))
 
 
+def telemetry(c: Ctx) -> None:
+    """Export the golden-set scores from the local MLflow store and upload them; the app reads them within 5 minutes."""
+    if not (ROOT / "eval" / "mlflow" / "mlflow.db").is_file():
+        print("No local MLflow store (eval/mlflow/mlflow.db): the app keeps its current scores.")
+        return
+    out = ROOT / "local" / "telemetry-eval.json"
+    out.parent.mkdir(parents=True, exist_ok=True)
+    subprocess.run([sys.executable, "-m", "eval.harness.telemetry_export", str(out)], cwd=ROOT, check=True)
+    c.gc("storage", "cp", str(out), f"gs://{c.bucket}/telemetry/eval.json", "--content-type=application/json")
+
+
+def uat(c: Ctx) -> None:
+    """Download the app's events, agent jobs and feedback, and log their aggregates to local MLflow (pharmagentics-uat)."""
+    dest = ROOT / "local" / "uat-export"
+    shutil.rmtree(dest, ignore_errors=True)
+    dest.mkdir(parents=True)
+    for folder in ("events", "jobs", "feedback"):
+        c.gc("storage", "cp", "--recursive", f"gs://{c.bucket}/{folder}", str(dest), check=False)
+    subprocess.run([sys.executable, "-m", "eval", "import-uat", "--state-dir", str(dest)], cwd=ROOT, check=True)
+
+
 def cloud_env(c: Ctx) -> list[str]:
     """Environment that tells the app how to start the cloud agent host; empty until that job exists."""
     if not c.ok("run", "jobs", "describe", AGENT_JOB, f"--region={c.region}"):
@@ -343,6 +366,7 @@ def app(c: Ctx, image: str | None = None) -> None:
          f"PHARMAGENTICS_OIDC_CLIENT_SECRET={SECRETS['client']}:latest,"
          f"PHARMAGENTICS_WORKER_TOKEN={SECRETS['worker']}:latest"
          + (f",ANTHROPIC_API_KEY={SECRETS['anthropic']}:latest" if builtin else ""))
+    telemetry(c)
     print(f"\nApp: {c.url(APP)}" + (f"  (agent team on {AGENT_MODEL})" if builtin else ""))
 
 
@@ -455,7 +479,7 @@ def env_pull(c: Ctx, force: bool) -> None:
 
 def main() -> None:
     p = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    p.add_argument("command", choices=["setup", "keycloak", "app", "agent", "feedback", "status", "rollback", "github-vars",
+    p.add_argument("command", choices=["setup", "keycloak", "app", "agent", "feedback", "telemetry", "uat", "status", "rollback", "github-vars",
                                        "team", "env-push", "env-pull", "anthropic-key"])
     p.add_argument("--project", required=True)
     p.add_argument("--account", help="gcloud account to use (e.g. mwc2150@columbia.edu); the active account is not changed")
@@ -483,6 +507,10 @@ def main() -> None:
         agent(c, a.image)
     elif a.command == "feedback":
         feedback(c)
+    elif a.command == "telemetry":
+        telemetry(c)
+    elif a.command == "uat":
+        uat(c)
     elif a.command == "status":
         status(c)
     elif a.command == "rollback":

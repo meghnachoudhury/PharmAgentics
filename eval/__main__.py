@@ -1,4 +1,4 @@
-"""python -m eval {import-stories, check, run, gate, candidates, ui}"""
+"""python -m eval {import-stories, check, run, gate, candidates, export-telemetry, import-uat, ui}"""
 from __future__ import annotations
 
 import argparse
@@ -34,6 +34,10 @@ def main(argv=None) -> int:
     cand = sub.add_parser("candidates", help="draft golden-set candidates from UAT votes on answers (core-008)")
     cand.add_argument("--state-dir", type=Path, help="downloaded state folder (default: local/feedback-export, else local/state)")
     cand.add_argument("--force", action="store_true", help="overwrite existing drafts (loses hand edits)")
+
+    sub.add_parser("export-telemetry", help="write the golden-set scores the hosted app shows (src/pharmagentics/api/telemetry.json)")
+    uat = sub.add_parser("import-uat", help="log the hosted app's live use to MLflow (experiment pharmagentics-uat)")
+    uat.add_argument("--state-dir", type=Path, help="downloaded state folder (default: local/uat-export)")
 
     ui = sub.add_parser("ui", help="open the MLflow dashboard on eval/mlflow")
     ui.add_argument("--port", default="5000")
@@ -88,6 +92,22 @@ def main(argv=None) -> int:
         for path in written:
             print(f"  {path.relative_to(candidates.EVAL_DIR)}")
         print("A draft is not a case: review it, write its facts, give it an ID and move it into eval/golden/<lane>/.")
+        return 0
+
+    if args.cmd == "export-telemetry":
+        from .harness import telemetry_export
+        snap = telemetry_export.export()
+        print(f"wrote {telemetry_export.OUT} ({len(snap['runs'])} runs, {len(snap['latest'])} system/lane pairs)")
+        return 0
+
+    if args.cmd == "import-uat":
+        from .harness import uat_import
+        run_id = uat_import.run(args.state_dir or uat_import.DEFAULT_DIR)
+        if run_id is None:
+            print("No downloaded state. Fetch it first: uv run python deploy/gcp.py uat --project pharmagentics "
+                  "--account <you>, or pass --state-dir.")
+            return 1
+        print(f"logged run {run_id} to experiment {uat_import.EXPERIMENT}")
         return 0
 
     if args.cmd == "ui":
