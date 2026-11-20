@@ -28,7 +28,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
-from . import agent_host, auth, classification, cloud, feedback, forecast, jobs, rbac, service, store, telemetry, views
+from . import agent_host, auth, classification, cloud, feedback, forecast, jobs, overview, rbac, service, store, telemetry, views
 from .schemas import (AgentJobRequest, BriefingQuery, InsightMark, ReleaseContext, ReviewRequest, ViewAs, WorkerPoll,
                       WorkerResult)
 
@@ -82,6 +82,7 @@ app.include_router(auth.router)
 app.include_router(feedback.router)  # UAT feedback (core-008)
 app.include_router(classification.router)  # data classification labels (core-009)
 app.include_router(forecast.router)  # Forecast lane scaffold (Alvin and Sienna)
+app.include_router(overview.router)  # the analyst's brand overview (Weekly briefing, Overview tab)
 app.include_router(telemetry.router)  # golden-set scores from the exported MLflow snapshot
 
 Briefing = Depends(rbac.require_briefing)

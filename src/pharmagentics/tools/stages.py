@@ -203,8 +203,9 @@ def _series(reg):
     return s
 
 
-def screen(reg: Registry, p: Period):
-    """Territories whose change is beyond their own normal noise and beyond their peers' change."""
+def screen(reg: Registry, p: Period, details: dict | None = None):
+    """Territories whose change is beyond their own normal noise and beyond their peers' change.
+    `details`, when given, receives each screened territory's change, gap and threshold."""
     W, B, ok, focus = p.weeks, p.baseline, p.ok, p.focus
     series = _series(reg)
     flagged_cal = {w for (w,) in reg.rows("select week_start::varchar from raw.calendar where holiday_flag = 1 or plan_year_reset = 1")}
@@ -219,7 +220,10 @@ def screen(reg: Registry, p: Period):
         hist = sorted(w for w in series[t] if w < W[0] and w not in flagged_cal)[-60:]
         devs = [series[t][w] / _mean([series[t][p] for p in hist[max(0, i - 4):i]]) - 1 for i, w in enumerate(hist) if i >= 4]
         sigma = max(statistics.pstdev(devs), 0.04) if len(devs) > 8 else 0.08
-        material = abs(change) >= max(MATERIAL_CHANGE, NOISE_Z * sigma / min(len(W), 3) ** 0.5) and abs(gap) >= MATERIAL_GAP
+        threshold = max(MATERIAL_CHANGE, NOISE_Z * sigma / min(len(W), 3) ** 0.5)
+        material = abs(change) >= threshold and abs(gap) >= MATERIAL_GAP
+        if details is not None:
+            details[t] = {"change": change, "gap": gap, "threshold": threshold}
         if material or t == focus:
             found.append({"territory": t, "kind": "territory", "impact": abs(x - b), "change": change})
         else:

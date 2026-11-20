@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from "re
 import { Toaster, toast } from "sonner"
 import { BrandMark, Icon, type IconName } from "./agent/primitives"
 import { TelemetryWorkspace } from "./Telemetry"
+import { Overview } from "./Overview"
 import { AnswerFeedback, FeedbackProvider, ShareFeedbackLink, useFeedbackActions } from "./Feedback"
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem,
@@ -606,7 +607,7 @@ function AnalystApp({me}: {me: Me}) {
   const [pending,setPending] = useState(false)
   const [result,setResult] = useState<BriefingResult | null>(null)
   const [runError,setRunError] = useState<string | null>(null)
-  const [view,setView] = useState<"home" | "triage" | "result" | "approved">("home")
+  const [view,setView] = useState<"overview" | "home" | "triage" | "result" | "approved">("overview")
   const [requestScope,setRequestScope] = useState<{brand:string,territory:string,week:string} | null>(null)
   const [plan,setPlan] = useState<TriagePlan | null>(null)
   // Agent engine (core-007 FR-028/FR-031): jobs run on teammate or cloud CPU hosts; the app only queues them.
@@ -688,9 +689,9 @@ function AnalystApp({me}: {me: Me}) {
     try { setResult(await openBrief(id, "analyst")) } catch(e) { setRunError(message(e)) } finally { setPending(false) }
   }
   const selectable = !!context && !loadingContext && !pending
-  return <Shell me={me} onBriefingHome={()=>setView("home")}>
-    <div className="workspace-content pt-8 sm:pt-10">{(view==="home" || view==="approved") && <Greeting detail={context ? `Data through ${labelWeek(context.latest_week)}, across ${context.territory_ids.length} territories.` : undefined}/>}<SubTabs label="Weekly briefing" value={view==="approved" ? "approved" : "new"} onChange={t=>setView(t==="approved" ? "approved" : "home")} options={[["new","New briefing","briefing.new"],["approved","Approved briefings","briefing.approved"]] as const}/></div>
-    {view==="home" ? <div key="home" className="workspace-content pa-stagger space-y-5 py-8">
+  return <Shell me={me} onBriefingHome={()=>setView("overview")}>
+    <div className={`${view==="overview" ? "workspace-wide" : "workspace-content"} pt-8 sm:pt-10`}>{(view==="home" || view==="approved" || view==="overview") && <Greeting detail={context ? `Data through ${labelWeek(context.latest_week)}, across ${context.territory_ids.length} territories.` : undefined}/>}<SubTabs label="Weekly briefing" value={view==="approved" ? "approved" : view==="overview" ? "overview" : "new"} onChange={t=>setView(t==="approved" ? "approved" : t==="overview" ? "overview" : "home")} options={[["overview","Overview","briefing.overview"],["new","New briefing","briefing.new"],["approved","Approved briefings","briefing.approved"]] as const}/></div>
+    {view==="overview" ? <Overview key="overview" weeks={context?.available_weeks ?? []} onGenerate={(t,w)=>{setTerritory(t);setWeek(w);setView("home")}}/> : view==="home" ? <div key="home" className="workspace-content pa-stagger space-y-5 py-8">
       <p className="text-sm text-muted">Generate the week's brand-performance briefing, check its evidence, and approve it for the Brand Director.</p>
       {contextError && <div role="alert" className="rounded-xl bg-amberbg p-4 text-sm text-amber"><strong>Backend unavailable.</strong> {contextError}<button className="mt-2 block underline" onClick={()=>void refresh()}>Retry connection</button></div>}
       <form onSubmit={submit} className={`${PANEL} space-y-6 p-6`} aria-busy={loadingContext}>
