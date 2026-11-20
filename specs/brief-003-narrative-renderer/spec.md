@@ -3,7 +3,7 @@
 **Spec ID**: `brief-003-narrative-renderer` (Briefing lane; owners: Michael, Meghna)
 **Feature Branch**: `speckit-briefing`
 **Created**: 2026-10-16 | **Updated**: 2026-11-19
-**Status**: Draft v3. Memo outline, projected national, charts and evidence tables (2026-11-19 planning session; `GLOSSARY.md`, `docs/adr/0001`). Not started.
+**Status**: Draft v3. Memo outline, projected national, charts and evidence tables (2026-11-19 planning session; `GLOSSARY.md`, `docs/adr/0001`). Slice 1 (memo outline, projected national) planned 2026-11-19 in `plan.md`.
 **Replaces**: `007-narrative-renderer` (Oct 16)
 **Input**: System Architecture §4 (stage 5, Briefing); Briefing Architecture §5.5, decision 6, decision 20; Evaluation Pack EV-1.1 to EV-1.3, EV-7.1 to EV-7.5, EV-8.5; Personas P1, P3, P4; User stories P1-Q1, P1-Q2, P1-Q3, P1-Q6, P3-Q2, P3-Q3, P3-Q4, P3-Q5, P3-Q6, P4-Q2, P4-Q3, P4-Q6
 
@@ -50,7 +50,7 @@ The brief is a memo with a fixed outline (Clarifications 2026-11-19): §1 Bottom
 **Acceptance Scenarios**:
 
 1. **Given** the routine week 2025-04-21, **When** the brief is drafted, **Then** it holds the KPI table, at most one line saying territory swings stayed in their normal range, the footnote and the glossary, and no story. It never says "Pacific surged 25%". (User story P1-Q3.)
-2. **Given** week 2026-05-04, **When** the brief is drafted, **Then** §1 says first that New England's feed is incomplete; §2 shows a projected national with New England marked projected (coverage 0.66); the like-for-like change says "7 of 8 territories"; §4 names New England with its three reasons; and no §3 story is opened for it. It never says "New England BXA fell 34%". (User story P1-Q2; ADR 0001.)
+2. **Given** week 2026-05-04, **When** the brief is drafted, **Then** §1 says first that New England's feed is incomplete; §2 shows a projected national with New England marked projected (coverage 0.66); each like-for-like figure states its territory count (6 of 8 against the four weeks before, because Mid-Atlantic 2026-04-06 is also withheld; 7 of 8 week over week); §4 names New England with its three reasons; and no §3 story is opened for it. It never says "New England BXA fell 34%". (User story P1-Q2; ADR 0001.)
 3. **Given** week 2026-08-24, **When** the brief is drafted, **Then** it carries a Southeast story and a continuing Metacora line, and nothing about a national "collapse". (User story P1-Q6.)
 4. **Given** any brief, **When** its length is counted, **Then** it is within the semantic-layer limit.
 
@@ -184,7 +184,7 @@ Each section shows its chart with a caption and one or two lines on what it show
 - **FR-019**: The stage MUST accept verifier flags or reviewer comments and redraft only the flagged sections.
 - **FR-020**: Code MUST build the section skeleton, every table, chart, caption and claim; the writer MUST write only the prose fields of a section. The scripted engine and the agent MUST emit the same skeleton.
 - **FR-021**: §1 MUST state, in order, projected national TRx, the like-for-like change against the four weeks before, brand share of the market basket, and the number least sure of, chosen by the rule in the Clarifications.
-- **FR-022**: Projected national MUST be the sum over territories of observed TRx ÷ panel coverage, with the coverage bands and the estimate rule in the Clarifications; each projected or estimated territory MUST be labelled in every table and chart that shows it.
+- **FR-022**: Projected national MUST be the sum over territories of observed TRx ÷ panel coverage, with the coverage bands and the estimate rule in the Clarifications; each projected or estimated territory MUST be labelled in every table and chart that shows it. A failed cut is projected only when all its faults are completeness faults (missing keys, row-count mismatch, low coverage, late delivery, incomplete source); a cut with duplicate keys, under restatement review or with any other fault is estimated, whatever its coverage (plan research R2, 2026-11-19).
 - **FR-023**: No story MAY name a driver for a projected or estimated cut. Growth figures MUST be like-for-like and carry their coverage label (FR-012).
 - **FR-024**: §2, each §3 story and §4 MUST carry the charts in the Clarifications, each with a code-built caption and a one-to-two-line explanation whose numbers are claim tokens.
 - **FR-025**: Every section MUST carry an evidence table of the rows behind its claims and the query that produced them; the analyst view MUST offer the query and a CSV download.
