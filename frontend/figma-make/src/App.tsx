@@ -279,12 +279,16 @@ function SubTabs<T extends string>({label, value, options, onChange}: {label: st
     if (el) setBar({left: el.offsetLeft, width: el.offsetWidth})
   },[value, options.length])
   return <div className="flex items-end justify-between gap-4 border-b border-rule">
-    <div ref={list} role="tablist" aria-label={label} className="relative -mb-px flex gap-6 overflow-x-auto">
+    <div ref={list} role="tablist" aria-label={label} className="relative -mb-px flex min-w-0 gap-6 overflow-x-auto">
       {options.map(([key, text]) => <button key={key} type="button" role="tab" aria-selected={value === key} onClick={() => onChange(key)}
         className={`whitespace-nowrap pb-3 pt-1 text-sm font-medium transition-colors duration-200 ${value === key ? "text-ink" : "text-muted hover:text-ink"}`}>{text}</button>)}
       {bar && <span aria-hidden="true" className="pa-tabbar absolute bottom-0 h-0.5 rounded-full bg-agent" style={{left: bar.left, width: bar.width}}/>}
     </div>
-    {current?.[2] && <div className="hidden pb-3 sm:block"><ClassLabel tab={current[2]}/></div>}
+    {current?.[2] && (
+      <div className="shrink-0 pb-3">
+        <ClassLabel tab={current[2]}/>
+      </div>
+    )}
   </div>
 }
 
@@ -469,6 +473,7 @@ function Shell({me, onBriefingHome, children, startInForecast=false}: {me: Me, o
           <button type="button" onClick={toggleNav} aria-expanded={open} aria-label={open ? "Collapse the sidebar" : "Expand the sidebar"} title={`${open ? "Collapse" : "Expand"} the sidebar (Ctrl+B)`}
             className="grid h-9 w-9 place-items-center rounded-lg text-muted transition-colors hover:bg-paper hover:text-ink"><Icon name="panel" className="h-5 w-5"/></button>
           <h1 key={telemetry ? "t" : forecast ? "f" : "b"} className="pa-fade truncate text-base sm:text-lg">{telemetry ? "Evaluation" : forecast ? "Forecast explanation" : "Weekly briefing"}</h1>
+          {telemetry && <ClassLabel tab="evaluation.overview"/>}
         </div>
         <AccountMenu me={me}/>
       </header>
