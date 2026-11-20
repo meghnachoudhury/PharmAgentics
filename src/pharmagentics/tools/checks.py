@@ -13,6 +13,14 @@ OWNER = {  # function to involve (Evaluation Pack EV-7.3)
     "supply": "supply chain and trade", "competitor": "marketing and sales",
     "data": "the data vendor and commercial analytics",
 }
+DECISION = {  # what a next check unlocks (brief-003 §5 Next checks)
+    "access": "whether the plan's coverage change needs a pull-through response",
+    "promotion": "whether to change call plans or campaign timing in the territory",
+    "supply": "whether to escalate supply with trade partners",
+    "competitor": "whether to adjust the response to Metacora",
+    "data": "whether the restated week changes any figure already reported",
+    "unresolved": "whether to open a deeper review of the territory",
+}
 
 
 @dataclass

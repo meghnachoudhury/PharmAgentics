@@ -42,9 +42,11 @@ def test_tool_list_is_the_two_groups_plus_admin():
     tools = asyncio.run(go())
     expected = set(ADMIN_TOOLS) | {t for group in AGENT_TOOLS.values() for t in group}
     assert set(tools) == expected
-    # No tool takes free text the agent could turn into SQL: only a territory, or nothing (FR-020).
+    # No tool takes free text the agent could turn into SQL: only a territory, a closed enum, or nothing (FR-020).
     for name in expected - set(ADMIN_TOOLS):
-        assert set(tools[name].input_schema.get("properties", {})) <= {"territory"}, name
+        props = tools[name].input_schema.get("properties", {})
+        free = {k for k, v in props.items() if k != "territory" and "enum" not in v}
+        assert not free, (name, free)
 
 
 def test_numbers_are_tokens_and_match_the_shared_stage_code():

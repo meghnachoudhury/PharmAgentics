@@ -72,6 +72,8 @@ class BriefingResult(BaseModel):
     triage: dict[str, Any] | None = None  # TriageRecord: who made each triage call
     flow: list[dict[str, Any]] | None = None  # StageFlow: the seven stages, states and actors
     citations: list[dict[str, int]] | None = None  # where each claim value sits in `answer`: {start, end, claim}
+    # brief-003: the memo's sections with charts and the data behind them; leaders get views.leadership_sections
+    sections: list[dict[str, Any]] | None = None
 
 
 class ReleaseContext(BaseModel):

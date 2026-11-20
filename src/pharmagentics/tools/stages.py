@@ -95,7 +95,7 @@ def data_health(reg: Registry, p: Period) -> str:
         head = f"Data health: {n_bad} territory-weeks are withheld across these weeks."
     if not flagged:
         return head + " No cut is withheld."
-    lines = [head + " Withheld cuts are left out of every figure below and never read as zero demand:"]
+    lines = [head + " Withheld cuts are left out of every like-for-like figure and story, and never read as zero demand:"]
     for w, t, reasons in flagged[:5 if len(W) > 1 else 8]:
         names = ", ".join(q.REASONS.get(r, r.lower()) for r in reasons.split(";") if r)
         detail = []

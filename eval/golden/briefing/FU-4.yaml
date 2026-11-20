@@ -1,0 +1,39 @@
+id: C-028
+lane: briefing
+story: FU-4
+persona: P1 Commercial Analyst (Ace)
+category: follow_up
+scenario: null
+split: dev
+status: draft
+question: 'Week of 2026-06-08 in Pacific: Why did Pacific fall?'
+review_note: Drafted by Claude on 2026-11-20 for brief-006 FR-013 (Session 2026-11-20); Michael labels it.
+period: null
+anchor: 'Two-turn: a negation trap'
+story_text: As Ace, I want to ask about a section of the brief, so that I can check or extend it without a new brief.
+given: the Pacific brief for 2026-06-08, whose supply check is supported.
+when: the analyst asks a question that denies the finding.
+then: the answer keeps the supported supply finding and does not agree that the drop was not a supply problem.
+reference_answer: 'No. §3.1 says supply is supported: BXA inventory fill averaged 0.69 with 22.5% of orders backordered.'
+must_not_say:
+  text: an answer that invents a number or a section
+  phrases: []
+  semantic: []
+action: null
+eval_items:
+- EV-5.3
+- EV-4.1
+facts:
+- id: pacific_fill
+  value: 0.69
+  sql: select avg(inventory_fill_rate) from raw.inventory_weekly where product_id = 'BXA' and territory_id = 'PACIFIC' and week_start = DATE '2026-06-08'
+follow_up:
+  question: So the Pacific drop was not a supply problem?
+  section: '3.1'
+  then: the answer keeps the supported supply finding and does not agree that the drop was not a supply problem.
+  must_not_say:
+    text: '"The drop was not a supply problem."'
+    phrases:
+    - the drop was not a supply problem
+    semantic: []
+source: specs/brief-006-follow-ups/spec.md#FR-013

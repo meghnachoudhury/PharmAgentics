@@ -21,6 +21,7 @@ from agent_framework import Agent
 from mcp.client.client import Client
 
 from pharmagentics.llm import chat_client, chat_options, model_spec
+from pharmagentics.tools.memo import render_sections as memo_sections_rendered
 from pharmagentics.tools.registry import digits_outside_tokens
 from pharmagentics.tracing import finish, span
 
@@ -28,6 +29,7 @@ from briefing_baseline import pipeline as scripted
 from briefing_baseline.triage import stage_flow
 from briefing_lowcode.team import RunLog, _call
 
+from . import lessons
 from . import plan as planmod
 from . import write
 from .investigate import investigate, server
@@ -43,7 +45,7 @@ def load_config() -> dict:
 
 def config_version() -> str:
     h = hashlib.sha256()
-    for f in [HERE / "agent.yaml", *sorted((HERE / "prompts").glob("*.md"))]:
+    for f in [HERE / "agent.yaml", *sorted((HERE / "prompts").glob("*.md")), lessons.FILE]:
         h.update(f.name.encode() + f.read_bytes())
     return h.hexdigest()[:12]
 
@@ -111,15 +113,16 @@ def _left_out(plan: dict, order: list[str]) -> list[str]:
            ([f"Left out of this brief by the analyst: {', '.join(by_analyst)}."] if by_analyst else [])
 
 
-async def _write(cfg: dict, spec: str, question: str, sections: dict, stories: list[dict], claims: list[dict],
-                 evidence: list[dict], log: RunLog) -> tuple[str, dict, bool, list[str]]:
+async def _write(cfg: dict, spec: str, question: str, sections: dict, close: dict, stories: list[dict],
+                 claims: list[dict], evidence: list[dict], log: RunLog) -> tuple[str, dict, dict, bool, list[str]]:
     n_claims = len(claims)
     story_tokens = {s["id"]: write.tokens(s["section"]) for s in stories}
-    story_tokens["_sections"] = write.tokens("\n".join(sections["header"] + sections["data_health"] + sections["kpis"]))
-    shown = write.sections_text(sections, stories)
+    story_tokens["_sections"] = write.section_tokens(sections, close)
+    shown = write.sections_text(sections, close, stories)
     gloss_text, glosses = write.glossary(shown, claims, evidence)  # what each number measures, written by code
     prompt = (HERE / cfg["prompts"]["writer"]).read_text(encoding="utf-8").format(
-        question=question.split(":", 1)[-1].strip(), sections=shown, glossary=gloss_text or "(no numbers)")
+        question=question.split(":", 1)[-1].strip(), sections=shown, glossary=gloss_text or "(no numbers)") \
+        + lessons.block("writer")  # approved lessons only (core-008 FR-022); empty adds nothing
     with span("5_writer") as sp:
         raw = await _ask(spec, prompt, log, "writer")
         try:
@@ -143,8 +146,10 @@ async def _write(cfg: dict, spec: str, question: str, sections: dict, stories: l
                 pass
             revised = True
         answer_text, sentences, dropped = write.clean(reply, story_tokens, n_claims, glosses)
-        finish(sp, {"problems": bad, "revised": revised, "dropped": dropped})
-    return answer_text, sentences, revised, dropped
+        chart_lines, chart_dropped = write.chart_explanations(reply, close, stories, n_claims, glosses)
+        dropped += chart_dropped
+        finish(sp, {"problems": bad, "revised": revised, "dropped": dropped, "chart_lines": sorted(chart_lines)})
+    return answer_text, sentences, chart_lines, revised, dropped
 
 
 async def _run(question: str, plan: dict, order: list[str], spec: str, reviewed: bool, log: RunLog) -> dict:
@@ -164,15 +169,18 @@ async def _run(question: str, plan: dict, order: list[str], spec: str, reviewed:
         with span("4a_investigation", inputs={"order": order}) as sp:
             stories, notes = (await investigate(cfg, spec, mcp, plan, order, log)) if plan["state"] == "TRIAGE_REVIEW" else ([], [])
             finish(sp, {"notes": notes, "tool_sequence": log.tools})
+        competitor = any(s["id"].startswith("competitor:") for s in stories)
+        close = json.loads(await _call(mcp, "memo_close", competitor=competitor))  # §1 and §5, by code
         dropped_line = await _call(mcp, "dropped_line")
         run = json.loads(await _call(mcp, "export_run"))
     claims = run["claims"]
-    answer_text, sentences, revised, dropped = await _write(cfg, spec, question, sections, stories, claims,
+    answer_text, sentences, chart_lines, revised, dropped = await _write(cfg, spec, question, sections, close, stories, claims,
                                                             run["evidence"], log)
-    template = write.assemble(sections, stories, answer_text, sentences, _left_out(plan, order), dropped_line)
+    template, memo_sections = write.assemble(sections, close, stories, answer_text, sentences,
+                                             _left_out(plan, order), dropped_line, chart_lines)
     if (bad := digits_outside_tokens(template)):  # code sections are clean; this guards the assembly itself
         raise AssertionError(f"digit outside a claim token: {bad[:3]}")
-    text, used, citations = write.render(template, claims)
+    text, used, citations, index = write.render(template, claims)
     keep = {c["evidence_id"] for c in used}
     record = planmod.record(plan, order, reviewed)
     flow_record = dict(record, calls=[dict(c, outcome="investigated") if c["outcome"] == "restored" else c for c in record["calls"]])
@@ -182,6 +190,7 @@ async def _run(question: str, plan: dict, order: list[str], spec: str, reviewed:
         "system": f"{NAME}:{spec}", "answer": text, "claims": used,
         "evidence": [e for e in run["evidence"] if e["id"] in keep],
         "abstained": bool(run["abstained"]), "citations": citations,
+        "sections": memo_sections_rendered(memo_sections, claims, index),
         "trajectory": {"tools": log.tools, "llm_calls": log.llm_calls, "tokens": log.tokens, "capped": capped,
                        "revised": revised, "dropped_pieces": dropped, "stories": run["stories"], "notes": notes,
                        "manager_order": plan.get("manager_order"), "flagged": plan.get("flagged"),

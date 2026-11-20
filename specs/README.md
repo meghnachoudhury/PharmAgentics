@@ -81,7 +81,7 @@ Markers `[NEEDS CLARIFICATION: …]` stay in the spec that owns them, at most th
 | core-007 | Forecast role-to-view mapping, CA analyst and BM leader (Alvin and Sienna confirm). Open items 1 (approval: analyst alone in UAT) and 2 (agent output: committed snapshots) closed 2026-11-11 |
 | brief-001 | Business impact (A4); multiple-testing control (A5) |
 | brief-002 | Triage junction (A1); plan-review default (A10) |
-| brief-003 | Monday template and length (Eval 4); promotion reach and campaign data (A16, Eval 19) |
+| brief-003 | Length limit (Eval 4; the memo outline settled the template on 2026-11-19); promotion reach and campaign data (A16, Eval 19) |
 | brief-004 | Judge agreement bar (Eval 2) |
 | brief-005 | Sign-off level (A9); whether reviewers may overwrite a number by hand |
 

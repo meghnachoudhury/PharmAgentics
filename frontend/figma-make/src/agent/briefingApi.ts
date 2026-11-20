@@ -40,6 +40,34 @@ export type BriefingResult = {
   triage?: TriageRecord | null  // brief-002: who made each triage call (analyst view only)
   flow?: Stage[] | null         // brief-002: the seven stages, run states and actors (analyst view only)
   citations?: { start: number; end: number; claim: number }[] | null  // where each claim sits in the answer
+  sections?: MemoSection[] | null  // brief-003: the memo's sections, charts and the data behind them
+}
+// brief-003: the memo outline. Every number in `text`, `prose`, a caption or an explanation is a claim of the
+// same brief; every plotted point comes from `table`, a governed query recorded as an evidence item.
+export type Span = { start: number; end: number; claim: number }
+export type DataTable = { evidence_id: string; query: string; columns: string[]; rows: (string | number | boolean | null)[][] }
+export type ChartPoint = { week: string; value: number | null; basis?: "observed" | "projected" | "estimated"; restated?: boolean }
+export type ChartSpec = {
+  kind: "trend" | "story" | "share" | "coverage"
+  weeks: string[]
+  caption: string
+  explanation: string
+  series?: { name: string; points: ChartPoint[] }[]
+  band?: { low: number; high: number; weeks: string[]; label: string } | null
+  panel?: { name: string; unit: string; driver: string; points: ChartPoint[]; table?: DataTable } | null
+  rows?: { territory: string; cells: { week: string; basis: "observed" | "projected" | "estimated"; restated: boolean }[] }[]
+  table?: DataTable | null  // analyst view only
+  explanation_citations?: Span[]  // analyst view only
+}
+export type MemoSection = {
+  number: string
+  title: string
+  text: string
+  prose: string
+  claims?: number[]            // analyst view only: indexes into the brief's claims
+  text_citations?: Span[]      // analyst view only
+  prose_citations?: Span[]     // analyst view only
+  chart?: ChartSpec | null
 }
 // brief-002 Phase A: the code triage plan P1 reviews, and how a brief was made.
 export type StoryCard = {
@@ -119,6 +147,7 @@ export type LeadershipBrief = {
   review_status: ReviewStatus
   reviewed_at: string | null
   summary: string
+  sections?: MemoSection[] | null  // brief-003 FR-026: §1, §2, §3 without checks, §5; no claims, tables or queries
 }
 export type PublishedBrief = {
   brief_id: string
@@ -162,7 +191,7 @@ function stringArray(v: unknown): v is string[] {
 }
 const REVIEW = new Set(["pending", "approved", "rejected"])
 
-async function api<T>(path: string, init?: RequestInit): Promise<T> {
+export async function api<T>(path: string, init?: RequestInit): Promise<T> {
   if (!BASE) throw new Error("API URL is not configured. Set VITE_PHARMAGENTICS_API_BASE_URL. No mock fallback is enabled.")
   let response: Response
   try { response = await fetch(`${BASE}${path}`, { cache: "no-store", credentials: "same-origin", ...init }) }
@@ -180,7 +209,7 @@ async function api<T>(path: string, init?: RequestInit): Promise<T> {
   if (response.status === 204) return undefined as T
   return await response.json() as T
 }
-const post = (body: unknown): RequestInit => ({ method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
+export const post = (body: unknown): RequestInit => ({ method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) })
 
 export async function getMe(): Promise<Me> {
   const v: unknown = await api("/api/me")

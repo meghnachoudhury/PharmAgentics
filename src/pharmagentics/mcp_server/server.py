@@ -14,17 +14,19 @@ from __future__ import annotations
 import json
 import os
 import re
+from typing import Literal
 
 from mcp.server.mcpserver import MCPServer
 from mcp.server.mcpserver.exceptions import ToolError
 
 from pharmagentics.tools import DEFAULT_DB, Registry
 from pharmagentics.tools import queries as q
-from pharmagentics.tools import stages
+from pharmagentics.tools import charts, memo, projection, stages
 from pharmagentics.tools.checks import (DRIVERS, OWNER, Check, check_access, check_competitor, check_data,
                                         check_promotion, check_supply, confidence, context_baseline)
 
-ADMIN_TOOLS = ("open_run", "export_run", "brief_sections", "story_section", "competitor_section", "dropped_line")
+ADMIN_TOOLS = ("open_run", "export_run", "brief_sections", "story_section", "competitor_section", "dropped_line",
+               "memo_close")
 _ORD = {1: "one", 2: "two", 3: "three", 4: "four", 5: "five", 6: "six"}
 AGENT_TOOLS = {
     # Briefing Data Forensics: is the data wrong, and what is the like-for-like change?
@@ -32,7 +34,11 @@ AGENT_TOOLS = {
     # Briefing Driver Investigator: where did it move, and why?
     "driver_investigator": ("screen_territories", "territory_change", "check_access", "check_promotion",
                             "check_supply", "check_competitor", "competitor_status", "story_confidence"),
+    # Follow-ups (brief-006 slice 4): a new governed query an analyst may ask for.
+    "follow_up": ("split_change",),
 }
+SPLITS = {"plan": "plan_id", "specialty": "hcp_specialty", "channel": "payer_channel"}
+SMALL_CELL = 50  # weekly BXA TRx below which a split cell is noisy (brief-003 FR-015; cash cells of 36 to 49)
 _TERRITORIES = {k: v for k, v in q.TERRITORY_NAMES.items() if k != "NATIONAL"}
 _TOKEN = re.compile(r"\{c(\d+)\}")
 
@@ -45,12 +51,17 @@ class RunSession:
         self.legend = legend
         # Build 3's no-repeat ledger (brief-002 FR-016): off unless asked, so builds 1 and 2 are unchanged.
         self.no_repeat = os.environ.get("PHARMAGENTICS_MCP_NO_REPEAT") == "1" if no_repeat is None else no_repeat
+        # A follow-up session (brief-006): driver checks report their verdict only, without the investigation's
+        # story-so-far status, which a lone check would show as "Low, no driver yet" against a finished brief.
+        self.follow_up = os.environ.get("PHARMAGENTICS_MCP_FOLLOW_UP") == "1"
         self.seen: dict[tuple[str, str], str] = {}
         self.reg: Registry | None = None
         self.p: stages.Period | None = None
         self.checks: dict[str, dict[str, Check]] = {}
         self.stories: dict[str, dict] = {}
         self.calls: list[dict] = []
+        self.proj: projection.Projection | None = None  # set by brief_sections, read by memo_close
+        self.restated = False
 
     # admin -------------------------------------------------------------------------------------
     def open_run(self, question: str) -> str:
@@ -198,15 +209,36 @@ class RunSession:
 
     # Admin: the brief's code-built sections (build 3, brief-002 FR-026) --------------------------
     def brief_sections(self) -> dict:
-        """Stages 1 to 3 as the scripted brief states them, in token templates, from this run's Registry."""
+        """The memo's code sections that stages 1 to 3 settle (brief-003): §2, §4 and §6, plus the title. Claims
+        come from this run's Registry, through the same builders as the scripted brief (tools/memo.py)."""
         reg, p = self._reg(), self.p
-        withheld_focus = (f"{q.name(p.focus)} has withheld cuts in these weeks, so no like-for-like story is given for it."
-                          if p.focus in p.terrs and p.focus not in p.ok else None)
-        return {"header": [f"Brief for {stages.describe(p)}. Data version {reg.data_version}. Product: BXA. "
-                           "Territory questions use only cuts that pass the feed gate."] + ([p.note] if p.note else []),
-                "data_health": [stages.data_health(reg, p)] + stages.restatements(reg, p),
-                "kpis": ([p.calendar_note] if p.calendar_note else []) + stages.kpis(reg, p),
-                "calendar": bool(p.calendar), "withheld_focus": withheld_focus}
+        health = stages.data_health(reg, p)
+        restated = stages.restatements(reg, p)
+        kpis = stages.kpis(reg, p)
+        self.proj, self.restated = projection.build(reg, p), bool(restated)
+        return {"title": memo.title_lines(p), "numbers": memo.numbers(self.proj, kpis, restated),
+                "limits": memo.limits(p, self.proj, health), "appendix": memo.appendix(reg),
+                "calendar": bool(p.calendar)}
+
+    def memo_close(self, competitor: bool) -> dict:
+        """§1 and §5 once the stories are closed (contracts/mcp-admin-tools.md): the bottom line in FR-021 order
+        with the number least sure of, and the next checks."""
+        reg, p = self._reg(), self.p
+        if self.proj is None:
+            raise ToolError("brief_sections must run before memo_close")
+        told = [{"territory": t, "confidence": st["confidence"],
+                 "drivers": [d for d, v in st["verdicts"].items() if v == "supported"]}
+                for t, st in self.stories.items() if st["closed"]]
+        story_charts = {}
+        for s in told:  # brief-003 FR-024: same builders as the scripted brief
+            access = self.checks.get(s["territory"], {}).get("access")
+            plan = (access.detail or {}).get("plan") if access else None
+            drivers = s["drivers"] if s["confidence"] != "Low" else []
+            story_charts[s["territory"]] = charts.story(reg, p, s["territory"], drivers, plan)
+        return {"bottom_line": memo.bottom_line(reg, p, self.proj, told, self.restated),
+                "next_checks": memo.next_checks(p, told, competitor),
+                "charts": {"2": charts.trend(reg, p), "4": charts.coverage(reg, p), "stories": story_charts,
+                           "competitor": charts.competitor(reg, p) if competitor else None}}
 
     def story_section(self, territory: str, n: int) -> str:
         """One story as the agents left it: head, the checks they ran in the order run, the closing confidence."""
@@ -216,7 +248,7 @@ class RunSession:
         head = f"Story {_ORD.get(n, str(n))}: {stages.territory_change(self._reg(), self.p, t)}"
         done = list(self.checks.get(t, {}).values())
         lines = [head] + (["Checked, in this order:"] + [f"- {c.text}" for c in done] if done else ["No driver was tested before the cap."])
-        lines.append(self._status(t, closing=True))
+        lines.append(memo.without_next(self._status(t, closing=True)))  # its next check goes to §5
         return "\n".join(lines)
 
     def competitor_section(self, lead: str) -> str:
@@ -231,7 +263,43 @@ class RunSession:
 
     def _record(self, t: str, check: Check) -> str:
         self.checks.setdefault(t, {})[check.driver] = check
+        if self.follow_up:
+            return self._out(f"{q.name(t)}. {check.text}")
         return self._out(f"{q.name(t)}. {check.text}\n{self._status(t, closing=False)}")
+
+    def split_change(self, territory: str, by: str) -> str:
+        """A territory's change split by plan, specialty or channel: each cut's weekly BXA TRx in the period
+        against the weeks before, the largest moves first, small cells marked noisy (brief-003 FR-015)."""
+        self._log("split_change", territory=territory, by=by)
+        t = self._territory(territory)
+        if t is None:
+            return self._bad_territory(territory)
+        if by not in SPLITS:
+            return f"Unknown split {by!r}. Use one of: {', '.join(SPLITS)}."
+        if (withheld := self._withheld(t)):
+            return withheld
+        reg, W, B, col = self.reg, self.p.weeks, self.p.baseline, SPLITS[by]
+        if not B:
+            return "The release has no earlier weeks to compare with."
+        rows = reg.rows(f"select {col}, sum(trx) filter (where week_start in {q._dates(W)}) / {len(W)}.0, "
+                        f"sum(trx) filter (where week_start in {q._dates(B)}) / {len(B)}.0 from {q.RX} "
+                        f"where product_id = 'BXA' and territory_id = '{t}' and week_start in {q._dates(sorted(set(W) | set(B)))} "
+                        f"group by 1")
+        rows = sorted((r for r in rows if r[0] is not None), key=lambda r: -abs((r[1] or 0) - (r[2] or 0)))[:6]
+        lines = [f"{q.name(t)} BXA TRx by {by}, a week in these weeks against the weeks before (largest moves first):"]
+        for g, x, b in rows:
+            g = str(g).replace("'", "")
+            base = f"from {q.RX} where product_id = 'BXA' and territory_id = '{t}' and {col} = '{g}'"
+            now_sql = f"select coalesce(sum(trx), 0) / {len(W)}.0 {base} and week_start in {q._dates(W)}"
+            then_sql = f"select coalesce(sum(trx), 0) / {len(B)}.0 {base} and week_start in {q._dates(B)}"
+            now, then = (reg.claim("split_change", now_sql, "int", territory=t, by=by, cut=g),
+                         reg.claim("split_change", then_sql, "int", territory=t, by=by, cut=g))
+            change = reg.scalar(q.pct_change(now_sql, then_sql))
+            moved = (f", {stages.word(change)} {reg.claim('split_change', q.pct_change(now_sql, then_sql), 'pct1', territory=t, by=by, cut=g)}"
+                     if change is not None else "")
+            noisy = " (small cell: noisy, do not generalize from it)" if (b or 0) < SMALL_CELL else ""
+            lines.append(f"- {g}: {now} a week against {then} before{moved}{noisy}")
+        return self._out("\n".join(lines))
 
     def check_access(self, territory: str) -> str:
         return self._driver("check_access", territory, check_access, reference=False)
@@ -306,8 +374,13 @@ def build_server(db=DEFAULT_DB, legend: bool = False) -> MCPServer:
 
     @server.tool(**text)
     async def brief_sections() -> str:
-        """Admin: the brief's code-built sections (header, data health, restatements, KPIs) as JSON. Callers only."""
+        """Admin: the memo's code-built title, numbers, limits and appendix as JSON. Callers only."""
         return json.dumps(s.brief_sections())
+
+    @server.tool(**text)
+    async def memo_close(competitor: bool) -> str:
+        """Admin: the memo's bottom line and next checks as JSON, after the stories close. Callers only."""
+        return json.dumps(s.memo_close(competitor))
 
     @server.tool(**text)
     async def story_section(territory: str, n: int) -> str:
@@ -378,6 +451,11 @@ def build_server(db=DEFAULT_DB, legend: bool = False) -> MCPServer:
     async def competitor_status() -> str:
         """Metacora (competitor, launched 2026-03-02) as a continuing national story: weeks since launch, direction, basket shares."""
         return s.competitor_status()
+
+    @server.tool(**text)
+    async def split_change(territory: str, by: Literal["plan", "specialty", "channel"]) -> str:
+        """A territory's change split by "plan", "specialty" or "channel": each cut's weekly BXA TRx in these weeks against the weeks before, largest moves first; small cells are marked noisy."""
+        return s.split_change(territory, by)
 
     @server.tool(**text)
     async def story_confidence(territory: str) -> str:

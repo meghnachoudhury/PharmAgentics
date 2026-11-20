@@ -1,0 +1,39 @@
+id: C-029
+lane: briefing
+story: FU-5
+persona: P1 Commercial Analyst (Ace)
+category: follow_up
+scenario: null
+split: dev
+status: draft
+question: 'Week of 2026-05-04 in New England: What happened in New England?'
+review_note: Drafted by Claude on 2026-11-20 for brief-006 FR-013 (Session 2026-11-20); Michael labels it.
+period: null
+anchor: 'Two-turn: a why with no supported driver'
+story_text: As Ace, I want to ask about a section of the brief, so that I can check or extend it without a new brief.
+given: the New England brief for 2026-05-04, where New England's feed is incomplete.
+when: the analyst asks why it dropped.
+then: the answer says no driver can be named for New England, because its level is projected from panel coverage, an assumption (brief-003 FR-023).
+reference_answer: 'No driver can be named for New England: its level this week is projected from panel coverage of 0.656, an assumption, not an observed count.'
+must_not_say:
+  text: an answer that invents a number or a section
+  phrases: []
+  semantic: []
+action: null
+eval_items:
+- EV-5.2
+- EV-2.3
+facts:
+- id: ne_coverage
+  value: 0.656
+  sql: select panel_coverage_ratio from reporting.v_feed_health where week_start = DATE '2026-05-04' and territory_id = 'NEW_ENGLAND'
+follow_up:
+  question: Why did New England drop?
+  then: the answer says no driver can be named for New England, because its level is projected from panel coverage, an assumption (brief-003 FR-023).
+  must_not_say:
+    text: '"New England dropped because …"'
+    phrases:
+    - New England dropped because
+    - New England fell because
+    semantic: []
+source: specs/brief-006-follow-ups/spec.md#FR-013

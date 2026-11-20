@@ -1,4 +1,4 @@
-<!-- Markdown copy of the Google Doc "User stories" (Consolidated 10/22 folder), taken 2026-10-23. The Google Doc is the master; update it first. -->
+<!-- Markdown copy of the Google Doc "User stories" (Consolidated 10/22 folder), taken 2026-10-23, refreshed 2026-11-20 (P1-Q2, P3-Q6: projected national). The Google Doc is the master; update it first. -->
 
 # **PharmAgentics User Stories: Briefing and Forecast Personas**
 Oct 22, 2026 · @Michael
@@ -34,8 +34,8 @@ Ace produces the brief and reviews the agent's draft first. Ace's stories test w
   - **Eval items** EV-1.1, EV-2.1, EV-2.3.
 ### **P1-Q2 · Is this week's data complete, and which cuts can't I report?**
 *As Ace, I want feed problems found before drafting, so that I never write commentary on numbers that are wrong.*
-  - **Answer from the data (week of 2026-05-04).** New England delivered 84 of 128 rows (44 missing keys), panel coverage 0.656 against a 0.98 floor, 10.29 days after week end against a 7-day target; status INCOMPLETE. Its observed BXA TRx of 267 compares with 397 to 422 in the four weeks before. The other seven territories pass.
-  - **Given** New England fails the feed gate for 2026-05-04. **When** the brief runs. **Then** the data-health section leads the brief, names New England as not reportable with its three reasons, reports the other seven, and labels national totals "7 of 8."
+  - **Answer from the data (week of 2026-05-04).** New England delivered 84 of 128 rows (44 missing keys), panel coverage 0.656 against a 0.98 floor, 10.29 days after week end against a 7-day target; status INCOMPLETE. Its observed BXA TRx of 267 compares with 397 to 422 in the four weeks before. Projected from its panel coverage, New England is about 407 (267 divided by 0.656), an assumption the brief labels as projected, and projected national BXA TRx is 4,491. The other seven territories pass.
+  - **Given** New England fails the feed gate for 2026-05-04. **When** the brief runs. **Then** the Bottom line says first that New England's feed is incomplete; The numbers gives a projected national with New England labelled as projected, an assumption from its panel coverage; What the data can't tell us names New England as not reportable with its reasons; every like-for-like figure states how many territories it covers; and no story is opened for New England.
   - **Must not say** "New England BXA fell 34%."
   - **Action.** Ace leaves New England out of the commentary and adds it to next week's re-check list. The brief tells Ace to re-run New England when the reload lands and to disclose the restated week.
   - **Eval items** EV-2.1, EV-2.3, EV-1.1.
@@ -155,8 +155,8 @@ Diana reads only the brief P2 approved and carries it to leadership. Her stories
   - **Eval items** EV-7.3, EV-9.1.
 ### **P3-Q6 · Can I quote these numbers in my leadership meeting?**
 *As Diana, I want numbers that will not be corrected later, so that my credibility holds upward.*
-  - **Answer from the data (brief of 2026-07-13).** The vendor restated Mid-Atlantic BXA TRx for the week of 2026-04-06 from 692 to 742 that day. Separately, three weeks in the release are missing one territory's cut (2026-04-06, 2026-05-04, 2026-07-06), so their national sums cover 7 of 8 territories.
-  - **Given** a restatement of a number already reported. **When** the next brief runs. **Then** it states the old and new values with the reason, and any national figure built on 7 territories says so.
+  - **Answer from the data (brief of 2026-07-13).** The vendor restated Mid-Atlantic BXA TRx for the week of 2026-04-06 from 692 to 742 that day. Projected national BXA TRx for the week of 2026-07-13 is 4,240, with every territory observed. The like-for-like change against the four weeks before covers 7 of 8 territories, because Great Lakes failed its checks for 2026-07-06. Three weeks in the release have one failed territory cut (2026-04-06, 2026-05-04, 2026-07-06); their projected national labels that territory as projected or estimated, an assumption, instead of leaving it out.
+  - **Given** a restatement of a number already reported. **When** the next brief runs. **Then** it states the old and new values with the reason where leaders see them, any like-for-like figure built on 7 territories says so, and the projected national labels a projected or estimated territory as an assumption instead of leaving it out.
   - **Must not say** a corrected number with no note that it changed.
   - **Action.** Diana quotes only from the KPI table and corrects her April deck. The brief tells her which earlier figure changed.
   - **Eval items** EV-1.1, EV-1.2.

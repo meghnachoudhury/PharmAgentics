@@ -27,18 +27,50 @@ Q_0713 = "Week of 2026-07-13 in Mid-Atlantic: Generate the weekly brand-performa
 def test_sections_match_the_scripted_brief():
     from briefing_baseline.pipeline import answer
 
+    def by_heading(text: str) -> dict[str, list[str]]:
+        out, current = {}, "title"
+        for line in text.splitlines():
+            if line.startswith("## "):
+                current = line[3:]
+                continue
+            out.setdefault(current, []).append(line)
+        return out
+
+    scripted = by_heading(answer(Q_0713)["answer"])
     s = RunSession()
     s.open_run(Q_0713)
     sec = s.brief_sections()
-    lines = sec["header"] + sec["data_health"] + sec["kpis"]
-    rendered = s.reg.render("\n".join(lines)).splitlines()
-    scripted = answer(Q_0713)["answer"].splitlines()
-    assert rendered == scripted[:len(rendered)]
-    s.check_supply("PACIFIC")
-    story = s.reg.render(s.story_section("PACIFIC", 1))
-    assert story.startswith("Story one: Pacific. BXA TRx averaged 737") and "Checked, in this order:\n- Supply:" in story
-    assert "Not tested:" in story  # untested drivers stay open (Principle V)
+    render = lambda lines: s.reg.render("\n".join(lines)).splitlines()  # noqa: E731
+    # FR-020: the agent's code sections are the scripted brief's, word for word
+    assert render(sec["title"]) == scripted["title"]
+    stories = []
+    for n, t in enumerate(("PACIFIC", "MID_ATLANTIC"), 1):  # the scripted brief's stories, in its order
+        for check in (s.check_data, s.check_access, s.check_promotion, s.check_supply, s.check_competitor):
+            check(t)
+        stories += s.reg.render(s.story_section(t, n)).splitlines()
+    # every driver tested, so each story's head and checks read as the scripted one's; the closing line names the
+    # territory in the agent's wording; neither carries "Next:" (it lives in §5)
+    body = lambda lines: [x for x in lines if not x.startswith(("Confidence", "Chart:", "In the week of"))]  # noqa: E731
+    assert body(stories) == body(scripted["What changed and why"])[:len(body(stories))]
+    assert stories[0].startswith("Story one: Pacific. BXA TRx averaged 737") and not any("Next:" in x for x in stories)
+    close = s.memo_close(competitor=True)
+    assert render(close["bottom_line"]) == scripted["Bottom line"]
+    assert render(close["next_checks"]) == scripted["Next checks"]
+    from pharmagentics.tools.memo import chart_lines  # slice 2: the same charts, by the same builders
+    assert render(sec["numbers"] + chart_lines(close["charts"]["2"])) == scripted["The numbers"]
+    assert render(sec["limits"] + chart_lines(close["charts"]["4"])) == scripted["What the data can't tell us"]
+    assert set(close["charts"]["stories"]) == {"PACIFIC", "MID_ATLANTIC"} and close["charts"]["competitor"]["kind"] == "share"
     assert s.reg.render(s.dropped_line()).startswith("Considered and dropped:")
+    s.close()
+
+
+@needs_db
+def test_an_untested_driver_stays_open():
+    s = RunSession()
+    s.open_run(Q_0713)
+    s.brief_sections()
+    s.check_supply("PACIFIC")
+    assert "Not tested:" in s.story_section("PACIFIC", 1)  # Principle V
     s.close()
 
 
@@ -122,16 +154,33 @@ def test_writer_checks_drop_typed_digits_foreign_tokens_and_banned_terms():
 def test_assembly_keeps_code_sections_and_places_story_sentences():
     from briefing_agent import write
 
-    sections = {"header": ["Brief for week of 2026-07-13."], "data_health": ["Data health: {c1} of {c2} pass."],
-                "kpis": ["KPIs: {c3}."], "calendar": False, "withheld_focus": None}
-    stories = [{"id": "territory:PACIFIC", "n": 1, "section": "Story one: Pacific {c5}.\nChecked, in this order:\n- Supply: supported.\nConfidence for Pacific: Medium."}]
-    t = write.assemble(sections, stories, "Pacific fell.", {"territory:PACIFIC": "Supply is the lead."}, ["Left out of this brief by the analyst: Mid-Atlantic."], "Considered and dropped: {c8}.")
+    from pharmagentics.tools.memo import render_sections
+
+    sections = {"title": ["Brief for week of 2026-07-13. Product: BXA."], "numbers": ["Projected national: {c1}."],
+                "limits": ["Data health: {c2} of {c3} pass."], "appendix": ["Data version x."], "calendar": False}
+    close = {"bottom_line": ["Projected national BXA TRx is {c1}.", "BXA held {c4}."],
+             "next_checks": ["- Pacific: confirm the supply finding. Owner: supply chain and trade. Unlocks: x."]}
+    stories = [{"id": "territory:PACIFIC", "n": 1, "section": "Story one: Pacific {c5}.\nChecked, in this order:\n"
+                "- Supply: supported.\nConfidence for Pacific: Medium. Candidate drivers: supply. Next: involve supply chain and trade."}]
+    t, secs = write.assemble(sections, close, stories, "Pacific fell.", {"territory:PACIFIC": "Supply is the lead."},
+                             ["Left out of this brief by the analyst: Mid-Atlantic."], "Considered and dropped: {c8}.")
     lines = t.split("\n")
-    assert lines[0] == "Pacific fell." and lines[1].startswith("Brief for") and lines[5] == "Supply is the lead."
-    assert lines[-2].startswith("Left out") and lines[-1].startswith("Considered")
-    text, used, spans = write.render(t, [{"value": str(i), "evidence_id": f"e{i}"} for i in range(1, 10)])
-    assert "{c" not in text and [c["evidence_id"] for c in used] == ["e1", "e2", "e3", "e5", "e8"]
-    assert all(text[s["start"]:s["end"]] == used[s["claim"]]["value"] for s in spans) and len(spans) == 5
+    assert lines[:4] == ["Brief for week of 2026-07-13. Product: BXA.", "## Bottom line", "Projected national BXA TRx is {c1}.", "BXA held {c4}."]
+    assert lines[4] == "Pacific fell."  # the writer's answer closes §1
+    story = lines.index("Story one: Pacific {c5}.")
+    assert lines[story - 1] == "## What changed and why" and lines[story + 1] == "Supply is the lead."
+    assert lines[story + 4] == "Confidence for Pacific: Medium. Candidate drivers: supply."  # "Next:" moved to §5
+    assert lines[story + 5].startswith("Left out") and lines[story + 6].startswith("Considered")
+    assert [x for x in lines if x.startswith("## ")] == ["## Bottom line", "## The numbers", "## What changed and why",
+                                                        "## What the data can't tell us", "## Next checks", "## Appendix"]
+    claims = [{"value": str(i), "evidence_id": f"e{i}"} for i in range(1, 10)]
+    text, used, spans, index = write.render(t, claims)
+    assert "{c" not in text and [c["evidence_id"] for c in used] == ["e1", "e4", "e5", "e8", "e2", "e3"]
+    assert all(text[s["start"]:s["end"]] == used[s["claim"]]["value"] for s in spans) and len(spans) == 7
+    rendered = render_sections(secs, claims, index)
+    assert [s["number"] for s in rendered] == ["1", "2", "3", "3.1", "4", "5", "6"]
+    assert rendered[0]["prose"] == "Pacific fell." and rendered[3]["prose"] == "Supply is the lead."
+    assert [used[i]["value"] for i in rendered[0]["claims"]] == ["1", "4"]
 
 
 def test_manager_slips_seen_in_eval_run_e994d094():

@@ -102,6 +102,6 @@ async def investigate(cfg: dict, spec: str, mcp, plan: dict, order: list[str], l
                                      min(cfg["story_wall_seconds"] * scale, left))
             section = await _call(mcp, "story_section", territory=card["territory"], n=n)  # code closes the story
             finish(sp, {"capped": capped, "section": section})
-        stories.append({"id": sid, "n": n, "section": section})
+        stories.append({"id": sid, "n": n, "section": section, "territory": card["territory"]})
         notes.append({"story": sid, "capped": capped})
     return stories, notes

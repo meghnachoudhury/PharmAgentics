@@ -128,3 +128,38 @@ SELECT week_start, territory_id, product_id,
        count(*) AS source_row_count
 FROM reporting.v_reportable_rx
 GROUP BY week_start, territory_id, product_id;
+
+-- Projected national (brief-003 FR-022; ADR 0001). One row per week, territory and
+-- product. A passing cut is observed. A failed cut whose faults are all completeness
+-- faults, with panel coverage of at least 0.5, is projected: observed TRx divided by
+-- coverage. Any other failed cut (duplicate keys, restatement review, invalid metrics,
+-- schema or metadata faults, coverage below 0.5) is estimated by the caller from the
+-- territory's recent share of national, so the view exposes no TRx for it. Levels only:
+-- growth and driver tests stay on reporting.v_reportable_rx (like for like).
+CREATE OR REPLACE VIEW reporting.v_rx_projection AS
+WITH cuts AS (
+    SELECT h.week_start, h.territory_id, p.product_id, h.health_status, h.flag_reasons,
+           h.panel_coverage_ratio,
+           CASE
+               WHEN h.health_status = 'PASS' THEN 'observed'
+               WHEN list_has_all(
+                        ['MISSING_RX_KEYS', 'ROW_COUNT_MISMATCH', 'LOW_OR_INVALID_COVERAGE',
+                         'LATE_OR_UNKNOWN_DELIVERY', 'SOURCE_NOT_COMPLETE'],
+                        string_split(h.flag_reasons, ';'))
+                    AND h.panel_coverage_ratio >= 0.5 THEN 'projected'
+               ELSE 'estimated'
+           END AS basis
+    FROM reporting.v_feed_health h
+    CROSS JOIN (SELECT product_id FROM raw.dim_product) p
+),
+observed AS (
+    SELECT week_start, territory_id, product_id, sum(trx) AS trx
+    FROM raw.rx_weekly
+    GROUP BY week_start, territory_id, product_id
+)
+SELECT c.week_start, c.territory_id, c.product_id, c.health_status, c.flag_reasons,
+       c.panel_coverage_ratio, c.basis,
+       CASE WHEN c.basis <> 'estimated' THEN coalesce(o.trx, 0) END AS observed_trx,
+       CASE WHEN c.basis <> 'estimated' THEN coalesce(o.trx, 0) / c.panel_coverage_ratio END AS projected_trx
+FROM cuts c
+LEFT JOIN observed o USING (week_start, territory_id, product_id);

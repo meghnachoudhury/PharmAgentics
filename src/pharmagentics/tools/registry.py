@@ -20,6 +20,7 @@ DEFAULT_DB = Path(__file__).resolve().parents[3] / "local" / "pharmagentics.duck
 
 ALLOWED = {
     "reporting.v_reportable_rx", "reporting.v_weekly_rx_kpis", "reporting.v_feed_health",
+    "reporting.v_rx_projection",  # projected national (brief-003 FR-022): levels only, never drivers
     "raw.calendar", "raw.dim_plan", "raw.dim_product", "raw.dim_territory", "raw.dim_specialty",
     "raw.access_status_monthly", "raw.inventory_weekly", "raw.promo_activity", "raw.market_basket",
     "raw.market_share_weekly", "raw.restatement_log", "raw.forecast_vs_actual_weekly",

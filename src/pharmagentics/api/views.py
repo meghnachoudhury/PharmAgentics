@@ -1,21 +1,35 @@
 """Views of one briefing (core-007 FR-002 to FR-006).
 
-The leadership view is cut from the full answer by code: it keeps every line except the
-driver-check detail, so each number it shows is already a claim of the same run and every
-caveat (withheld cuts, restatements, abstentions) survives. It carries no claims, evidence,
-query text or trace.
+The leadership view is cut from the full answer by code: it keeps the memo's Bottom line, The
+numbers, What changed and why without the driver-check detail, and Next checks (brief-003 FR-026),
+so each number it shows is already a claim of the same run. Caveats survive: the Bottom line leads
+with any withheld cut and The numbers carries restatements. It carries no claims, evidence, query
+text or trace.
 """
 from __future__ import annotations
 
 CHECKS_HEADER = "Checked, in this order:"
 DROPPED_PREFIX = "Considered and dropped:"
+HEADING = "## "
+# Memo sections leaders do not see (brief-003 FR-026): the data's limits and the appendix.
+LEADERSHIP_DROPS = ("What the data can't tell us", "Appendix")
 
 
 def executive_summary(answer: str) -> str:
+    """Leaders get the title, Bottom line, The numbers, What changed and why without the checks, and Next
+    checks. A brief from before the memo (no headings) keeps every line but the checks."""
     keep: list[str] = []
-    in_checks = False
+    in_checks = dropped_section = False
     for line in answer.splitlines():
         if not line.strip():
+            continue
+        if line.startswith(HEADING):
+            dropped_section = line[len(HEADING):].strip() in LEADERSHIP_DROPS
+            in_checks = False
+            if not dropped_section:
+                keep.append(line)
+            continue
+        if dropped_section:
             continue
         if line.startswith(CHECKS_HEADER):
             in_checks = True
@@ -31,6 +45,43 @@ def executive_summary(answer: str) -> str:
 
 LEADERSHIP_FIELDS = ("brief_id", "engine", "system", "brand_id", "territory_id", "week_start",
                      "data_version", "abstained", "review_status", "reviewed_at")
+LEADERSHIP_SECTIONS = ("1", "2", "3", "5")  # brief-003 FR-026; story subsections 3.1, 3.2 … follow §3
+SECTION_FIELDS = ("number", "title", "text", "prose")  # allow-list: no claims, citations or evidence
+CHART_FIELDS = ("kind", "weeks", "caption", "explanation", "series", "band", "rows")  # no table, query or panel table
+
+
+def _leader_text(text: str) -> str:
+    keep, in_checks = [], False
+    for line in text.splitlines():
+        if line.startswith(CHECKS_HEADER):
+            in_checks = True
+            continue
+        if in_checks and line.lstrip().startswith("- "):
+            continue
+        in_checks = False
+        if not line.startswith(DROPPED_PREFIX):
+            keep.append(line)
+    return "\n".join(keep)
+
+
+def leadership_sections(sections: list[dict] | None) -> list[dict] | None:
+    """The memo sections a leader sees, cut by code from the analyst's: §1, §2 with its chart, §3 and its stories
+    without the checks list or the evidence, and §5. Allow-lists, so a new field never reaches a leader."""
+    if not sections:
+        return None
+    out = []
+    for s in sections:
+        if s["number"].split(".")[0] not in LEADERSHIP_SECTIONS:
+            continue
+        cut = {k: s.get(k) for k in SECTION_FIELDS}
+        cut["text"] = _leader_text(cut["text"] or "")
+        chart = s.get("chart")
+        if chart:
+            cut["chart"] = {k: chart.get(k) for k in CHART_FIELDS if k in chart}
+            if chart.get("panel"):
+                cut["chart"]["panel"] = {k: chart["panel"].get(k) for k in ("name", "unit", "driver", "points")}
+        out.append(cut)
+    return out
 
 
 def leadership(record: dict) -> dict:
@@ -40,6 +91,7 @@ def leadership(record: dict) -> dict:
     out = {k: (record.get(k) if k in record else result.get(k)) for k in LEADERSHIP_FIELDS}
     out["view"] = "leadership"
     out["summary"] = executive_summary(result["answer"])
+    out["sections"] = leadership_sections(result.get("sections"))
     return out
 
 

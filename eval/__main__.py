@@ -36,6 +36,13 @@ def main(argv=None) -> int:
     cand.add_argument("--state-dir", type=Path, help="downloaded state folder (default: local/feedback-export, else local/state)")
     cand.add_argument("--force", action="store_true", help="overwrite existing drafts (loses hand edits)")
 
+    imp2 = sub.add_parser("improve", help="propose lessons and cases from votes and saved threads (core-008 FR-019)")
+    imp2.add_argument("--state-dir", type=Path, help="state folder to read and write (default: local/feedback-export, else local/state)")
+    imp2.add_argument("--baseline", help="agent run to gate the candidate lessons against; without it no lesson is confident")
+    imp2.add_argument("--model", help="drafting and reviewing model (default anthropic:claude-haiku-5-5)")
+    prom = sub.add_parser("promote", help="write approved lessons and cases (core-008 FR-021); prints the git steps")
+    prom.add_argument("--state-dir", type=Path, help="state folder holding review/proposals (default as for improve)")
+
     sub.add_parser("export-telemetry", help="write the golden-set scores the hosted app shows (src/pharmagentics/api/telemetry.json)")
     uat = sub.add_parser("import-uat", help="log the hosted app's live use to MLflow (experiment pharmagentics-uat)")
     uat.add_argument("--state-dir", type=Path, help="downloaded state folder (default: local/uat-export)")
@@ -83,6 +90,23 @@ def main(argv=None) -> int:
         judge = DEFAULT_JUDGE if args.judge == "default" else args.judge
         stories = [s.strip() for s in args.stories.split(",")] if args.stories else None
         run_suite(args.system, args.lane, args.reruns, judge, stories, model=args.model)
+        return 0
+
+    if args.cmd == "improve":
+        from .harness import improve
+        made = improve.run(args.state_dir, baseline=args.baseline, model=args.model)
+        for p in made:
+            print(f"{p['id']} {p['kind']:<6} {'confident' if p['confident'] else 'flagged':<9} {p['source']}"
+                  + (f"  ({'; '.join(p['reasons'])})" if p["reasons"] else ""))
+        print(f"{len(made)} new proposal(s); review them on the Evaluation page (tester admin).")
+        return 0
+
+    if args.cmd == "promote":
+        from .harness import promote
+        out = promote.run(args.state_dir)
+        print(f"lessons promoted: {len(out['lessons'])}; cases drafted: {len(out['cases'])}; skipped: {len(out['skipped'])}")
+        for line in out.get("git", []):
+            print("  " + line)
         return 0
 
     if args.cmd == "gate":

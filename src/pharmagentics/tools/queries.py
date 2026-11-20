@@ -101,3 +101,49 @@ def fva_sum(col: str, weeks, terr: str = "NATIONAL") -> str:
 def fva_peers(col: str, weeks, terr: str) -> str:
     return (f"select coalesce(sum({col}), 0) from {FVA} where product_id = 'BXA' "
             f"and territory_id not in ('NATIONAL', '{terr}') and week_start in {_dates(weeks)}")
+
+
+# Projected national (brief-003 FR-022; ADR 0001) -----------------------------------------------------
+# Each builder returns one self-contained SELECT over governed relations, so a claim can be re-run later.
+
+PROJ = "reporting.v_rx_projection"
+
+
+def projection_ctes(weeks, product: str = "BXA") -> str:
+    """CTEs for the target weeks: each cut's basis and projected TRx, the four clean weeks before each target
+    week (every territory passes, no holiday or plan-year reset), each territory's share of national in them,
+    and the national: (observed + projected) / (1 - shares of the estimated territories)."""
+    targets = ", ".join(f"DATE '{w}'" for w in weeks)
+    return (
+        f"with wk as (select unnest([{targets}]) as week_start), "
+        f"cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from {PROJ} p join wk using (week_start) "
+        f"where p.product_id = '{product}'), "
+        "clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start "
+        "where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h "
+        "where h.week_start = c.week_start and h.health_status <> 'PASS') "
+        "qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), "
+        "share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s "
+        f"from clean cl join {RX} r on r.week_start = cl.week_start and r.product_id = '{product}' group by 1, 2), "
+        "nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') "
+        "/ (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national "
+        "from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 "
+        "having count(*) filter (where c.basis <> 'estimated') > 0) "
+    )
+
+
+def projected_national(weeks, product: str = "BXA") -> str:
+    """Average weekly projected national TRx over `weeks` (NULL when no week can be reported)."""
+    return projection_ctes(weeks, product) + "select avg(national) from nat"
+
+
+def projected_territory(weeks, territory: str, product: str = "BXA") -> str:
+    """Average weekly TRx of one territory: observed or projected from the view, or share × national when estimated."""
+    return (projection_ctes(weeks, product)
+            + "select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) "
+              "from cut c join nat n using (week_start) left join share s on s.target = c.week_start "
+              f"and s.territory_id = c.territory_id where c.territory_id = '{territory}'")
+
+
+def projection_cell(week: str, territory: str, col: str, product: str = "BXA") -> str:
+    return (f"select {col} from {PROJ} where week_start = DATE '{week}' and territory_id = '{territory}' "
+            f"and product_id = '{product}'")

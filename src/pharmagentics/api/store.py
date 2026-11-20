@@ -40,6 +40,9 @@ class LocalBackend:
         folder = self.root / prefix
         return sorted(p.relative_to(self.root).as_posix() for p in folder.rglob("*.json")) if folder.is_dir() else []
 
+    def delete(self, key: str) -> None:
+        (self.root / key).unlink(missing_ok=True)
+
 
 class BucketBackend:
     def __init__(self, bucket: str):
@@ -56,6 +59,11 @@ class BucketBackend:
 
     def keys(self, prefix: str) -> list[str]:
         return sorted(b.name for b in self.bucket.list_blobs(prefix=prefix) if b.name.endswith(".json"))
+
+    def delete(self, key: str) -> None:
+        blob = self.bucket.blob(key)
+        if blob.exists():
+            blob.delete()
 
 
 @lru_cache(maxsize=4)

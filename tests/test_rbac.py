@@ -182,7 +182,8 @@ def test_leadership_response_carries_no_evidence_query_or_trace():
     body = response.json()
     assert response.headers["cache-control"] == "no-store"
     assert body["view"] == "leadership" and leaks(body) == []
-    assert set(body) == set(views.LEADERSHIP_FIELDS) | {"view", "summary"}
+    assert set(body) == set(views.LEADERSHIP_FIELDS) | {"view", "summary", "sections"}  # sections: brief-003 FR-026
+    assert all(set(s) <= set(views.SECTION_FIELDS) | {"chart"} for s in body["sections"] or [])
 
 
 def test_analyst_preview_matches_what_the_director_sees():
@@ -239,8 +240,13 @@ def test_real_new_england_week_keeps_the_withheld_cut_for_leaders():
     analyst.post(f"/api/briefing/{brief['brief_id']}/review", json={"decision": "approved"})
     body = director.get(f"/api/briefing/{brief['brief_id']}").json()
     assert leaks(body) == []
-    assert "7 of 8 territories" in body["summary"] and "not reportable" in body["summary"]
-    assert set(body["summary"].splitlines()) <= set(brief["answer"].splitlines())
+    summary = body["summary"]
+    # brief-003 FR-026: §1 leads with the withheld cut; §4's gate detail and §6 stay with the analyst
+    assert summary.split("\n")[2].startswith("Data warning: New England's feed for 2026-05-04 is incomplete")
+    assert "No story is given for it." in summary and "6 of 8 territories" in summary
+    assert "## What the data can't tell us" not in summary and "## Appendix" not in summary and "Data version" not in summary
+    assert "## Next checks" in summary and "New England, week of 2026-05-04: re-run" in summary
+    assert set(summary.splitlines()) <= set(brief["answer"].splitlines())
 
 
 # --- brief-002 Phase A: triage plan review and stage flow (real engine) -----------------------------
