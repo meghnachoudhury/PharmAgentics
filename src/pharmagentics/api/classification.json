@@ -8,6 +8,7 @@
     {"id": "sensitive", "label": "Sensitive", "description": "The most restricted data; strictly need to know."}
   ],
   "tabs": {
+    "briefing.overview": "confidential",
     "briefing.new": "confidential",
     "briefing.approved": "proprietary",
     "briefing.view.analyst": "confidential",

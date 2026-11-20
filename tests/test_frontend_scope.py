@@ -8,8 +8,8 @@ SRC = ROOT / "frontend" / "figma-make" / "src"
 def test_frontend_contains_only_supported_feature_modules():
     assert SRC.is_dir()
     assert sorted(p.relative_to(SRC).as_posix() for p in SRC.rglob("*") if p.is_file()) == [
-        "App.tsx", "Feedback.tsx", "Telemetry.tsx", "agent/briefingApi.ts", "agent/feedbackApi.ts", "agent/forecastApi.ts",
-        "agent/primitives.tsx", "agent/telemetryApi.ts", "components/ui/dropdown-menu.tsx",
+        "App.tsx", "Feedback.tsx", "Overview.tsx", "Telemetry.tsx", "agent/briefingApi.ts", "agent/feedbackApi.ts",
+        "agent/forecastApi.ts", "agent/overviewApi.ts", "agent/primitives.tsx", "agent/telemetryApi.ts", "components/ui/dropdown-menu.tsx",
         "index.css", "main.tsx", "vite-env.d.ts"
     ]
 

@@ -2,10 +2,24 @@
 
 **Spec ID**: `brief-003-narrative-renderer` (Briefing lane; owners: Michael, Meghna)
 **Feature Branch**: `speckit-briefing`
-**Created**: 2026-10-16 | **Updated**: 2026-10-23
-**Status**: Draft v2. Not started.
+**Created**: 2026-10-16 | **Updated**: 2026-11-19
+**Status**: Draft v3. Memo outline, projected national, charts and evidence tables (2026-11-19 planning session; `GLOSSARY.md`, `docs/adr/0001`). Not started.
 **Replaces**: `007-narrative-renderer` (Oct 16)
 **Input**: System Architecture §4 (stage 5, Briefing); Briefing Architecture §5.5, decision 6, decision 20; Evaluation Pack EV-1.1 to EV-1.3, EV-7.1 to EV-7.5, EV-8.5; Personas P1, P3, P4; User stories P1-Q1, P1-Q2, P1-Q3, P1-Q6, P3-Q2, P3-Q3, P3-Q4, P3-Q5, P3-Q6, P4-Q2, P4-Q3, P4-Q6
+
+## Clarifications
+
+### Session 2026-11-19
+
+Settled in a structured planning session with Michael; terms are in `GLOSSARY.md`, decisions in `docs/adr/0001` to `0003`.
+
+- Q: What template does the brief follow (Evaluation Pack open item 4)? → A: **A memo with a fixed outline**, modelled on the course's MMM and forecasting memos: §1 Bottom line, §2 The numbers, §3 What changed and why (§3.1, §3.2 … one per story), §4 What the data can't tell us, §5 Next checks, §6 Appendix (method and the checks run). Replaces the User Story 2 template. Every brief uses it, scripted or agent, routine or eventful.
+- Q: Who builds what? → A: Code builds every section, table, chart, caption and number; a model (or the scripted template) writes only the prose inside a section, numbers only through claim tokens. The scripted engine and the agent produce the same skeleton.
+- Q: What leads the brief? → A: §1 states, in order: projected national TRx this week; the like-for-like change against the four weeks before; brand share of the market basket; and the one number we are least sure of, chosen by rule (an estimated territory if any; else the lead number of the lowest-confidence story; else the change built on the fewest TRx).
+- Q: Is national TRx projected? → A: **Yes, by territory stratum** (course Week 2, "projectable to national with stratified factors"): observed TRx ÷ panel coverage per territory, summed. Coverage 0.98–1.0 is observed; 0.5–0.98 is projected and labelled; below 0.5 or no feed, the territory is estimated from its own share of national over its last four weeks that passed the gate and were not holidays, and labelled estimated. Growth stays like-for-like. No story names a driver from a projected or estimated cut (ADR 0001).
+- Q: Charts? → A: Yes, code-built from evidence rows, each with a caption (code, with claims) and a one-to-two-line explanation (writer prose with claim tokens): §2 a 13-week TRx trend (projected national and the selected territory; restated weeks dotted; projected and estimated weeks hollow; no forecast line); §3 per story, the territory's weekly TRx against its four-week baseline band, with a second panel for the driver the checks tested; §4 a coverage strip, territory by week, with projected, estimated and restated cells marked.
+- Q: Can the analyst see the data? → A: Yes: every section carries its evidence table (the rows behind its claims), the query behind a toggle, and a CSV download. Analysts only.
+- Q: What do leaders see? → A: §1, §2 (table and charts, no queries or downloads), §3 without the checks and evidence, and §5.
 
 ## User Scenarios & Testing *(mandatory)*
 
@@ -25,9 +39,9 @@ The writer produces prose around claim tokens. Code fills each token from the cl
 
 ---
 
-### User Story 2 - The Monday format, every week (Priority: P1)
+### User Story 2 - The Monday memo, every week (Priority: P1)
 
-The brief follows one template: data health first when any cut is unreliable; a KPI table filled by code; what changed, ordered by impact; is it real; likely drivers with confidence; promotion context for stories where promotion was tested; investigate next and who to involve; restatement disclosure; data-health footnote; glossary from the semantic layer. Routine weeks use the same template.
+The brief is a memo with a fixed outline (Clarifications 2026-11-19): §1 Bottom line; §2 The numbers (KPI table and trend chart); §3 What changed and why, one subsection per story ordered by impact, each with its checks, confidence, driver chart, promotion context where promotion was tested, and owner; §4 What the data can't tell us (data health, restatements, projection and coverage, the coverage strip); §5 Next checks, each with an owner and the decision it unlocks; §6 Appendix (method, the checks run, glossary). When any cut is unreliable, §1 says so first. Routine weeks use the same outline with an empty §3 that says why.
 
 **Why this priority**: The director wants the same short format each week (P3-Q1); P1 wants the team's Monday format (P1-Q6).
 
@@ -36,7 +50,7 @@ The brief follows one template: data health first when any cut is unreliable; a 
 **Acceptance Scenarios**:
 
 1. **Given** the routine week 2025-04-21, **When** the brief is drafted, **Then** it holds the KPI table, at most one line saying territory swings stayed in their normal range, the footnote and the glossary, and no story. It never says "Pacific surged 25%". (User story P1-Q3.)
-2. **Given** week 2026-05-04, **When** the brief is drafted, **Then** the data-health section leads, names New England as not reportable with its three reasons, and national figures say "7 of 8 territories". It never says "New England BXA fell 34%". (User story P1-Q2.)
+2. **Given** week 2026-05-04, **When** the brief is drafted, **Then** §1 says first that New England's feed is incomplete; §2 shows a projected national with New England marked projected (coverage 0.66); the like-for-like change says "7 of 8 territories"; §4 names New England with its three reasons; and no §3 story is opened for it. It never says "New England BXA fell 34%". (User story P1-Q2; ADR 0001.)
 3. **Given** week 2026-08-24, **When** the brief is drafted, **Then** it carries a Southeast story and a continuing Metacora line, and nothing about a national "collapse". (User story P1-Q6.)
 4. **Given** any brief, **When** its length is counted, **Then** it is within the semantic-layer limit.
 
@@ -104,6 +118,37 @@ No line identifies a rep. "New patients" is used only for NBRx. "Competitive int
 1. **Given** a rep-vacancy case, **When** drafted, **Then** the brief mentions only territory-level aggregated activity.
 2. **Given** any draft, **When** scanned, **Then** banned terms are absent.
 
+### User Story 7 - A national number every week (Priority: P1)
+
+The brief always states a national TRx level built territory by territory from panel coverage, so the director gets a national figure even in a week with a broken feed, and knows which part of it is projected or estimated.
+
+**Why this priority**: A weekly brand report is "projectable to national with stratified factors" (course Week 2); today the brief shows only like-for-like territories.
+
+**Independent Test**: Draft 2026-05-04 (New England at coverage 0.66) and a routine week (all coverage 1.0).
+
+**Acceptance Scenarios**:
+
+1. **Given** a week where every territory has coverage 1.0, **When** the brief is drafted, **Then** projected national equals the observed sum and nothing is labelled projected.
+2. **Given** 2026-05-04, **When** the brief is drafted, **Then** New England's TRx is observed ÷ 0.66, labelled projected, and §1 names it as the number we are least sure of when no territory is estimated.
+3. **Given** a territory below 0.5 coverage or with no feed, **When** the brief is drafted, **Then** its TRx is estimated from its share of national over its last four clean weeks and labelled estimated, and no driver is named for it.
+
+---
+
+### User Story 8 - Charts and the data behind every section (Priority: P1)
+
+Each section shows its chart with a caption and one or two lines on what it shows, and an analyst can open the rows behind any claim, see the query, and download them.
+
+**Why this priority**: A brief the analyst cannot check against its data is not trusted (planning session 2026-11-19); the course memos lead with a chart and a caption.
+
+**Independent Test**: Draft 2026-08-24 and open §2 and §3.1 as an analyst and as the director.
+
+**Acceptance Scenarios**:
+
+1. **Given** the 2026-08-24 brief, **When** an analyst opens §3.1, **Then** the Southeast chart shows weekly TRx against its baseline band and the tested driver, with a caption and an explanation whose numbers are claim tokens, and the evidence table, query and CSV are available.
+2. **Given** the same brief opened by the director, **When** §2 and §3 are shown, **Then** the charts and captions appear, and no evidence table, query, download or checks list does.
+
+---
+
 ### Edge Cases
 
 - All cuts failed: the brief is a data-health notice only (A7 proposal).
@@ -111,6 +156,8 @@ No line identifies a rep. "New patients" is used only for NBRx. "Competitive int
 - Too many stories for the length limit: lower-impact stories move to "investigate next" with a count.
 - A revision after a failed check: one revision only (brief-004).
 - A story's promotion was not tested (no activity data for the cut): the promotion context section says so.
+- No driver is supported for a story: its chart shows the TRx panel only, and the explanation says no driver was supported.
+- Every territory's coverage is below 0.5 in the same week: no projected national is given; §1 says the week cannot be reported.
 
 ## Requirements *(mandatory)*
 
@@ -119,7 +166,7 @@ No line identifies a rep. "New patients" is used only for NBRx. "Competitive int
 - **FR-001**: The writer MUST read only the closed evidence pack, the continuity object and the definitions of the metrics in play.
 - **FR-002**: The writer MUST emit claim tokens for every figure and MUST NOT emit a digit outside a token.
 - **FR-003**: The renderer MUST replace each token with its tool record's value using the metric's rounding rule, and MUST fail on an unresolved token.
-- **FR-004**: The brief MUST follow the fixed template in User Story 2 and the semantic-layer length limit. [NEEDS CLARIFICATION: the template and length a real brand team uses (Evaluation Pack open item 4)]
+- **FR-004**: The brief MUST follow the memo outline in User Story 2 (§1–§6, stories numbered §3.1, §3.2 …) and the semantic-layer length limit. Outline settled 2026-11-19; [NEEDS CLARIFICATION: the length limit a real brand team uses (Evaluation Pack open item 4)]
 - **FR-005**: Code MUST fill the KPI table, the data-health section, the coverage labels, the restatement disclosure, the promotion context table and the glossary. The writer does not write them.
 - **FR-006**: Stories MUST be ordered by business impact.
 - **FR-007**: Routine, warning, failed-validation and eventful runs MUST all use the same template.
@@ -135,10 +182,18 @@ No line identifies a rep. "New patients" is used only for NBRx. "Competitive int
 - **FR-017**: The draft MUST store each claim as a `brief_claim` (core-004) with token, text, evidence IDs, metric, rounding, confidence and section.
 - **FR-018**: The prompt version MUST be pinned in the run record.
 - **FR-019**: The stage MUST accept verifier flags or reviewer comments and redraft only the flagged sections.
+- **FR-020**: Code MUST build the section skeleton, every table, chart, caption and claim; the writer MUST write only the prose fields of a section. The scripted engine and the agent MUST emit the same skeleton.
+- **FR-021**: §1 MUST state, in order, projected national TRx, the like-for-like change against the four weeks before, brand share of the market basket, and the number least sure of, chosen by the rule in the Clarifications.
+- **FR-022**: Projected national MUST be the sum over territories of observed TRx ÷ panel coverage, with the coverage bands and the estimate rule in the Clarifications; each projected or estimated territory MUST be labelled in every table and chart that shows it.
+- **FR-023**: No story MAY name a driver for a projected or estimated cut. Growth figures MUST be like-for-like and carry their coverage label (FR-012).
+- **FR-024**: §2, each §3 story and §4 MUST carry the charts in the Clarifications, each with a code-built caption and a one-to-two-line explanation whose numbers are claim tokens.
+- **FR-025**: Every section MUST carry an evidence table of the rows behind its claims and the query that produced them; the analyst view MUST offer the query and a CSV download.
+- **FR-026**: The leadership view MUST carry §1, §2 (no queries or downloads), §3 without checks or evidence, and §5; the server MUST strip the rest.
+- **FR-027**: The brief envelope MUST carry the sections as structured data (number, title, prose, claims, chart spec, evidence) and, for the existing scorers, the same content flattened as `answer` text.
 
 ### Key Entities
 
-Draft, `brief_claim`, rendered brief, template, glossary, continuity object, promotion context table.
+Draft, `brief_claim`, rendered brief, memo outline, section, story, chart spec, evidence table, projected national, estimated territory, glossary (`GLOSSARY.md`), continuity object, promotion context table.
 
 ## Success Criteria *(mandatory)*
 
@@ -154,6 +209,9 @@ Draft, `brief_claim`, rendered brief, template, glossary, continuity object, pro
 - **SC-008**: Every promotion-tested story carries the promotion context table and its limits statement (EV-7.5).
 - **SC-009**: Zero individual identifications and zero banned or jargon terms in reader text (EV-9.1, EV-9.2).
 - **SC-010**: Every "must not say" phrase in the Briefing user stories is absent from the matching dev brief.
+- **SC-011**: Projected national matches the hand calculation (observed ÷ coverage per territory) to the rounding rule in 100% of dev weeks; golden cases P1-Q2 and P3-Q6 are updated for projection and pass.
+- **SC-012**: Every §2, §3 and §4 chart's caption and explanation contain no digit outside a claim token, and every claim in them resolves to its evidence table.
+- **SC-013**: Zero evidence rows, queries or checks lists in any leadership response.
 
 ## Assumptions
 
@@ -161,4 +219,5 @@ Draft, `brief_claim`, rendered brief, template, glossary, continuity object, pro
 - Unreliable cuts arrive flagged; the writer does not judge reliability.
 - The template starts from Briefing Architecture §5.5 and is replaced if the mentor provides a real one.
 - ASD-STE100 is a style target scored by human reviewers.
-- The language model is Gemini (external); prompts carry only synthetic values and metric definitions (S14).
+- The agent's language model is Claude Haiku 5.5 through the Anthropic API (core-007 FR-032); prompts carry only synthetic values and metric definitions (S14).
+- The release has territory-level counts and weekly panel coverage per territory, not a pharmacy panel; territories are the projection strata.
