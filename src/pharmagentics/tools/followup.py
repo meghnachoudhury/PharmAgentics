@@ -23,6 +23,8 @@ PRODUCTS = {"BXC": "Lipidara", "BXD": "Vascriva", "BXE": "Metacora"}
 NEW_NUMBER = re.compile(r"\b(split|break\s?down|breakdown|by plan|by specialty|by channel|by payer|per plan|which plans?|"
                         r"how many|how much|what about|compare|versus|vs\.?)\b", re.I)
 WHY = re.compile(r"\b(why|cause[sd]?|driver|drove|reason|explain)\b", re.I)
+REP = re.compile(r"\b(which|what|name|named|who)\b[^.?!]*\b(reps?|representatives?|salespeople|sales ?person)\b|"
+                 r"\b(reps?|representatives?)\b[^.?!]*\b(name|names|named|who|which)\b", re.I)
 SUGGESTIONS = {  # per section kind, phrased so the scripted engine can answer them (brief-006 FR-006)
     "1": ["What is this brief least sure of?", "Restate the bottom line"],
     "2": ["Which territories are projected or estimated?", "Restate the numbers"],
@@ -95,6 +97,11 @@ def answer(result: dict, question: str, section: str | None = None) -> dict:
         return {**base, "kind": "out_of_scope", "offer": offer,
                 "answer": f"This brief covers {brand}, {here}, week of {week}, and stays as it is. "
                           f"Generate a brief for {label} to answer that."}
+
+    if REP.search(text):  # Briefing B-VI: no line identifies an individual rep
+        return {**base, "kind": "no_individual", "cited": [ref],
+                "answer": "The brief never names or singles out an individual rep. Promotion activity is aggregated "
+                          "by territory before anyone sees it; ask about the territory instead."}
 
     labelled = _labelled(sections, "2")
     if WHY.search(text):

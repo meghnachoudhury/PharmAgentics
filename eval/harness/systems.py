@@ -81,8 +81,36 @@ class _ScriptedLane:
         return AnswerEnvelope.model_validate(self._answer(question)).model_dump()
 
 
+def transcript(system: str, brief: dict, turn: dict, brief_seconds: float, turn_seconds: float) -> dict:
+    """A two-turn case as one envelope (brief-006 FR-013): the answer, claims and evidence of both turns, so every
+    gated check covers both, plus what the follow-up said and cited. Follow-up evidence keeps its own ids."""
+    have = {e["id"] for e in brief.get("evidence", [])}
+    return AnswerEnvelope.model_validate({
+        "system": system, "answer": brief["answer"] + "\n\n" + turn["answer"],
+        "claims": list(brief.get("claims", [])) + list(turn.get("claims", [])),
+        "evidence": list(brief.get("evidence", [])) + [e for e in turn.get("evidence", []) if e["id"] not in have],
+        "abstained": bool(brief.get("abstained")), "sections": brief.get("sections"),
+        "follow_up_answer": turn["answer"], "cited": turn.get("cited", []),
+        "brief_sections": [s["number"] for s in brief.get("sections") or []],
+        "latency": {"brief": brief_seconds, "turn": turn_seconds},
+        "trajectory": {**(brief.get("trajectory") or {}), "follow_up": turn.get("trajectory")} if brief.get("trajectory") else None,
+    }).model_dump()
+
+
 class BriefingScripted(_ScriptedLane):
     name, folder, package = "briefing_scripted", "brand-briefing", "briefing_baseline"
+
+    def predict_follow_up(self, question: str, follow_up: str, section: str | None) -> dict:
+        """The scripted brief, then the rule-based follow-up from that brief alone (brief-006 FR-004)."""
+        import time
+
+        from pharmagentics.tools import followup
+        pkg = _lane_package(self.folder, self.package)
+        started = time.perf_counter()
+        brief = self._answer(question)
+        middle = time.perf_counter()
+        turn = followup.answer({**brief, **pkg.pipeline.scope(question)}, follow_up, section)
+        return transcript(self.name, brief, turn, middle - started, time.perf_counter() - middle)
 
 
 class ForecastScripted(_ScriptedLane):
@@ -130,6 +158,21 @@ class BriefingAgent(BriefingLowCode):
         self._answer = pkg.answer
         self.model = model_spec(model)
         self.params = {"agent_config_version": pkg.config_version()}
+
+    def predict_follow_up(self, question: str, follow_up: str, section: str | None) -> dict:
+        """The agent's brief, then one agent follow-up on it (brief-006 slice 4). A turn that runs out of time is
+        a run error, never a score (FR-010)."""
+        import time
+
+        from briefing_agent import followup
+        from briefing_baseline import pipeline
+        started = time.perf_counter()
+        brief = self._answer(question, self.model)
+        middle = time.perf_counter()
+        turn = followup.answer({**brief, **pipeline.scope(question)}, follow_up, section, self.model)
+        if turn.get("error") == "timeout":
+            raise TimeoutError(f"follow-up: {turn['answer']}")
+        return transcript(f"{self.name}:{self.model}", brief, turn, middle - started, time.perf_counter() - middle)
 
 
 class ForecastRules:

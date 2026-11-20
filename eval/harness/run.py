@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import os
 import statistics
+import time
 from pathlib import Path
 
 import mlflow
@@ -43,15 +44,25 @@ def run_suite(system: str, lane: str = "all", reruns: int = 1, judge: str | None
     os.environ.setdefault("MLFLOW_GENAI_EVAL_SKIP_TRACE_VALIDATION", "True")
 
     configure(uri, experiment, artifacts)
-    rows = [{"inputs": {"question": c.question}, "expectations": c.expectations()} for c in cases]
+    rows = [{"inputs": c.inputs(), "expectations": c.expectations()} for c in cases]
+    latency: dict[str, list[float]] = {"brief": [], "turn": []}  # brief-006 FR-011
 
     # Traced here because skipping MLflow's first-row validation also skips its auto-tracing wrapper.
     errors: list[str] = []
 
     @mlflow.trace(name=f"{system}.predict", span_type="AGENT")
-    def predict_fn(question: str) -> dict:
+    def predict_fn(question: str, follow_up: str | None = None, section: str | None = None) -> dict:
         try:
-            return sut.predict(question)
+            started = time.perf_counter()
+            if follow_up and hasattr(sut, "predict_follow_up"):
+                out = sut.predict_follow_up(question, follow_up, section)
+            else:
+                out = sut.predict(question)
+            timed = (out.get("latency") if isinstance(out, dict) else None) or {"brief": time.perf_counter() - started}
+            for kind, secs in timed.items():
+                if kind in latency and secs is not None:
+                    latency[kind].append(float(secs))
+            return out
         except Exception as exc:  # MLflow records the failure per row; count it so it is never read as a score
             errors.append(f"{question[:70]}: {type(exc).__name__}: {exc}")
             raise
@@ -72,12 +83,20 @@ def run_suite(system: str, lane: str = "all", reruns: int = 1, judge: str | None
             with mlflow.start_run(run_name=f"{system} · {lane} · rerun {i}", nested=True) as child:
                 mlflow.log_params({**params, "rerun": i})
                 errors.clear()
+                latency["brief"].clear(); latency["turn"].clear()
                 result = mlflow.genai.evaluate(data=rows, predict_fn=predict_fn, scorers=scorers)
                 metrics = {k: float(v) for k, v in result.metrics.items() if isinstance(v, (int, float))}
                 if hasattr(sut, "runtime"):  # before the judge, which may evict a local agent model
                     mlflow.set_tags(sut.runtime())
                 if judges:
                     metrics.update(_judge_rerun(child.info.run_id, judges, len(rows)))
+                for kind, values in latency.items():  # median and 95th percentile per brief and per turn
+                    if values:
+                        ordered = sorted(values)
+                        metrics[f"latency_{kind}_p50/mean"] = statistics.median(ordered)
+                        metrics[f"latency_{kind}_p95/mean"] = ordered[min(len(ordered) - 1, round(0.95 * (len(ordered) - 1)))]
+                        mlflow.log_metric(f"latency_{kind}_p50/mean", metrics[f"latency_{kind}_p50/mean"])
+                        mlflow.log_metric(f"latency_{kind}_p95/mean", metrics[f"latency_{kind}_p95/mean"])
                 metrics["run_errors/mean"] = float(len(errors))  # failure tag "run error" (Evaluation Pack section 8)
                 mlflow.log_metric("run_errors/mean", float(len(errors)))
                 if errors:

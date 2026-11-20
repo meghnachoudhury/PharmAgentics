@@ -32,7 +32,7 @@ Each `run` is one MLflow parent run with a child run per rerun. Every case becom
 
 | Path | Holds |
 | :- | :- |
-| `golden/briefing/` | 24 cases, one per Briefing persona question (C-001 to C-024, P1-Q1 to P4-Q6) |
+| `golden/briefing/` | 30 cases: one per Briefing persona question (C-001 to C-024, P1-Q1 to P4-Q6) and six draft two-turn cases (C-025 to C-030, FU-1 to FU-6; brief-006 FR-013) whose `follow_up` is asked on the brief the first question produced |
 | `golden/forecast/` | 18 cases, one per Forecast persona question (F-001 to F-018, CA-Q1 to FM-Q6). Drafts until Alvin and Sienna confirm them and map each to TC-01 to TC-12 |
 | `golden/CHANGELOG.md` | Every change to a case, and what is still open before freezing |
 | `labels/` | Human labels that check the LLM judge (Evaluation Pack open item 2) |
@@ -56,6 +56,8 @@ A case holds the question, the golden answer (the story's "Answer from the data"
 | `numbers_traced` | Every number in the answer text is a claim with evidence. Systems with evidence only | EV-6.1, FE-19 | Yes |
 | `links_resolve` | Every claim links to an evidence item pinned to the data version of the run. Systems with evidence only | EV-6.2, FE-20 | Yes |
 | `run_errors` | Count of cases where the system crashed; a crash is never scored as zero | Run error tag | Yes (gate) |
+| `sections_exist` | Every section a follow-up cites (§3.1) exists in its brief; 1.0 for cases with no follow-up | brief-006 FR-005, SC-002 | Yes |
+| `latency_brief_p50`, `latency_brief_p95`, `latency_turn_p50`, `latency_turn_p95` | Median and 95th-percentile seconds per brief and per follow-up turn | brief-006 FR-011 | No |
 | `tool_calls`, `llm_calls`, `seconds`, `hit_cap`, `needed_revision` | Report only: how an agent got its answer (trajectory). Agent systems only | Autonomy ledger evidence; white-box | No |
 | `judge_factual_correctness` | RAGAS FactualCorrectness against the golden answer, with `--judge` | EV-1.3 | No: report-only until judge-human agreement clears the bar |
 

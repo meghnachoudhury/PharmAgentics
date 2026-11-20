@@ -1,0 +1,30 @@
+id: C-026
+lane: briefing
+story: FU-2
+persona: P1 Commercial Analyst (Ace)
+category: follow_up
+scenario: null
+split: dev
+status: draft
+question: 'Week of 2026-06-08 in Pacific: What moved in Pacific?'
+review_note: Drafted by Claude on 2026-11-20 for brief-006 FR-013 (Session 2026-11-20); Michael labels it.
+period: null
+anchor: 'Two-turn: a new query'
+story_text: As Ace, I want to ask about a section of the brief, so that I can check or extend it without a new brief.
+given: the Pacific brief for 2026-06-08.
+when: the analyst asks for a split the brief does not hold.
+then: the scripted engine says the split is not in the brief and offers the agent; the agent runs a governed query, and every new number is a claim with its evidence.
+reference_answer: The split by plan is not in the brief. It needs a new governed query, and any number that query returns is a claim with its evidence.
+must_not_say:
+  text: an answer that invents a number or a section
+  phrases: []
+  semantic: []
+action: null
+eval_items:
+- EV-6.1
+- EV-1.1
+facts: []
+follow_up:
+  question: Split §3.1 by plan.
+  then: the scripted engine says the split is not in the brief and offers the agent; the agent runs a governed query, and every new number is a claim with its evidence.
+source: specs/brief-006-follow-ups/spec.md#FR-013

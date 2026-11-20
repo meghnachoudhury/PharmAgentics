@@ -1,0 +1,30 @@
+id: C-027
+lane: briefing
+story: FU-3
+persona: P1 Commercial Analyst (Ace)
+category: follow_up
+scenario: null
+split: dev
+status: draft
+question: 'Week of 2026-05-04 in New England: Is New England reportable this week?'
+review_note: Drafted by Claude on 2026-11-20 for brief-006 FR-013 (Session 2026-11-20); Michael labels it.
+period: null
+anchor: 'Two-turn: a scope change'
+story_text: As Ace, I want to ask about a section of the brief, so that I can check or extend it without a new brief.
+given: the New England brief for 2026-05-04.
+when: the analyst asks about another product and territory.
+then: the answer says the brief covers BXA, New England, week of 2026-05-04, leaves the brief unchanged, and offers a brief for BXE in South Central.
+reference_answer: This brief covers BXA, New England, week of 2026-05-04, and stays as it is. A brief for BXE in South Central answers that question.
+must_not_say:
+  text: an answer that invents a number or a section
+  phrases: []
+  semantic: []
+action: null
+eval_items:
+- EV-9.4
+- EV-2.3
+facts: []
+follow_up:
+  question: What about BXE in South Central?
+  then: the answer says the brief covers BXA, New England, week of 2026-05-04, leaves the brief unchanged, and offers a brief for BXE in South Central.
+source: specs/brief-006-follow-ups/spec.md#FR-013

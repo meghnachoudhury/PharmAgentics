@@ -30,8 +30,8 @@ export type Thread = {
 
 const base = (id: string) => `/api/briefing/${encodeURIComponent(id)}/thread`
 export const getThread = (id: string) => api<Thread>(base(id))
-export const askThread = (id: string, question: string, section?: string | null) =>
-  api<Thread>(`${base(id)}/ask`, post({ question, section: section ?? null }))
+export const askThread = (id: string, question: string, section?: string | null, engine: "scripted" | "agent" = "scripted") =>
+  api<Thread>(`${base(id)}/ask`, post({ question, section: section ?? null, engine }))
 export const saveThread = (id: string) => api<Thread>(`${base(id)}/save`, post({}))
 export const openShared = (id: string, owner: string) => api<Thread>(`${base(id)}/shared/${encodeURIComponent(owner)}`)
 export const continueShared = (id: string, owner: string) => api<Thread>(`${base(id)}/continue/${encodeURIComponent(owner)}`, post({}))

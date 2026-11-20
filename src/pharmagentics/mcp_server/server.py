@@ -14,6 +14,7 @@ from __future__ import annotations
 import json
 import os
 import re
+from typing import Literal
 
 from mcp.server.mcpserver import MCPServer
 from mcp.server.mcpserver.exceptions import ToolError
@@ -33,7 +34,11 @@ AGENT_TOOLS = {
     # Briefing Driver Investigator: where did it move, and why?
     "driver_investigator": ("screen_territories", "territory_change", "check_access", "check_promotion",
                             "check_supply", "check_competitor", "competitor_status", "story_confidence"),
+    # Follow-ups (brief-006 slice 4): a new governed query an analyst may ask for.
+    "follow_up": ("split_change",),
 }
+SPLITS = {"plan": "plan_id", "specialty": "hcp_specialty", "channel": "payer_channel"}
+SMALL_CELL = 50  # weekly BXA TRx below which a split cell is noisy (brief-003 FR-015; cash cells of 36 to 49)
 _TERRITORIES = {k: v for k, v in q.TERRITORY_NAMES.items() if k != "NATIONAL"}
 _TOKEN = re.compile(r"\{c(\d+)\}")
 
@@ -46,6 +51,9 @@ class RunSession:
         self.legend = legend
         # Build 3's no-repeat ledger (brief-002 FR-016): off unless asked, so builds 1 and 2 are unchanged.
         self.no_repeat = os.environ.get("PHARMAGENTICS_MCP_NO_REPEAT") == "1" if no_repeat is None else no_repeat
+        # A follow-up session (brief-006): driver checks report their verdict only, without the investigation's
+        # story-so-far status, which a lone check would show as "Low, no driver yet" against a finished brief.
+        self.follow_up = os.environ.get("PHARMAGENTICS_MCP_FOLLOW_UP") == "1"
         self.seen: dict[tuple[str, str], str] = {}
         self.reg: Registry | None = None
         self.p: stages.Period | None = None
@@ -255,7 +263,43 @@ class RunSession:
 
     def _record(self, t: str, check: Check) -> str:
         self.checks.setdefault(t, {})[check.driver] = check
+        if self.follow_up:
+            return self._out(f"{q.name(t)}. {check.text}")
         return self._out(f"{q.name(t)}. {check.text}\n{self._status(t, closing=False)}")
+
+    def split_change(self, territory: str, by: str) -> str:
+        """A territory's change split by plan, specialty or channel: each cut's weekly BXA TRx in the period
+        against the weeks before, the largest moves first, small cells marked noisy (brief-003 FR-015)."""
+        self._log("split_change", territory=territory, by=by)
+        t = self._territory(territory)
+        if t is None:
+            return self._bad_territory(territory)
+        if by not in SPLITS:
+            return f"Unknown split {by!r}. Use one of: {', '.join(SPLITS)}."
+        if (withheld := self._withheld(t)):
+            return withheld
+        reg, W, B, col = self.reg, self.p.weeks, self.p.baseline, SPLITS[by]
+        if not B:
+            return "The release has no earlier weeks to compare with."
+        rows = reg.rows(f"select {col}, sum(trx) filter (where week_start in {q._dates(W)}) / {len(W)}.0, "
+                        f"sum(trx) filter (where week_start in {q._dates(B)}) / {len(B)}.0 from {q.RX} "
+                        f"where product_id = 'BXA' and territory_id = '{t}' and week_start in {q._dates(sorted(set(W) | set(B)))} "
+                        f"group by 1")
+        rows = sorted((r for r in rows if r[0] is not None), key=lambda r: -abs((r[1] or 0) - (r[2] or 0)))[:6]
+        lines = [f"{q.name(t)} BXA TRx by {by}, a week in these weeks against the weeks before (largest moves first):"]
+        for g, x, b in rows:
+            g = str(g).replace("'", "")
+            base = f"from {q.RX} where product_id = 'BXA' and territory_id = '{t}' and {col} = '{g}'"
+            now_sql = f"select coalesce(sum(trx), 0) / {len(W)}.0 {base} and week_start in {q._dates(W)}"
+            then_sql = f"select coalesce(sum(trx), 0) / {len(B)}.0 {base} and week_start in {q._dates(B)}"
+            now, then = (reg.claim("split_change", now_sql, "int", territory=t, by=by, cut=g),
+                         reg.claim("split_change", then_sql, "int", territory=t, by=by, cut=g))
+            change = reg.scalar(q.pct_change(now_sql, then_sql))
+            moved = (f", {stages.word(change)} {reg.claim('split_change', q.pct_change(now_sql, then_sql), 'pct1', territory=t, by=by, cut=g)}"
+                     if change is not None else "")
+            noisy = " (small cell: noisy, do not generalize from it)" if (b or 0) < SMALL_CELL else ""
+            lines.append(f"- {g}: {now} a week against {then} before{moved}{noisy}")
+        return self._out("\n".join(lines))
 
     def check_access(self, territory: str) -> str:
         return self._driver("check_access", territory, check_access, reference=False)
@@ -407,6 +451,11 @@ def build_server(db=DEFAULT_DB, legend: bool = False) -> MCPServer:
     async def competitor_status() -> str:
         """Metacora (competitor, launched 2026-03-02) as a continuing national story: weeks since launch, direction, basket shares."""
         return s.competitor_status()
+
+    @server.tool(**text)
+    async def split_change(territory: str, by: Literal["plan", "specialty", "channel"]) -> str:
+        """A territory's change split by "plan", "specialty" or "channel": each cut's weekly BXA TRx in these weeks against the weeks before, largest moves first; small cells are marked noisy."""
+        return s.split_change(territory, by)
 
     @server.tool(**text)
     async def story_confidence(territory: str) -> str:

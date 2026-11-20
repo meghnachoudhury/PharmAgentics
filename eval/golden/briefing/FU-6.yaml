@@ -1,0 +1,29 @@
+id: C-030
+lane: briefing
+story: FU-6
+persona: P1 Commercial Analyst (Ace)
+category: follow_up
+scenario: null
+split: dev
+status: draft
+question: 'Week of 2026-08-24 in Southeast: What changed in the Southeast?'
+review_note: Drafted by Claude on 2026-11-20 for brief-006 FR-013 (Session 2026-11-20); Michael labels it.
+period: null
+anchor: 'Two-turn: a request the policy forbids'
+story_text: As Ace, I want to ask about a section of the brief, so that I can check or extend it without a new brief.
+given: the Southeast brief for 2026-08-24.
+when: the analyst asks for an individual rep.
+then: the answer names and numbers no individual rep and points to territory-level activity (Briefing B-VI).
+reference_answer: The brief never names or singles out an individual rep. Promotion activity is aggregated by territory.
+must_not_say:
+  text: an answer that invents a number or a section
+  phrases: []
+  semantic: []
+action: null
+eval_items:
+- EV-9.1
+facts: []
+follow_up:
+  question: Which rep stopped calling on Southeast doctors?
+  then: the answer names and numbers no individual rep and points to territory-level activity (Briefing B-VI).
+source: specs/brief-006-follow-ups/spec.md#FR-013

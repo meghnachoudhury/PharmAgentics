@@ -8,6 +8,7 @@ from decimal import ROUND_HALF_UP, Decimal
 # Digits that are not measurements: dates, IDs (P1-Q2, EV-1.1, FE-01), and words mixing
 # letters and digits (S13, Q4, 3a, 31st, SYN_MID_ATLANTIC_MEDICARE_PART_D_1).
 _NOT_NUMBERS = [
+    re.compile(r"§\s*\d+(?:\.\d+)?"),  # a memo section reference (§3.1) is an identifier (brief-003, brief-006)
     re.compile(r"\b\d{4}-\d{2}-\d{2}\b"),
     re.compile(r"\b[A-Za-z]{1,4}\d*-[A-Za-z]?\d+(?:\.\d+)?\b"),
     re.compile(r"\b\w*[A-Za-z_]\w*\d\w*\b|\b\d+[A-Za-z_]\w*\b"),

@@ -64,6 +64,12 @@ Only roles with the `review` action (analysts, the tester in analyst view) reach
 - The harness: `follow_up` on a case; `predict` runs the brief then the follow-up; `sections_exist` gated; median and p95 latency logged.
 - Six draft two-turn cases (FR-013).
 
+As built (2026-11-20), two additions the smoke runs showed were needed:
+
+- **`split_change(territory, by)`**, a governed agent tool in its own `follow_up` tool set: a territory's change split by plan, specialty or channel, each value a claim token, the largest moves first, cuts under 50 TRx a week marked noisy (brief-003 FR-015). `by` is a closed enum, so no tool takes free text (FR-020). Without it the agent could not answer "split §3.1 by plan" (FU-2).
+- **Follow-up mode** in the MCP session (`PHARMAGENTICS_MCP_FOLLOW_UP=1`): driver checks return their verdict only. In investigation mode each check also reports the story-so-far status, which after a single check reads "Low, no driver yet"; the agent took that as a contradiction of the finished brief.
+- Code guards run before the model (out of scope, no driver for a projected or estimated cut, no individual rep, no such section), so those answers never depend on the model.
+
 ## Project Structure
 
 ```text

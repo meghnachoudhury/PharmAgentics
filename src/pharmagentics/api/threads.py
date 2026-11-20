@@ -10,15 +10,18 @@ from __future__ import annotations
 
 import hashlib
 import json
+import sys
 import time
 from datetime import datetime, timedelta, timezone
+
+from typing import Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Response
 from pydantic import BaseModel, Field
 
 from pharmagentics.tools import followup
 
-from . import rbac, store
+from . import agent_host, rbac, store
 
 router = APIRouter(prefix="/api/briefing/{brief_id}/thread", tags=["threads"])
 MAX_TURNS = 20  # FR-008
@@ -29,6 +32,19 @@ _purged = False
 class Ask(BaseModel):
     question: str = Field(min_length=1, max_length=500)
     section: str | None = Field(default=None, pattern=r"^\d(\.\d+)?$")
+    engine: Literal["scripted", "agent"] = "scripted"  # agent: Claude Haiku in the app (slice 4, core-007 FR-032)
+
+
+def _agent_answer(result: dict, question: str, section: str | None) -> dict:
+    """One Haiku turn (brief-006 slice 4); only when the app runs the agent itself."""
+    spec = agent_host.model()
+    if not spec:
+        raise HTTPException(status_code=409, detail="The agent is not available here; ask the scripted engine.")
+    if str(agent_host.AGENTS_DIR) not in sys.path:
+        sys.path.insert(0, str(agent_host.AGENTS_DIR))
+    from briefing_agent import followup as agent_followup
+
+    return agent_followup.answer(result, question, section, spec)
 
 
 def owner_of(p: rbac.Principal) -> str:
@@ -110,7 +126,14 @@ def ask(brief_id: str, body: Ask, response: Response, who=Depends(analyst)) -> d
     if len(thread["turns"]) >= MAX_TURNS:
         raise HTTPException(status_code=409, detail=f"This thread is full ({MAX_TURNS} follow-ups). Start a new thread.")
     started = time.perf_counter()
-    turn = followup.answer(record["result"], body.question, body.section)
+    if body.engine == "agent":
+        turn = _agent_answer(record["result"], body.question, body.section)
+        if turn.get("error") == "timeout":  # FR-010: shown and logged, no answer text kept
+            store.record_event("follow_up", **p.tag(), brief_id=brief_id, rule="timeout", engine="agent",
+                               seconds=turn["seconds"])
+            raise HTTPException(status_code=504, detail=turn["answer"])
+    else:
+        turn = followup.answer(record["result"], body.question, body.section)
     turn.update(n=len(thread["turns"]) + 1, question=body.question, section=body.section, at=store.now(),
                 seconds=round(time.perf_counter() - started, 3))
     thread["turns"].append(turn)

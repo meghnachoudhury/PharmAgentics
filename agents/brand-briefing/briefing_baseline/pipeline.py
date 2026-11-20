@@ -52,6 +52,16 @@ def answer(question: str, db=DEFAULT_DB) -> dict:
         reg.close()
 
 
+def scope(question: str, db=DEFAULT_DB) -> dict:
+    """The brief's scope as the API stores it (brand, territory, week): what a follow-up is in or out of."""
+    reg = Registry(db)
+    try:
+        p = stages.resolve(reg, question)
+    finally:
+        reg.close()
+    return {"brand_id": "BXA", "territory_id": p.focus or "NATIONAL", "week_start": p.requested[-1] if p.requested else ""}
+
+
 def triage(question: str, db=DEFAULT_DB) -> dict:
     """Stages 1 to 3, then the code triage plan for P1 (brief-002 US8). Its claims are its own run's."""
     from .triage import build_plan

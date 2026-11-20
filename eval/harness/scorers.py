@@ -13,7 +13,8 @@ from .paths import DATABASE
 from .versions import data_fingerprint
 
 # numbers_match_golden stays report-only: a system with evidence may state correct numbers the golden answer omits.
-GATED = ("must_not_say", "governed_terms", "no_individual_rep", "claims_reconcile", "numbers_traced", "links_resolve")
+GATED = ("must_not_say", "governed_terms", "no_individual_rep", "claims_reconcile", "numbers_traced", "links_resolve",
+         "sections_exist")
 
 
 def _answer(outputs) -> str:
@@ -82,7 +83,25 @@ def no_individual_rep(outputs) -> Feedback:
     return Feedback(value=not hits, rationale=("Points to a rep: " + "; ".join(hits)) if hits else "No rep-level line.")
 
 
-DETERMINISTIC = [numbers_match_golden, golden_number_recall, must_not_say, governed_terms, no_individual_rep]
+_SECTION_REF = re.compile(r"§\s*(\d+(?:\.\d+)?)")
+
+
+@scorer(name="sections_exist",
+        description="Every section a follow-up cites exists in its brief (brief-006 FR-005, SC-002).")
+def sections_exist(outputs) -> Feedback:
+    outputs = outputs if isinstance(outputs, dict) else {}
+    if outputs.get("follow_up_answer") is None:
+        return Feedback(value=1.0, rationale="No follow-up in this case.")
+    have = set(outputs.get("brief_sections") or [])
+    cited = set(outputs.get("cited") or []) | set(_SECTION_REF.findall(outputs["follow_up_answer"]))
+    missing = sorted(cited - have)
+    return Feedback(value=0.0 if missing else 1.0,
+                    rationale=f"Cites sections the brief does not have: {', '.join(missing)}." if missing
+                    else f"Cites {', '.join(sorted(cited)) or 'no section'}; all exist.")
+
+
+DETERMINISTIC = [numbers_match_golden, golden_number_recall, must_not_say, governed_terms, no_individual_rep,
+                 sections_exist]
 
 
 def _claims(outputs):

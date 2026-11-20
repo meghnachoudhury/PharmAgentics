@@ -16,9 +16,11 @@
 
 ## Slice 4: Haiku follow-ups and two-turn cases
 
-- [ ] T010 [US1] Agent follow-up in agents/brand-briefing/briefing_agent/ (one agent, both tool sets, sections as context, 60 s, token checks and one revision)
-- [ ] T011 [US5] Timeout path: "Didn't finish in time; nothing was guessed", recorded as a run error, no answer stored
-- [ ] T012 [US1] Threads call the agent when asked (engine choice in the bar)
-- [ ] T013 Harness: `follow_up` in cases, two-turn predict, `sections_exist` gated check, latency median and p95 (eval/harness/)
-- [ ] T014 Six draft two-turn golden cases (FR-013) with SQL facts
-- [ ] T015 Gate both engines; commit by path
+- [X] T010 [US1] Agent follow-up in agents/brand-briefing/briefing_agent/ (one agent, both tool sets, sections as context, 60 s, token checks and one revision)
+- [X] T011 [US5] Timeout path: "Didn't finish in time; nothing was guessed", recorded as a run error, no answer stored
+- [X] T012 [US1] Threads call the agent when asked (engine choice in the bar)
+- [X] T013 Harness: `follow_up` in cases, two-turn predict, `sections_exist` gated check, latency median and p95 (eval/harness/)
+- [X] T014 Six draft two-turn golden cases (FR-013) with SQL facts
+- [X] T015 Gate both engines; commit by path
+
+- Slice 4 gate (2026-11-20): 30 Briefing cases (24 plus FU-1 to FU-6). Scripted `88e13b759f5c` against `060132b35cc1`, exit 0; agent `66920e2b0f8a` (four workers) against `43c24bc0a892`, exit 0. Every gated check 1.000 including the new `sections_exist`; no run errors. Agent follow-up turns: p50 2.5 s, p95 19.7 s (target under 30 s, SC-005); `needed_revision` 0.133 (4 of 30 cases). Full test suite: 589 passed after the integrity test counted 48 cases.

@@ -855,7 +855,7 @@ function AnalystApp({me}: {me: Me}) {
     </div>}
     {view!=="approved" && <div className="workspace-content"><MessageBar briefId={view==="result" && result ? result.brief_id : null} pending={pending} chip={chip} onClearChip={()=>setChip(null)}
       canGenerate={view==="home" && agent?.configured===true} onGenerate={q=>{setEngine("agent");setAsk(q);setAutoAsk(true)}}
-      onOfferScope={o=>{ if(o.territory) setTerritory(o.territory); if(o.week) setWeek(o.week); setView("home") }} onOpenEvidence={id=>setBarEvidence({id})}/></div>}
+      onOfferScope={o=>{ if(o.territory) setTerritory(o.territory); if(o.week) setWeek(o.week); setView("home") }} onOpenEvidence={id=>setBarEvidence({id})} agentAvailable={!!agent?.builtin}/></div>}
   </Shell>
 }
 

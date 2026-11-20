@@ -26,6 +26,15 @@ class MustNotSay(BaseModel):
     semantic: list[str] = []  # quoted but context-dependent ("... without the plan"); judge only
 
 
+class FollowUp(BaseModel):
+    """A second turn on the brief the first question produced (brief-006 FR-013)."""
+
+    question: str
+    section: str | None = None  # the section an analyst pinned ("3.1"), if any
+    then: str
+    must_not_say: MustNotSay | None = None
+
+
 class Case(BaseModel):
     id: str
     lane: Lane
@@ -48,16 +57,23 @@ class Case(BaseModel):
     action: str | None = None
     eval_items: list[str]
     facts: list[Fact] = []
+    follow_up: FollowUp | None = None  # two-turn cases (brief-006 FR-013)
     source: str
+
+    def inputs(self) -> dict:
+        """What the system under test receives: the question, and the follow-up for a two-turn case."""
+        return {"question": self.question, "follow_up": self.follow_up.question if self.follow_up else None,
+                "section": self.follow_up.section if self.follow_up else None}
 
     def expectations(self) -> dict:
         """What the scorers compare against. Only `expected_response` reaches an LLM judge."""
+        later = self.follow_up.must_not_say.phrases if self.follow_up and self.follow_up.must_not_say else []
         return {
             "expected_response": self.reference_answer,
             "case_id": self.id,
             "story": self.story,
             "lane": self.lane,
-            "must_not_say": self.must_not_say.phrases,
+            "must_not_say": self.must_not_say.phrases + later,
             "golden_numbers": [f.value for f in self.facts if isinstance(f.value, (int, float))],
             "eval_items": self.eval_items,
         }

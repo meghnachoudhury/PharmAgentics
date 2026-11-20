@@ -29,7 +29,7 @@ function TurnView({turn, briefId, mine, onCite, onOpenEvidence, onOfferScope}: {
   </li>
 }
 
-export function MessageBar({briefId, pending, chip, onClearChip, canGenerate, onGenerate, onOfferScope, onOpenEvidence}: {
+export function MessageBar({briefId, pending, chip, onClearChip, canGenerate, onGenerate, onOfferScope, onOpenEvidence, agentAvailable = false}: {
   briefId: string | null
   pending: boolean
   chip: Chip | null
@@ -38,6 +38,7 @@ export function MessageBar({briefId, pending, chip, onClearChip, canGenerate, on
   onGenerate: (question: string) => void
   onOfferScope?: (o: NonNullable<Turn["offer"]>) => void
   onOpenEvidence: (evidenceId: string) => void
+  agentAvailable?: boolean  // the app runs the agent itself (brief-006 slice 4)
 }) {
   const [thread, setThread] = useState<Thread | null>(null)
   const [text, setText] = useState("")
@@ -46,6 +47,7 @@ export function MessageBar({briefId, pending, chip, onClearChip, canGenerate, on
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
+  const [engine, setEngine] = useState<"scripted" | "agent">("scripted")
   const input = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
@@ -60,7 +62,7 @@ export function MessageBar({briefId, pending, chip, onClearChip, canGenerate, on
   const ask = async (q: string) => {
     if (!briefId) return
     setBusy(true); setError(null)
-    try { setThread(await askThread(briefId, q, chip?.number)); setOpen(true); setText(""); onClearChip() }
+    try { setThread(await askThread(briefId, q, chip?.number, agentAvailable ? engine : "scripted")); setOpen(true); setText(""); onClearChip() }
     catch (e) { setError(message(e)) }  // the draft stays in the bar
     finally { setBusy(false) }
   }
@@ -112,7 +114,10 @@ export function MessageBar({briefId, pending, chip, onClearChip, canGenerate, on
         onChange={e => setText(e.target.value)} onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(text) } }}
         placeholder={full ? "This thread is full. Start a new brief to ask more." : briefId ? (chip ? `Ask about §${chip.number}…` : "Ask a follow-up about this brief…") : "Ask a question to start an agent brief for the scope above…"}
         className="max-h-32 min-h-[2.25rem] flex-1 resize-none bg-transparent py-1.5 text-sm text-ink placeholder:text-muted focus:outline-none"/>
-      <button type="submit" disabled={busy || full || !text.trim()} className="rounded-xl bg-navy px-3 py-1.5 text-sm font-medium text-onaccent hover:bg-navyhover disabled:opacity-40">{busy ? "Asking…" : "Send"}</button>
+      {briefId && agentAvailable && <label className="mb-1 shrink-0 text-[11px] text-muted"><span className="sr-only">Answer with</span>
+        <select value={engine} onChange={e => setEngine(e.target.value as "scripted" | "agent")} className="rounded border border-rule bg-paper px-1.5 py-1 text-[11px] text-ink">
+          <option value="scripted">Scripted</option><option value="agent">Agent</option></select></label>}
+      <button type="submit" disabled={busy || full || !text.trim()} className="rounded-xl bg-navy px-3 py-1.5 text-sm font-medium text-onaccent hover:bg-navyhover disabled:opacity-40">{busy ? (engine === "agent" && agentAvailable ? "Agent working…" : "Asking…") : "Send"}</button>
     </form>}
   </div>
 }
