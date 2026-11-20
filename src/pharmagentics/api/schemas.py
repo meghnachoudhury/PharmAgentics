@@ -11,6 +11,13 @@ Territory = Literal[
     "GREAT_LAKES", "MID_ATLANTIC", "MOUNTAIN", "NEW_ENGLAND",
     "NORTHWEST", "PACIFIC", "SOUTHEAST", "SOUTH_CENTRAL", "NATIONAL",
 ]
+Brand = Literal["BXA", "BXC"]
+
+
+class BrandCapability(BaseModel):
+    id: Brand
+    name: str
+    engines: list[Literal["scripted", "agent"]]
 
 
 class TriageDecision(BaseModel):
@@ -25,7 +32,7 @@ class BriefingQuery(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     intent: Literal["weekly_brief"] = "weekly_brief"
-    brand_id: Literal["BXA"] = "BXA"
+    brand_id: Brand = "BXA"
     territory_id: Territory = "PACIFIC"
     week_start: date
     question: str = Field(default="What changed this week?", min_length=3, max_length=300)
@@ -60,7 +67,7 @@ class BriefingResult(BaseModel):
     engine: Literal["scripted", "agent"] = "scripted"  # agent: posted by the owner's local worker (core-007 FR-028)
     system: str
     question: str
-    brand_id: Literal["BXA"] = "BXA"
+    brand_id: Brand = "BXA"
     territory_id: Territory
     week_start: date
     answer: str
@@ -79,10 +86,12 @@ class BriefingResult(BaseModel):
 class ReleaseContext(BaseModel):
     first_week: date
     latest_week: date
-    brand_id: Literal["BXA"] = "BXA"
+    brand_id: Brand | None = "BXA"
     territory_ids: list[str]
     available_weeks: list[date] = Field(default_factory=list)
-    product_ids: list[Literal["BXA"]] = Field(default_factory=lambda: ["BXA"])
+    product_ids: list[Brand] = Field(default_factory=lambda: ["BXA"])
+    brands: list[BrandCapability] = Field(default_factory=lambda: [
+        BrandCapability(id="BXA", name="Cardiovela", engines=["scripted", "agent"])])
     supported_intents: list[Literal["weekly_brief"]] = Field(default_factory=lambda: ["weekly_brief"])
     engine: Literal["scripted"] = "scripted"
 

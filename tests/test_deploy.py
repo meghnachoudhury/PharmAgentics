@@ -49,17 +49,17 @@ def test_each_shared_password_belongs_to_its_realm_account():
         assert users[account]["credentials"][0]["value"] == "${" + key + "}"
 
 
-def test_the_realm_has_exactly_the_five_logins_and_the_tester_holds_only_the_test_role():
+def test_the_realm_has_the_uat_logins_and_independent_tester_grants():
     realm = json.loads((ROOT / "deploy" / "keycloak" / "realm-pharmagentics.json").read_text(encoding="utf-8"))
     users = {u["username"]: u for u in realm["users"]}
-    assert set(users) == set(SHARED_LOGINS)
-    assert users["uat-tester"]["realmRoles"] == ["tester"]
+    assert set(users) == set(SHARED_LOGINS) | {"uat-briefing-analyst-multibrand", "uat-briefing-director-multibrand"}
+    assert users["uat-tester"]["realmRoles"] == ["tester", "brand-bxa", "brand-bxc"]
 
 
 def test_realm_roles_match_the_policy():
     realm = json.loads((ROOT / "deploy" / "keycloak" / "realm-pharmagentics.json").read_text(encoding="utf-8"))
     policy = json.loads((ROOT / "src" / "pharmagentics" / "api" / "roles.json").read_text(encoding="utf-8"))
-    assert {r["name"] for r in realm["roles"]["realm"]} == set(policy["roles"]) | {policy["test_role"]["name"]}
+    assert {r["name"] for r in realm["roles"]["realm"]} == set(policy["roles"]) | {policy["test_role"]["name"], "brand-bxa", "brand-bxc"}
 
 
 def test_render_realm_fills_every_placeholder():

@@ -21,7 +21,7 @@ from typing import Any, Literal
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
-from . import forecast_store, rbac, store, views
+from . import brand_access, forecast_store, rbac, store, views
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/feedback", tags=["feedback"])
@@ -300,7 +300,7 @@ def _answer(p: rbac.Principal, lane: str, ref: str, view: str) -> dict:
         from . import threads
 
         bid, n = ref.split(":t")
-        record = store.get_brief(bid)
+        record = brand_access.brief_for(p, role, bid)
         shown = threads.turn_shown(p, bid, int(n)) if record and "review" in role.actions else None
         if shown is None:
             raise HTTPException(status_code=404, detail="No such follow-up.")
@@ -309,15 +309,14 @@ def _answer(p: rbac.Principal, lane: str, ref: str, view: str) -> dict:
                 "engine": "scripted", "system": r.get("system"), "data_version": r.get("data_version"),
                 "review_status": record["review_status"], "shown": shown}
     if lane == "briefing":
-        record = store.get_brief(ref)
-        if record is None or ("review" not in role.actions and record["review_status"] != "approved"):
-            raise HTTPException(status_code=404, detail="No such briefing.")
+        record = brand_access.brief_for(p, role, ref)
         r = record["result"]
         shown = r.get("answer") or ""
         return {"scope": {k: r.get(k) for k in ("brand_id", "territory_id", "week_start", "question")},
                 "engine": r.get("engine"), "system": r.get("system"), "data_version": r.get("data_version"),
                 "review_status": record["review_status"],
                 "shown": views.executive_summary(shown) if view == "leadership" else shown}
+    brand_access.require_brand(p, "BXA")
     record = forecast_store.get(ref)
     if record is None or ("run" not in role.actions and record["review_status"] == forecast_store.NOT_SUBMITTED):
         raise HTTPException(status_code=404, detail="No such Forecast run.")

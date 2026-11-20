@@ -17,18 +17,21 @@ from urllib.parse import urlencode
 from fastapi import APIRouter, Form, HTTPException, Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 
-from . import rbac
+from . import brand_access, rbac
 
 router = APIRouter()
 logger = logging.getLogger(__name__)
 
 DEV_USERS = {
-    "dev-analyst": ("Dev Commercial Analyst", ["briefing-analyst"]),
-    "dev-director": ("Dev Brand Director", ["briefing-director"]),
-    "dev-forecast-analyst": ("Dev Commercial Analyst", ["forecast-analyst"]),
-    "dev-forecast-manager": ("Dev Brand Manager", ["forecast-manager"]),
+    "dev-analyst": ("Dev Commercial Analyst · BXA", ["briefing-analyst", "brand-bxa"]),
+    "dev-director": ("Dev Brand Director · BXA", ["briefing-director", "brand-bxa"]),
+    "dev-analyst-multibrand": ("Dev Commercial Analyst · BXA and BXC", ["briefing-analyst", "brand-bxa", "brand-bxc"]),
+    "dev-director-multibrand": ("Dev Brand Director · BXA and BXC", ["briefing-director", "brand-bxa", "brand-bxc"]),
+    "dev-analyst-no-brands": ("Dev Commercial Analyst · no brands", ["briefing-analyst"]),
+    "dev-forecast-analyst": ("Dev Forecast Analyst", ["forecast-analyst", "brand-bxa"]),
+    "dev-forecast-manager": ("Dev Brand Manager", ["forecast-manager", "brand-bxa"]),
     # Like uat-tester in the Keycloak realm: both lanes, switching between the analyst and the leadership view.
-    "dev-tester": ("Dev test view", ["tester"]),
+    "dev-tester": ("Dev test view", ["tester", "brand-bxa", "brand-bxc"]),
     "dev-norole": ("Dev user with no role", []),
 }
 
@@ -69,7 +72,8 @@ def _client():
 def _set_user(request: Request, sub: str, name: str, roles: list[str]) -> None:
     known = rbac.known_role_names()
     request.session.clear()
-    request.session["user"] = {"sub": sub, "name": name, "roles": [r for r in roles if r in known]}
+    request.session["user"] = {"sub": sub, "name": name, "roles": [r for r in roles if r in known],
+                               "brand_grants": [r for r in roles if r in brand_access.GRANTS]}
 
 
 @router.get("/auth/login", include_in_schema=False)

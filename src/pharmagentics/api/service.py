@@ -11,6 +11,7 @@ from datetime import date
 from pathlib import Path
 
 from .schemas import BriefingQuery, BriefingResult, ReleaseContext
+from pharmagentics.tools.brands import BRIEFING_ENGINES, PRODUCTS
 
 ROOT = Path(__file__).resolve().parents[3]
 BRIEFING_DIR = ROOT / "agents" / "brand-briefing"
@@ -58,16 +59,15 @@ def release_context() -> ReleaseContext:
     available_territories = [row[0] for row in territory_rows if row[0] in TERRITORIES and row[0] != "NATIONAL"]
     if not available_territories:
         raise MissingDatabase("No supported territories found in the data release.")
-    # The scripted engine is specifically BXA-only, even though the synthetic
-    # product dimension includes competitors. Never advertise the competitors
-    # as selectable brands without corresponding Briefing engine support.
-    supported_products = [row[0] for row in product_rows if row[0] == "BXA"]
+    # Release membership and engine support are distinct from the caller's grants.
+    supported_products = [row[0] for row in product_rows if row[0] in BRIEFING_ENGINES]
     if not supported_products:
         raise MissingDatabase("The scripted Briefing brand is missing from the synthetic release.")
     return ReleaseContext(
         first_week=weeks[0], latest_week=weeks[-1],
         territory_ids=available_territories,
         available_weeks=weeks, product_ids=supported_products,
+        brands=[{"id": b, "name": PRODUCTS[b], "engines": list(BRIEFING_ENGINES[b])} for b in supported_products],
     )
 
 
@@ -104,6 +104,8 @@ class BadDecision(ValueError):
 
 def _check_scope(request: BriefingQuery) -> None:
     bounds = release_context()
+    if request.brand_id not in bounds.product_ids:
+        raise OutsideRelease("Brand not present in the supported synthetic data release.")
     if request.week_start not in bounds.available_weeks:
         raise OutsideRelease(
             f"Requested week is outside the synthetic data release "
@@ -128,12 +130,19 @@ def _traceable(claims: list, evidence: list) -> str | None:
     return next(iter(versions), None)
 
 
+def _matching_brand(expected: str, result: dict) -> None:
+    # Existing BXA workers predate the explicit brand field; BXC must always name it.
+    if result.get("brand_id", "BXA") != expected:
+        raise RuntimeError("The engine returned a different brand from the request.")
+
+
 def run_triage(request: BriefingQuery) -> dict:
     """Stages 1 to 3 and the code triage plan for P1 (brief-002 US8)."""
     _check_scope(request)
     from briefing_baseline.pipeline import triage
 
-    plan = triage(normalize_question(request), db=DB)
+    plan = triage(normalize_question(request), db=DB, brand_id=request.brand_id)
+    _matching_brand(request.brand_id, plan)
     _traceable(plan["claims"], plan["evidence"])
     plan.update(brand_id=request.brand_id, territory_id=request.territory_id, week_start=request.week_start.isoformat())
     return plan
@@ -146,18 +155,19 @@ def run_briefing(request: BriefingQuery) -> BriefingResult:
     if request.triage is None:
         from briefing_baseline.pipeline import answer
 
-        raw = answer(question, db=DB)
+        raw = answer(question, db=DB, brand_id=request.brand_id)
     else:
         from briefing_baseline import pipeline
 
         try:
-            out = pipeline.run_with_plan(question, request.triage.model_dump(), db=DB)
+            out = pipeline.run_with_plan(question, request.triage.model_dump(), db=DB, brand_id=request.brand_id)
         except pipeline.StalePlan as exc:
             raise StalePlan(str(exc)) from exc
         except ValueError as exc:
             raise BadDecision(str(exc)) from exc
         raw, extra = out["envelope"], {"triage": out["triage"], "flow": out["flow"]}
 
+    _matching_brand(request.brand_id, raw)
     claims = raw.get("claims", [])
     evidence = raw.get("evidence", [])
     return BriefingResult(
@@ -184,7 +194,11 @@ def untraced_numbers(answer: str, claims: list[dict], data_version: str | None) 
 
 def accept_agent_brief(query: BriefingQuery, posted: dict) -> BriefingResult:
     """A brief posted by the worker, admitted only if it is traceable on this app's data version (FR-027)."""
+    from .brand_access import require_engine
+
+    require_engine(query.brand_id, "agent")
     env = posted.get("envelope") or {}
+    _matching_brand(query.brand_id, env)
     claims, evidence = env.get("claims") or [], env.get("evidence") or []
     version = _traceable(claims, evidence)
     if version != current_data_version():

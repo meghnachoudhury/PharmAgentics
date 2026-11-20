@@ -28,7 +28,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.sessions import SessionMiddleware
 
-from . import agent_host, auth, classification, cloud, feedback, forecast, jobs, overview, rbac, service, store, telemetry, views
+from . import agent_host, auth, brand_access, classification, cloud, feedback, forecast, jobs, overview, rbac, service, store, telemetry, views
 from .schemas import (AgentJobRequest, BriefingQuery, InsightMark, ReleaseContext, ReviewRequest, ViewAs, WorkerPoll,
                       WorkerResult)
 
@@ -111,8 +111,9 @@ def me(response: Response, p: rbac.Principal = Depends(rbac.require_user)) -> di
     """Who is signed in and what they may open (FR-008). Only the user's own details."""
     _no_store(response)
     lanes = {r.lane: {"role": r.name, "persona": r.persona, "label": r.label, "views": list(r.views),
-                      "actions": list(r.actions), "available": rbac.lane_available(r.lane)} for r in p.lanes}
-    return {"name": p.name, "auth_mode": auth.mode(), "lanes": lanes,
+                      "actions": list(r.actions), "available": rbac.lane_available(r.lane)
+                      and (r.lane != "forecast" or "BXA" in brand_access.allowed_brands(p))} for r in p.lanes}
+    return {"name": p.name, "auth_mode": auth.mode(), "lanes": lanes, "brand_ids": sorted(brand_access.allowed_brands(p)),
             "tester": p.is_tester, "view_as": p.view_as if p.is_tester else None}
 
 
@@ -126,9 +127,11 @@ def view_as(body: ViewAs, request: Request, response: Response, p: rbac.Principa
 
 
 @app.get("/api/briefing/context", tags=["briefing"], response_model=ReleaseContext)
-async def context(who=Briefing) -> ReleaseContext:
+async def context(response: Response, who=Briefing) -> ReleaseContext:
+    _no_store(response)
     try:
-        return await run_in_threadpool(service.release_context)
+        release = await run_in_threadpool(service.release_context)
+        return brand_access.context(release, who[0])
     except service.MissingDatabase as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     except Exception as exc:
@@ -141,6 +144,8 @@ async def briefing_triage(payload: BriefingQuery, response: Response, who=Briefi
     """Stages 1 to 3 and the code triage plan the analyst reviews before investigation (brief-002 US8)."""
     p, role = who
     rbac.allow(role, "run")
+    brand_access.require_brand(p, payload.brand_id)
+    brand_access.require_engine(payload.brand_id, "scripted")
     _no_store(response)
     started = time.perf_counter()
     try:
@@ -161,6 +166,8 @@ async def briefing_triage(payload: BriefingQuery, response: Response, who=Briefi
 async def briefing_query(payload: BriefingQuery, response: Response, who=Briefing) -> dict:
     p, role = who
     rbac.allow(role, "run")
+    brand_access.require_brand(p, payload.brand_id)
+    brand_access.require_engine(payload.brand_id, "scripted")
     _no_store(response)
     started = time.perf_counter()
     try:
@@ -186,12 +193,12 @@ async def briefing_query(payload: BriefingQuery, response: Response, who=Briefin
 @app.get("/api/briefing/published", tags=["briefing"])
 async def published(response: Response, who=Briefing) -> list[dict]:
     """Analyst-approved briefs on the current data version (FR-009), as leadership summaries' headers."""
-    _p, role = who
+    p, role = who
     rbac.allow(role, "read")
     _no_store(response)
     version = await run_in_threadpool(service.current_data_version)
-    return [{k: views.leadership(r)[k] for k in ("brief_id", "week_start", "territory_id", "engine", "reviewed_at", "abstained")}
-            for r in store.approved(version)]
+    return [{k: views.leadership(r)[k] for k in ("brief_id", "brand_id", "week_start", "territory_id", "engine", "reviewed_at", "abstained")}
+            for r in store.approved(version, brand_access.allowed_brands(p))]
 
 
 @app.get("/api/briefing/{brief_id}", tags=["briefing"])
@@ -200,10 +207,7 @@ async def open_brief(brief_id: str, response: Response, view: str | None = Query
     rbac.allow(role, "read")
     _no_store(response)
     chosen = rbac.view_for(role, view)
-    record = store.get_brief(brief_id)
-    # A leader sees only approved briefs; anything else is "not found", so its existence is not disclosed.
-    if record is None or ("review" not in role.actions and record["review_status"] != "approved"):
-        raise HTTPException(status_code=404, detail="No such briefing.")
+    record = brand_access.brief_for(p, role, brief_id)
     store.record_event("opened", **_who(p, role), brief_id=brief_id, view=chosen)
     return views.analyst(record) if chosen == rbac.ANALYST else views.leadership(record)
 
@@ -213,6 +217,7 @@ async def review(brief_id: str, decision: ReviewRequest, response: Response, who
     p, role = who
     rbac.allow(role, "review")
     _no_store(response)
+    brand_access.brief_for(p, role, brief_id)
     if decision.decision == "rejected" and not decision.reason:
         raise HTTPException(status_code=422, detail="A rejection needs a reason.")
     try:
@@ -227,13 +232,14 @@ async def review(brief_id: str, decision: ReviewRequest, response: Response, who
 async def insight(mark: InsightMark, who=Briefing) -> Response:
     p, role = who
     rbac.view_for(role, mark.view)
+    brand_access.brief_for(p, role, mark.brief_id)
     store.record_event("insight", **_who(p, role), brief_id=mark.brief_id, view=mark.view)
     return Response(status_code=204)
 
 
 # --- Agent jobs, run by the owner's local worker (core-007 FR-028; brief-002 Phase B) -----------------
 
-def _job_view(job: dict) -> dict:
+def _job_view(job: dict, p: rbac.Principal, role: rbac.Role) -> dict:
     out = {k: job[k] for k in ("id", "kind", "status", "created_at", "started_at", "finished_at", "error")}
     worker = job.get("worker")
     out["host_kind"] = None
@@ -242,8 +248,8 @@ def _job_view(job: dict) -> dict:
     if job["status"] == "done" and job["kind"] == "triage":
         out["result"] = job["result"]
     elif job["status"] == "done" and job["kind"] == "brief":
-        record = store.get_brief(job["result"]["brief_id"])
-        out["result"] = views.analyst(record) if record else None
+        record = brand_access.brief_for(p, role, job["result"]["brief_id"])
+        out["result"] = views.analyst(record)
     return out
 
 
@@ -266,6 +272,8 @@ def agent_status(response: Response, who=Briefing) -> dict:
 async def agent_submit(req: AgentJobRequest, response: Response, who=Briefing) -> dict:
     p, role = who
     rbac.allow(role, "run")
+    brand_access.require_brand(p, req.query.brand_id)
+    brand_access.require_engine(req.query.brand_id, "agent")
     _no_store(response)
     try:
         await run_in_threadpool(service._check_scope, req.query)
@@ -273,9 +281,12 @@ async def agent_submit(req: AgentJobRequest, response: Response, who=Briefing) -
         raise HTTPException(status_code=400, detail=str(exc)) from exc
     payload = {"query": req.query.model_dump(mode="json"), "question": service.normalize_question(req.query)}
     if req.kind == "brief":
-        plan_job = jobs.get(req.triage_job or "")
+        plan_job = brand_access.job_for(p, req.triage_job) if req.triage_job else None
         if plan_job is None or plan_job["kind"] != "triage" or plan_job["status"] != "done":
             raise HTTPException(status_code=400, detail="A brief job needs a finished triage job.")
+        original = BriefingQuery.model_validate(plan_job["payload"]["query"])
+        if (original.brand_id != req.query.brand_id or service.normalize_question(original) != service.normalize_question(req.query)):
+            raise HTTPException(status_code=409, detail="The triage job belongs to a different scope.")
         plan = plan_job["result"]
         if req.decision is None or req.decision.plan_id != plan["plan_id"]:
             raise HTTPException(status_code=409, detail="The decision is not for that triage plan; review it again.")
@@ -286,20 +297,18 @@ async def agent_submit(req: AgentJobRequest, response: Response, who=Briefing) -
     job = jobs.submit(req.kind, payload, by=rbac.pseudonym(p.sub))
     store.record_event("agent_job", **_who(p, role), job_id=job["id"], job_kind=req.kind)
     await run_in_threadpool(_wake_cloud_host)
-    return _job_view(job)
+    return _job_view(job, p, role)
 
 
 @app.get("/api/agent/jobs/{job_id}", tags=["briefing"])
 def agent_job(job_id: str, response: Response, who=Briefing) -> dict:
-    _p, role = who
+    p, role = who
     rbac.allow(role, "run")
     _no_store(response)
-    job = jobs.get(job_id)
-    if job is None:
-        raise HTTPException(status_code=404, detail="No such job.")
+    job = brand_access.job_for(p, job_id)
     if job["status"] == "queued":
         _wake_cloud_host()  # a poll is also the retry if the first start failed or the host went away
-    return _job_view(job)
+    return _job_view(job, p, role)
 
 
 def _worker(authorization: str | None = Header(default=None)) -> None:
@@ -343,8 +352,10 @@ def accept_result(job_id: str, ok: bool, result: dict | None, error: str | None)
         return {"status": "failed"}
     query = BriefingQuery.model_validate(job["payload"]["query"])
     try:
+        brand_access.require_engine(query.brand_id, "agent")
         if job["kind"] == "triage":
             plan = result or {}
+            service._matching_brand(query.brand_id, plan)
             if plan.get("state") != "OUT_OF_SCOPE":
                 service._traceable(plan.get("claims", []), plan.get("evidence", []))
             plan.update(brand_id=query.brand_id, territory_id=query.territory_id, week_start=query.week_start.isoformat())

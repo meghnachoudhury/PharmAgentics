@@ -24,7 +24,7 @@ from pathlib import Path
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Response
 from fastapi.concurrency import run_in_threadpool
 
-from . import forecast_store, rbac, service, store, views
+from . import brand_access, forecast_store, rbac, service, store, views
 from .schemas import ForecastAsk, ForecastFollowup, ForecastReview, ForecastRunRequest
 
 log = logging.getLogger("pharmagentics.forecast")
@@ -334,6 +334,7 @@ def _no_store(response: Response) -> None:
 @router.get("/status")
 def status(response: Response, p: rbac.Principal = Depends(rbac.require_user)) -> dict:
     _no_store(response)
+    brand_access.require_brand(p, "BXA")
     role = p.role("forecast")
     return {
         "lane": "forecast", "available": rbac.lane_available("forecast"), "engine": engine_mode(),

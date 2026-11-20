@@ -13,10 +13,10 @@ from starlette.concurrency import run_in_threadpool
 from pharmagentics.tools import Registry, stages
 from pharmagentics.tools import queries as q
 
-from . import rbac, service
+from . import brand_access, rbac, service
+from pharmagentics.tools.brands import briefing_brand
 
 router = APIRouter(prefix="/api/briefing", tags=["briefing"])
-PRODUCT = "BXA"
 SERIES_WEEKS = 13
 
 
@@ -41,7 +41,8 @@ def _stat(key: str, label: str, value: dict, change: dict | None = None, adverse
     return out
 
 
-def build(week: str | None = None) -> dict:
+def build(week: str | None = None, brand_id: str = "BXA") -> dict:
+    brand_id = briefing_brand(brand_id)
     if not service.DB.is_file():
         raise service.MissingDatabase("DuckDB has not been built. Run the data loader first.")
     reg = Registry(service.DB)
@@ -50,7 +51,7 @@ def build(week: str | None = None) -> dict:
         week = week or latest
         if not first <= week <= latest:
             raise service.OutsideRelease(f"The release covers {first} to {latest}.")
-        p = stages.resolve(reg, f"Week of {week} in {q.name('NATIONAL')}: What changed this week?")
+        p = stages.resolve(reg, f"Week of {week} in {q.name('NATIONAL')}: What changed this week?", brand_id=brand_id)
         screened: dict[str, dict] = {}
         found, _ = stages.screen(reg, p, screened)
         material = {s["territory"]: s for s in found if s["kind"] == "territory"}
@@ -60,13 +61,13 @@ def build(week: str | None = None) -> dict:
         def wow(col: str, label: str) -> dict | None:
             if not has_prev:
                 return None
-            return _claim(reg, "get_metric", q.pct_change(q.trx_sum([week], col=col), q.trx_sum([prev], col=col)), "pct1",
+            return _claim(reg, "get_metric", q.pct_change(q.trx_sum([week], col=col, product=brand_id), q.trx_sum([prev], col=col, product=brand_id)), "pct1",
                           week=week, scope=f"{label}, week over week")
 
         stats = [
-            _stat("trx", "TRx", _claim(reg, "get_metric", q.trx_sum([week]), "int", week=week, scope="national TRx"),
+            _stat("trx", "TRx", _claim(reg, "get_metric", q.trx_sum([week], product=brand_id), "int", week=week, scope="national TRx"),
                   wow("trx", "TRx"), "down"),
-            _stat("nbrx", "New patients (NBRx)", _claim(reg, "get_metric", q.trx_sum([week], col="nbrx"), "int", week=week,
+            _stat("nbrx", "New patients (NBRx)", _claim(reg, "get_metric", q.trx_sum([week], col="nbrx", product=brand_id), "int", week=week,
                                                         scope="national NBRx"), wow("nbrx", "NBRx"), "down"),
             _stat("material", "Territories with a material change",
                   _count_in(reg, week, sorted(material), "territories with a material change"),
@@ -79,7 +80,7 @@ def build(week: str | None = None) -> dict:
         start = q.shift(week, -(SERIES_WEEKS - 1))
         series_rows, series_ev = reg.table(
             "get_series", f"select week_start::varchar, territory_id, sum(trx), sum(nrx), sum(nbrx) from {q.RX} "
-            f"where product_id = '{PRODUCT}' and week_start between DATE '{start}' and DATE '{week}' group by 1, 2 order by 1, 2",
+            f"where product_id = '{brand_id}' and week_start between DATE '{start}' and DATE '{week}' group by 1, 2 order by 1, 2",
             weeks=f"{start} to {week}", scope="13-week series")
         health_rows, health_ev = reg.table(
             "check_feed_health", "select territory_id, health_status, flag_reasons, missing_key_count, duplicate_key_count "
@@ -123,8 +124,8 @@ def build(week: str | None = None) -> dict:
         order = {"material": 0, "normal": 1, "no_baseline": 2, "held_back": 3}
         territories.sort(key=lambda r: (order[r["status"]], -(r["impact"] if r["status"] == "material" else abs(r["change"] or 0))))
         return {
-            "week": week, "first_week": first, "latest_week": latest, "data_version": reg.data_version, "product": PRODUCT,
-            "product_name": names.get(PRODUCT, PRODUCT), "weeks": p.weeks, "baseline": p.baseline,
+            "week": week, "first_week": first, "latest_week": latest, "data_version": reg.data_version, "product": brand_id,
+            "product_name": names.get(brand_id, brand_id), "weeks": p.weeks, "baseline": p.baseline,
             "rule": {"material_change": stages.MATERIAL_CHANGE, "material_gap": stages.MATERIAL_GAP, "noise_z": stages.NOISE_Z},
             "note": p.calendar_note or ("This is a holiday or plan-year week, so lower volume is expected." if p.calendar else None),
             "stats": stats, "territories": territories, "evidence": reg.evidence,
@@ -134,12 +135,14 @@ def build(week: str | None = None) -> dict:
 
 
 @router.get("/overview")
-async def overview(response: Response, week: date | None = Query(default=None), who=Depends(rbac.require_briefing)) -> dict:
-    _, role = who
+async def overview(response: Response, week: date | None = Query(default=None), brand_id: str = Query(default="BXA"), who=Depends(rbac.require_briefing)) -> dict:
+    p, role = who
     rbac.allow(role, "run")
+    brand_access.require_brand(p, brand_id)
+    brand_access.require_engine(brand_id, "scripted")
     response.headers["Cache-Control"] = "no-store"
     try:
-        return await run_in_threadpool(build, week.isoformat() if week else None)
+        return await run_in_threadpool(build, week.isoformat() if week else None, brand_id)
     except service.MissingDatabase as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
     except service.OutsideRelease as exc:

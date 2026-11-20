@@ -6,6 +6,7 @@ export type ReleaseContext = {
   territory_ids: string[]
   available_weeks: string[]
   product_ids: string[]
+  brands: { id: string; name: string; engines: ("scripted" | "agent")[] }[]
   supported_intents: string[]
   engine: "scripted"
 }
@@ -151,6 +152,7 @@ export type LeadershipBrief = {
 }
 export type PublishedBrief = {
   brief_id: string
+  brand_id: string
   week_start: string
   territory_id: string
   engine: string
@@ -167,7 +169,7 @@ export type LaneRole = {
 }
 export type ViewAs = "analyst" | "leadership"
 // tester: the test login, which switches between the analyst and the leadership roles of both lanes (view_as).
-export type Me = { name: string; auth_mode: "oidc" | "dev"; lanes: { briefing?: LaneRole; forecast?: LaneRole }; tester?: boolean; view_as?: ViewAs | null }
+export type Me = { name: string; auth_mode: "oidc" | "dev"; brand_ids: string[]; lanes: { briefing?: LaneRole; forecast?: LaneRole }; tester?: boolean; view_as?: ViewAs | null }
 // Data classification per tab and view (core-009): labels only, from src/pharmagentics/api/classification.json.
 export type ClassLevel = { id: string; label: string; description: string }
 export type Classification = { version: string; levels: ClassLevel[]; tabs: Record<string, string>; clearance: Record<string, string> }
@@ -237,8 +239,15 @@ export async function getContext(): Promise<ReleaseContext> {
     throw new Error("The backend context contract is incompatible with this frontend.")
   }
   if (!v.supported_intents.includes("weekly_brief")) throw new Error("The backend does not currently support weekly briefings.")
-  if (!v.product_ids.length || !v.territory_ids.length || !v.available_weeks.length) {
-    throw new Error("The backend returned no supported brands, territories or reporting weeks.")
+  const productIds = v.product_ids
+  if (!Array.isArray(v.brands) || v.brands.length !== v.product_ids.length || v.brands.some((b: unknown) => {
+    if (!b || typeof b !== "object") return true
+    const c = b as ReleaseContext["brands"][number]
+    return typeof c.id !== "string" || typeof c.name !== "string" || !productIds.includes(c.id) ||
+      !Array.isArray(c.engines) || !c.engines.length || c.engines.some(e => e !== "scripted" && e !== "agent")
+  })) throw new Error("The backend returned an incompatible brand catalog.")
+  if (!v.territory_ids.length || !v.available_weeks.length) {
+    throw new Error("The backend returned no supported territories or reporting weeks.")
   }
   return v as unknown as ReleaseContext
 }

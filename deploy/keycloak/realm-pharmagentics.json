@@ -22,6 +22,8 @@
       {"name": "briefing-director", "description": "P3 Brand Director: leadership view of approved briefings only (core-007)"},
       {"name": "forecast-analyst", "description": "CA Commercial Analyst: reserved; Alvin and Sienna confirm (core-007)"},
       {"name": "forecast-manager", "description": "BM Brand Manager: reserved; Alvin and Sienna confirm (core-007)"},
+      {"name": "brand-bxa", "description": "Account grant for the Cardiovela (BXA) workspace"},
+      {"name": "brand-bxc", "description": "Account grant for the Lipidara (BXC) workspace"},
       {"name": "tester", "description": "Test view: switches between the analyst (P1, CA) and leadership (P3, BM) roles of both lanes; not a persona"}
     ]
   },
@@ -76,7 +78,7 @@
       "email": "uat-briefing-analyst@pharmagentics.test",
       "emailVerified": true,
       "credentials": [{"type": "password", "value": "${UAT_PASSWORD_BRIEFING_ANALYST}", "temporary": false}],
-      "realmRoles": ["briefing-analyst"]
+      "realmRoles": ["briefing-analyst", "brand-bxa"]
     },
     {
       "username": "uat-briefing-director",
@@ -86,7 +88,7 @@
       "email": "uat-briefing-director@pharmagentics.test",
       "emailVerified": true,
       "credentials": [{"type": "password", "value": "${UAT_PASSWORD_BRIEFING_DIRECTOR}", "temporary": false}],
-      "realmRoles": ["briefing-director"]
+      "realmRoles": ["briefing-director", "brand-bxa"]
     },
     {
       "username": "uat-forecast-analyst",
@@ -96,7 +98,7 @@
       "email": "uat-forecast-analyst@pharmagentics.test",
       "emailVerified": true,
       "credentials": [{"type": "password", "value": "${UAT_PASSWORD_FORECAST_ANALYST}", "temporary": false}],
-      "realmRoles": ["forecast-analyst"]
+      "realmRoles": ["forecast-analyst", "brand-bxa"]
     },
     {
       "username": "uat-forecast-manager",
@@ -106,7 +108,7 @@
       "email": "uat-forecast-manager@pharmagentics.test",
       "emailVerified": true,
       "credentials": [{"type": "password", "value": "${UAT_PASSWORD_FORECAST_MANAGER}", "temporary": false}],
-      "realmRoles": ["forecast-manager"]
+      "realmRoles": ["forecast-manager", "brand-bxa"]
     },
     {
       "username": "uat-tester",
@@ -116,7 +118,47 @@
       "email": "uat-tester@pharmagentics.test",
       "emailVerified": true,
       "credentials": [{"type": "password", "value": "${UAT_PASSWORD_TESTER}", "temporary": false}],
-      "realmRoles": ["tester"]
+      "realmRoles": ["tester", "brand-bxa", "brand-bxc"]
+    },
+    {
+      "username": "uat-briefing-analyst-multibrand",
+      "enabled": true,
+      "firstName": "UAT",
+      "lastName": "Commercial Analyst (BXA and BXC)",
+      "email": "uat-briefing-analyst-multibrand@pharmagentics.test",
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${UAT_PASSWORD_BRIEFING_ANALYST}",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "briefing-analyst",
+        "brand-bxa",
+        "brand-bxc"
+      ]
+    },
+    {
+      "username": "uat-briefing-director-multibrand",
+      "enabled": true,
+      "firstName": "UAT",
+      "lastName": "Brand Director (BXA and BXC)",
+      "email": "uat-briefing-director-multibrand@pharmagentics.test",
+      "emailVerified": true,
+      "credentials": [
+        {
+          "type": "password",
+          "value": "${UAT_PASSWORD_BRIEFING_DIRECTOR}",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "briefing-director",
+        "brand-bxa",
+        "brand-bxc"
+      ]
     }
   ]
 }

@@ -16,10 +16,10 @@ from __future__ import annotations
 import re
 
 from .queries import TERRITORY_NAMES
+from .brands import PRODUCTS
 
 SECTION_REF = re.compile(r"§\s*(\d(?:\.\d+)?)")
 ISO = re.compile(r"\b\d{4}-\d{2}-\d{2}\b")
-PRODUCTS = {"BXC": "Lipidara", "BXD": "Vascriva", "BXE": "Metacora"}
 NEW_NUMBER = re.compile(r"\b(split|break\s?down|breakdown|by plan|by specialty|by channel|by payer|per plan|which plans?|"
                         r"how many|how much|what about|compare|versus|vs\.?)\b", re.I)
 WHY = re.compile(r"\b(why|cause[sd]?|driver|drove|reason|explain)\b", re.I)
@@ -86,8 +86,8 @@ def answer(result: dict, question: str, section: str | None = None) -> dict:
 
     stories = _story_territories(sections)
     other_terr = next((n for n in names if re.search(rf"\b{re.escape(n)}\b", text, re.I) and n != here and n not in stories), None)
-    other_prod = next((code for code, nm in PRODUCTS.items() if re.search(rf"\b{code}\b", text)), None) or \
-        next((code for code, nm in PRODUCTS.items() if code != "BXE" and re.search(rf"\b{nm}\b", text, re.I)), None)
+    other_prod = next((code for code, nm in PRODUCTS.items() if code != brand and re.search(rf"\b{code}\b", text)), None) or \
+        next((code for code, nm in PRODUCTS.items() if code != brand and code != "BXE" and re.search(rf"\b{nm}\b", text, re.I)), None)
     other_week = next((d for d in ISO.findall(text) if d != week), None)
     if other_terr or other_prod or other_week:
         offer = {"brand": other_prod or brand, "territory": names.get(other_terr, territory) if other_terr else territory,

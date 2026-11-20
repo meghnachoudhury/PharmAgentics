@@ -561,7 +561,7 @@ function PublishedList({onOpen}: {onOpen: (id: string) => void}) {
   if (!items) return <ListSkeleton/>
   if (!items.length) return <p className="text-sm text-muted">No approved briefings yet. A briefing appears here once the Commercial Analyst approves it.</p>
   return <ul className={`${PANEL} pa-stagger divide-y divide-rule`}>{items.map(b=><li key={b.brief_id}><button onClick={()=>onOpen(b.brief_id)} className="group flex w-full items-center justify-between gap-4 px-5 py-3.5 text-left transition-colors hover:bg-paper/60">
-    <span className="min-w-0"><span className="block text-sm">{labelTerritory(b.territory_id)}, week of {labelWeek(b.week_start)}</span><span className="mt-0.5 block text-xs text-muted">Approved {labelTime(b.reviewed_at)}{b.abstained ? " · unresolved findings" : ""}</span></span>
+    <span className="min-w-0"><span className="block text-sm">{b.brand_id} · {labelTerritory(b.territory_id)}, week of {labelWeek(b.week_start)}</span><span className="mt-0.5 block text-xs text-muted">Approved {labelTime(b.reviewed_at)}{b.abstained ? " · unresolved findings" : ""}</span></span>
     <Icon name="chevronRight" className="h-4 w-4 shrink-0 text-muted transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-agent"/></button></li>)}</ul>
 }
 
@@ -739,6 +739,21 @@ function AnalystApp({me}: {me: Me}) {
   const [chip,setChip] = useState<Chip | null>(null)  // brief-006: the message bar
   const [barEvidence,setBarEvidence] = useState<{id: string} | null>(null)
   const [autoAsk,setAutoAsk] = useState(false)
+  const generation = useRef(0)
+  const capabilities = context?.brands.find(b=>b.id===brand)
+  const agentSupported = !!capabilities?.engines.includes("agent")
+  const changeBrand = (id: string) => {
+    if (!context?.product_ids.includes(id)) return
+    generation.current += 1 // ignore every late result or job callback from the previous selection
+    setBrand(id)
+    const supported = context.brands.find(b=>b.id===id)?.engines ?? []
+    setEngine(e=>supported.includes(e) ? e : "scripted")
+    setPlan(null); setResult(null); setRunError(null); setRequestScope(null)
+    setTriageJob(null); setJobNote(null); setJobState(null); setPending(false)
+    setChip(null); setBarEvidence(null); setAsk(""); setAutoAsk(false)
+    setView(v=>v==="triage" || v==="result" ? "home" : v)
+  }
+
   useEffect(()=>{
     let live = true
     const poll = () => getAgentStatus().then(s=>{ if(live) setAgent(s) }).catch(()=>{ if(live) setAgent(null) })
@@ -764,7 +779,7 @@ function AnalystApp({me}: {me: Me}) {
     try {
       const c=await getContext()
       setContext(c)
-      setBrand(b=>c.product_ids.includes(b)?b:c.product_ids[0])
+      setBrand(b=>c.product_ids.includes(b)?b:(c.product_ids[0] ?? ""))
       setTerritory(t=>c.territory_ids.includes(t)?t:c.territory_ids[0])
       setWeek(w=>c.available_weeks.includes(w)?w:c.latest_week)
     } catch(e) {setContext(null);setContextError(message(e))}
@@ -777,53 +792,67 @@ function AnalystApp({me}: {me: Me}) {
   const submit = async (event?: React.FormEvent) => {
     event?.preventDefault()
     if(pending || !context || !context.product_ids.includes(brand) || !context.territory_ids.includes(territory) || !context.available_weeks.includes(week)) return
-    const selected={brand,territory,week}
-    // Plan review is always on in UAT (brief-002 FR-019): stages 1 to 3 and the code triage first.
+    const selected={brand,territory,week}, token=++generation.current
+    const active=()=>token===generation.current
     setPending(true);setRunError(null);setResult(null);setPlan(null);setRequestScope(selected);setView("triage");setJobNote(null)
     try {
       if (engine==="agent") {
         const job = await submitAgentJob({kind:"triage", query: query(selected)})
+        if (!active()) return
         setTriageJob(job.id)
-        const done = await waitAgentJob(job.id, describeJob)
+        const done = await waitAgentJob(job.id, j=>{if(active()) describeJob(j)})
+        if (!active()) return
         if (done.status==="failed") throw new Error(done.error ?? "The agent's triage failed.")
         setPlan(agentPlan(done))
-      } else setPlan(await getTriage(query(selected)))
-    } catch(e) {setRunError(message(e))}
-    finally {setPending(false);setJobNote(null);setJobState(null)}
+      } else {
+        const next=await getTriage(query(selected))
+        if (active()) setPlan(next)
+      }
+    } catch(e) {if(active()) setRunError(message(e))}
+    finally {if(active()){setPending(false);setJobNote(null);setJobState(null)}}
   }
   const query = (s: {brand:string,territory:string,week:string}) => ({intent:"weekly_brief" as const,brand_id:s.brand,territory_id:s.territory,week_start:s.week,
     question: engine==="agent" && ask.trim().length>=3 ? ask.trim().slice(0,300) : "Generate the weekly brand-performance briefing."})
   const approvePlan = async (decision: TriageDecision) => {
     if(!requestScope) return
+    const token=++generation.current, active=()=>token===generation.current
     setPending(true);setRunError(null);setResult(null);setView("result");setJobNote(null)
     try {
       if (plan?.engine==="agent" && triageJob) {
         const job = await submitAgentJob({kind:"brief", query: query(requestScope), triage_job: triageJob, decision})
-        const done = await waitAgentJob(job.id, describeJob)
+        if (!active()) return
+        const done = await waitAgentJob(job.id, j=>{if(active()) describeJob(j)})
+        if (!active()) return
         if (done.status==="failed") throw new Error(done.error ?? "The agent's run failed.")
         setResult(agentBrief(done))
       } else {
         const response=await getBriefing({...query(requestScope)}, decision)
-        setResult(response)
+        if (active()) setResult(response)
       }
-    } catch(e) {setRunError(message(e))}
-    finally {setPending(false);setJobNote(null);setJobState(null)}
+    } catch(e) {if(active()) setRunError(message(e))}
+    finally {if(active()){setPending(false);setJobNote(null);setJobState(null)}}
   }
   const openApproved = async (id: string) => {
-    setRunError(null);setResult(null);setRequestScope(null);setView("result");setPending(true)
-    try { setResult(await openBrief(id, "analyst")) } catch(e) { setRunError(message(e)) } finally { setPending(false) }
+    const token=++generation.current, active=()=>token===generation.current
+    setRunError(null);setResult(null);setRequestScope(null);setPlan(null);setView("result");setPending(true)
+    setChip(null);setBarEvidence(null)
+    try {
+      const next=await openBrief(id, "analyst")
+      if (active()) {setBrand(next.brand_id);setEngine(e=>context?.brands.find(b=>b.id===next.brand_id)?.engines.includes(e)?e:"scripted");setResult(next)}
+    } catch(e) {if(active()) setRunError(message(e))} finally {if(active()) setPending(false)}
   }
-  const selectable = !!context && !loadingContext && !pending
+  const selectable = !!context && context.product_ids.includes(brand) && !loadingContext && !pending
   return <Shell me={me} onBriefingHome={()=>setView("overview")}>
-    <div className={`${view==="overview" ? "workspace-wide" : "workspace-content"} pt-8 sm:pt-10`}>{(view==="home" || view==="approved" || view==="overview") && <Greeting detail={context ? `Data through ${labelWeek(context.latest_week)}, across ${context.territory_ids.length} territories.` : undefined}/>}<SubTabs label="Weekly briefing" value={view==="approved" ? "approved" : view==="overview" ? "overview" : "new"} onChange={t=>setView(t==="approved" ? "approved" : t==="overview" ? "overview" : "home")} options={[["overview","Overview","briefing.overview"],["new","New briefing","briefing.new"],["approved","Approved briefings","briefing.approved"]] as const}/></div>
-    {view==="overview" ? <Overview key="overview" weeks={context?.available_weeks ?? []} onGenerate={(t,w)=>{setTerritory(t);setWeek(w);setView("home")}}/> : view==="home" ? <div key="home" className="workspace-content pa-stagger space-y-5 py-8">
+    <div className={`${view==="overview" ? "workspace-wide" : "workspace-content"} pt-8 sm:pt-10`}>{(view==="home" || view==="approved" || view==="overview") && <Greeting detail={context ? `Data through ${labelWeek(context.latest_week)}, across ${context.territory_ids.length} territories.` : undefined}/>}<div className="flex justify-end py-3"><label className="flex items-center gap-2 text-xs text-muted">Brand
+      <select className={`${FIELD} w-auto`} value={brand} onChange={e=>changeBrand(e.target.value)} disabled={loadingContext || !context?.brands.length}>
+        {context?.brands.map(b=><option key={b.id} value={b.id}>{b.name} ({b.id})</option>)}
+      </select></label></div><SubTabs label="Weekly briefing" value={view==="approved" ? "approved" : view==="overview" ? "overview" : "new"} onChange={t=>setView(t==="approved" ? "approved" : t==="overview" ? "overview" : "home")} options={[["overview","Overview","briefing.overview"],["new","New briefing","briefing.new"],["approved","Approved briefings","briefing.approved"]] as const}/></div>
+    {contextError && <div role="alert" className="workspace-content py-4 text-sm text-amber">{contextError}<button className="ml-2 underline" onClick={()=>void refresh()}>Retry connection</button></div>}
+    {context && !context.product_ids.length ? <div className="workspace-content py-8"><h2 className="text-xl">No brand access</h2><p className="mt-2 text-sm text-muted">Your account has no authorized Briefing brands. Ask the project owner to assign brand access, then sign out and sign in again.</p></div> : view==="overview" ? brand && <Overview key={brand} brand={brand} week={week} onWeek={setWeek} weeks={context?.available_weeks ?? []} onGenerate={(t,w)=>{setTerritory(t);setWeek(w);setView("home")}}/> : view==="home" ? <div key="home" className="workspace-content pa-stagger space-y-5 py-8">
       <p className="text-sm text-muted">Generate the week's brand-performance briefing, check its evidence, and approve it for the Brand Director.</p>
-      {contextError && <div role="alert" className="rounded-xl bg-amberbg p-4 text-sm text-amber"><strong>Backend unavailable.</strong> {contextError}<button className="mt-2 block underline" onClick={()=>void refresh()}>Retry connection</button></div>}
+
       <form onSubmit={submit} className={`${PANEL} space-y-6 p-6`} aria-busy={loadingContext}>
-        <div className="grid gap-4 sm:grid-cols-3">
-          <label className={LABEL}>Brand
-            <select className={FIELD} value={brand} onChange={e=>setBrand(e.target.value)} disabled={!selectable}>{context?.product_ids.map(id=><option key={id} value={id}>{id}</option>)}</select>
-          </label>
+        <div className="grid gap-4 sm:grid-cols-2">
           <label className={LABEL}>Territory
             <select className={FIELD} value={territory} onChange={e=>setTerritory(e.target.value)} disabled={!selectable}>{context?.territory_ids.map(id=><option key={id} value={id}>{labelTerritory(id)}</option>)}</select>
           </label>
@@ -834,7 +863,7 @@ function AnalystApp({me}: {me: Me}) {
         <fieldset><legend className="mb-1.5 text-xs font-medium text-muted">Engine</legend>
           <div className="divide-y divide-rule rounded-lg border border-rule">
             <label className="flex cursor-pointer items-start gap-3 px-4 py-3 transition-colors hover:bg-paper/50"><input type="radio" name="engine" checked={engine==="scripted"} onChange={()=>setEngine("scripted")} className="mt-1"/><span><span className={`block text-sm ${engine==="scripted" ? "text-ink" : "text-muted"}`}>Scripted</span><span className="block text-xs text-muted">Instant. Runs the standard checks in a fixed order.</span></span></label>
-            <label className={`flex items-start gap-3 px-4 py-3 transition-colors ${agent?.configured===false ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:bg-paper/50"}`}><input type="radio" name="engine" checked={engine==="agent"} disabled={agent?.configured===false} onChange={()=>setEngine("agent")} className="mt-1"/><span title={agent?.model ? `Model: ${agent.model}` : undefined}><span className={`block text-sm ${engine==="agent" ? "text-ink" : "text-muted"}`}>Agent team <span className="text-xs text-muted">· experimental</span></span><span className="block text-xs text-muted">A manager and two specialist agents investigate the week. {agent?.builtin ? "Usually a minute or two." : agent?.online ? "A few minutes per step." : agent?.cloud?.enabled && agent.cloud.seconds_left>0 ? `About ${agent.cloud.eta_minutes ?? 15} minutes for a brief.` : "Waits until an agent host is available."}</span></span></label>
+            {agentSupported && <label className={`flex items-start gap-3 px-4 py-3 transition-colors ${!agentSupported || agent?.configured===false ? "cursor-not-allowed opacity-50" : "cursor-pointer hover:bg-paper/50"}`}><input type="radio" name="engine" checked={engine==="agent"} disabled={!agentSupported || agent?.configured===false} onChange={()=>setEngine("agent")} className="mt-1"/><span title={agent?.model ? `Model: ${agent.model}` : undefined}><span className={`block text-sm ${engine==="agent" ? "text-ink" : "text-muted"}`}>Agent team <span className="text-xs text-muted">· experimental</span></span><span className="block text-xs text-muted">A manager and two specialist agents investigate the week. {agent?.builtin ? "Usually a minute or two." : agent?.online ? "A few minutes per step." : agent?.cloud?.enabled && agent.cloud.seconds_left>0 ? `About ${agent.cloud.eta_minutes ?? 15} minutes for a brief.` : "Waits until an agent host is available."}</span></span></label>}
           </div>
         </fieldset>
         {engine==="agent" && <label className={LABEL}>Your question (optional)
@@ -857,11 +886,11 @@ function AnalystApp({me}: {me: Me}) {
             <div className="pa-skeleton h-5 w-2/5"/><div className={`${PANEL} space-y-3 p-6`}><div className="pa-skeleton h-6 w-3/5"/><div className="pa-skeleton h-3 w-full"/><div className="pa-skeleton h-3 w-11/12"/><div className="pa-skeleton h-3 w-4/5"/></div></div>)}
       {runError && <div role="alert" className="rounded-xl bg-amberbg px-5 py-4 text-sm text-amber"><strong>{view==="triage" ? "The triage plan could not be built." : "Briefing could not be generated."}</strong><p className="mt-2">{runError}</p><p className="mt-2">No mock result was substituted.</p>{view==="result" && plan && <button className="mt-2 underline" onClick={()=>{setRunError(null);setView("triage")}}>Back to the triage plan</button>}</div>}
       {view==="triage" && plan && !pending && <TriageReview plan={plan} busy={pending} onApprove={d=>void approvePlan(d)}/>}
-      {view==="result" && result && <AnalystBrief result={result} onChange={setResult} onAsk={setChip} openEvidence={barEvidence}/>}
+      {view==="result" && result && <AnalystBrief result={result} onChange={r=>setResult(cur=>cur?.brief_id===r.brief_id?r:cur)} onAsk={setChip} openEvidence={barEvidence}/>}
     </div>}
-    {view!=="approved" && <div className="workspace-content"><MessageBar briefId={view==="result" && result ? result.brief_id : null} pending={pending} chip={chip} onClearChip={()=>setChip(null)}
-      canGenerate={view==="home" && agent?.configured===true} onGenerate={q=>{setEngine("agent");setAsk(q);setAutoAsk(true)}}
-      onOfferScope={o=>{ if(o.territory) setTerritory(o.territory); if(o.week) setWeek(o.week); setView("home") }} onOpenEvidence={id=>setBarEvidence({id})} agentAvailable={!!agent?.builtin}/></div>}
+    {brand && view!=="approved" && (agentSupported || (view==="result" && !!result)) && <div className="workspace-content"><MessageBar key={brand} briefId={view==="result" && result ? result.brief_id : null} pending={pending} chip={chip} onClearChip={()=>setChip(null)}
+      canGenerate={view==="home" && agentSupported && agent?.configured===true} onGenerate={q=>{setEngine("agent");setAsk(q);setAutoAsk(true)}}
+      onOfferScope={o=>{ if(o.brand && o.brand!==brand){if(!context?.product_ids.includes(o.brand)){setRunError("Your account has no access to that brand.");return}changeBrand(o.brand)} if(o.territory) setTerritory(o.territory); if(o.week) setWeek(o.week); setView("home") }} onOpenEvidence={id=>setBarEvidence({id})} agentAvailable={agentSupported && !!agent?.builtin}/></div>}
   </Shell>
 }
 
@@ -875,7 +904,7 @@ function LeaderApp({me}: {me: Me}) {
   }
   return <Shell me={me} onBriefingHome={()=>{setBrief(null);setError(null)}}>
     <div className="workspace-content space-y-6 py-8 sm:py-10">
-      {brief || loading || error ? <>
+      {!me.brand_ids.length ? <><h2 className="text-xl">No brand access</h2><p className="text-sm text-muted">Ask the project owner to assign brand access, then sign out and sign in again.</p></> : brief || loading || error ? <>
         <button className="flex items-center gap-2 text-sm text-agentdeep hover:underline" onClick={()=>{setBrief(null);setError(null)}}><Icon name="back"/>All approved briefings</button>
         {loading && <p role="status" className="text-sm text-muted">Opening the briefing…</p>}
         {error && <div role="alert" className="rounded-xl bg-amberbg px-5 py-4 text-sm text-amber">{error}</div>}
@@ -898,7 +927,7 @@ export default function App() {
     if (me.lanes.forecast?.available) return <Shell me={me} startInForecast>{null}</Shell>
     return <Centered>
       <h1 className="mt-5 text-lg font-semibold">No access</h1>
-      <p className="mt-2 text-sm text-muted">Your account has no PharmAgentics role. Ask the project owner to assign one.</p>
+      <p className="mt-2 text-sm text-muted">Your account has no authorized workspace. Ask the project owner to assign a workspace role and brand access.</p>
       <a className="mt-5 inline-block text-sm font-medium text-agentdeep hover:underline" href="/auth/logout">Sign out</a>
     </Centered>
   }

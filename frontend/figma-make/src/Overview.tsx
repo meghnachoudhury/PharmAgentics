@@ -178,24 +178,23 @@ function Territories({ o, onOpen }: { o: O, onOpen: (t: TerritoryRow) => void })
   </section>
 }
 
-export function Overview({ weeks, onGenerate }: { weeks: string[], onGenerate: (territory: string, week: string) => void }) {
-  const [week, setWeek] = useState<string | undefined>(undefined)
+export function Overview({ weeks, brand, week, onWeek, onGenerate }: { weeks: string[], brand: string, week: string, onWeek: (week: string) => void, onGenerate: (territory: string, week: string) => void }) {
   const [o, setO] = useState<O | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [open, setOpen] = useState<{ kind: "territory", t: TerritoryRow } | { kind: "stat", s: Stat } | null>(null)
   useEffect(() => {
     let live = true
-    setError(null)
-    getOverview(week).then(v => { if (live) setO(v) }, e => { if (live) setError(e instanceof Error ? e.message : String(e)) })
+    setError(null); setO(null); setOpen(null)
+    getOverview(week, brand).then(v => { if (live) setO(v) }, e => { if (live) setError(e instanceof Error ? e.message : String(e)) })
     return () => { live = false }
-  }, [week])
+  }, [week, brand])
   const stat = open?.kind === "stat" ? open.s : null
   const statEvidence = stat && o ? o.evidence.filter(e => e.id === stat.evidence_id || e.id === stat.change?.evidence_id) : []
   return <><div className="workspace-wide pa-stagger space-y-6 py-8">
     <div className="flex flex-wrap items-end justify-between gap-4">
       <p className="text-sm text-muted">{o ? `${o.product_name} (${o.product}), week of ${day(o.week)}. Every figure is computed from the governed data; select one to see its query.` : "Loading the week…"}</p>
       <label className="flex items-center gap-2 text-xs text-muted">Week
-        <select value={week ?? o?.week ?? ""} onChange={e => setWeek(e.target.value)} className="rounded-lg border border-rule bg-paper px-2.5 py-1.5 text-sm text-ink">
+        <select value={week} onChange={e => onWeek(e.target.value)} className="rounded-lg border border-rule bg-paper px-2.5 py-1.5 text-sm text-ink">
           {[...weeks].reverse().map(w => <option key={w} value={w}>{day(w)}</option>)}
         </select>
       </label>

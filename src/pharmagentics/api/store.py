@@ -88,6 +88,8 @@ def brief_id(result: dict) -> str:
     """Same engine, data version, week, territory and question give the same brief, so a rerun
     keeps its review state instead of creating a duplicate."""
     key = "|".join(str(result.get(k)) for k in ("system", "data_version", "week_start", "territory_id", "question"))
+    if result.get("brand_id", "BXA") != "BXA":
+        key += "|brand:" + result["brand_id"]  # preserve legacy BXA IDs and shared links
     triage = result.get("triage") or {}
     if triage and not triage.get("default", True):  # P1 changed the plan: a different brief (brief-002 R6)
         key += "|triage:" + ",".join(triage.get("order", []))
@@ -133,13 +135,14 @@ def set_review(bid: str, decision: str, reason: str | None, by: str) -> dict:
     return record
 
 
-def approved(data_version: str | None) -> list[dict]:
+def approved(data_version: str | None, brands: set[str] | None = None) -> list[dict]:
     store = backend()
     out = []
     for key in store.keys("briefs/"):
         text = store.read(key)
         record = json.loads(text) if text else None
-        if record and record["review_status"] == "approved" and record["result"].get("data_version") == data_version:
+        if (record and record["review_status"] == "approved" and record["result"].get("data_version") == data_version
+                and (brands is None or record["result"].get("brand_id", "BXA") in brands)):
             out.append(record)
     return sorted(out, key=lambda r: (r["result"]["week_start"], r["result"]["territory_id"]), reverse=True)
 

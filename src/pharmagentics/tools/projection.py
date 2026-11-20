@@ -31,6 +31,7 @@ class Projection:
     weeks: list[str]
     national: str | None  # None when no week in the period can be read at all
     rows: list[Row]
+    brand_id: str = "BXA"
 
     def territories(self, basis: str) -> list[str]:
         return [r.territory for r in self.rows if basis in r.weeks.values()]
@@ -42,9 +43,9 @@ class Projection:
 def build(reg: Registry, p) -> Projection:
     W = p.weeks
     cells = reg.rows(f"select week_start::varchar, territory_id, basis, flag_reasons from {q.PROJ} "
-                     f"where product_id = 'BXA' and week_start in {q._dates(W)} order by 2, 1")
-    national_value = reg.scalar(q.projected_national(W))
-    national = None if national_value is None else reg.claim("project_national", q.projected_national(W), "int",
+                     f"where product_id = '{p.brand_id}' and week_start in {q._dates(W)} order by 2, 1")
+    national_value = reg.scalar(q.projected_national(W, product=p.brand_id))
+    national = None if national_value is None else reg.claim("project_national", q.projected_national(W, product=p.brand_id), "int",
                                                                scope="projected national")
     by_t: dict[str, list[tuple]] = {}
     for w, t, basis, reasons in cells:
@@ -54,13 +55,13 @@ def build(reg: Registry, p) -> Projection:
         for t, weeks in sorted(by_t.items(), key=lambda kv: q.name(kv[0])):
             off = {w: b for w, b, _ in weeks if b != "observed"}
             worst = max((b for _, b, _ in weeks), key=ORDER.get)
-            row = Row(t, reg.claim("project_national", q.projected_territory(W, t), "int", territory=t, scope="projected"),
+            row = Row(t, reg.claim("project_national", q.projected_territory(W, t, product=p.brand_id), "int", territory=t, scope="projected"),
                       worst, off, {w: r for w, b, r in weeks if b != "observed"})
             if len(W) == 1 and worst == "projected":
-                row.observed = reg.claim("project_national", q.projection_cell(W[0], t, "observed_trx"), "int", territory=t, week=W[0])
-                row.coverage = reg.claim("project_national", q.projection_cell(W[0], t, "panel_coverage_ratio"), "dec3", territory=t, week=W[0])
+                row.observed = reg.claim("project_national", q.projection_cell(W[0], t, "observed_trx", product=p.brand_id), "int", territory=t, week=W[0])
+                row.coverage = reg.claim("project_national", q.projection_cell(W[0], t, "panel_coverage_ratio", product=p.brand_id), "dec3", territory=t, week=W[0])
             rows.append(row)
-    return Projection(W, national, rows)
+    return Projection(W, national, rows, p.brand_id)
 
 
 def _label(row: Row, single: bool) -> str:
@@ -85,8 +86,8 @@ def table_lines(proj: Projection) -> list[str]:
     if proj.national is None:
         return ["No projected national is given: no territory in these weeks can be read."]
     single = len(W) == 1
-    head = (f"Projected national BXA TRx for the week of {W[0]}: {proj.national}." if single else
-            f"Projected national BXA TRx averaged {proj.national} a week from {W[0]} to {W[-1]}.")
+    head = (f"Projected national {proj.brand_id} TRx for the week of {W[0]}: {proj.national}." if single else
+            f"Projected national {proj.brand_id} TRx averaged {proj.national} a week from {W[0]} to {W[-1]}.")
     marked = [r for r in proj.rows if r.basis != "observed"]
     lines = [head, "By territory" + (", observed unless marked; a projected or estimated level is an assumption, "
                                      "not an observed count:" if marked else ", all observed:")]

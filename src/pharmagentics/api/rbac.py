@@ -59,6 +59,7 @@ class Principal:
     name: str
     role_names: tuple[str, ...]
     view_as: str = ANALYST  # the test login only: which side of each lane it is looking at
+    brand_grants: tuple[str, ...] = ()
 
     @property
     def is_tester(self) -> bool:
@@ -91,7 +92,8 @@ def principal(request: Request) -> Principal | None:
     if not user:
         return None
     view_as = LEADERSHIP if user.get("view_as") == LEADERSHIP else ANALYST
-    return Principal(user["sub"], user.get("name", ""), tuple(user.get("roles", [])), view_as)
+    return Principal(user["sub"], user.get("name", ""), tuple(user.get("roles", [])), view_as,
+                     tuple(user.get("brand_grants", [])))
 
 
 def require_user(request: Request) -> Principal:
@@ -114,6 +116,9 @@ def require_forecast(request: Request) -> tuple[Principal, Role]:
     role = p.role("forecast")
     if role is None:
         raise HTTPException(status_code=403, detail="Your account has no Forecast role.")
+    from .brand_access import require_brand
+
+    require_brand(p, "BXA")  # the current Forecast series and investigator are BXA-only
     return p, role
 
 

@@ -15,7 +15,7 @@ from typing import Literal
 from fastapi import APIRouter, Depends, HTTPException, Response
 from pydantic import BaseModel, Field
 
-from . import rbac, store
+from . import brand_access, rbac, store
 
 router = APIRouter(prefix="/api/review", tags=["review"])
 PROPOSALS = "review/proposals/"
@@ -37,12 +37,25 @@ def _no_store(response: Response) -> None:
     response.headers["Cache-Control"] = "no-store"
 
 
+def _brand(doc: dict) -> str | None:
+    """Resolve old proposals from their source; new ones also carry their brand explicitly."""
+    declared = doc.get("brand_id") or ((doc.get("draft_case") or {}).get("scope") or {}).get("brand_id")
+    match = re.search(r"(?:briefing/|thread:)(b-[0-9a-f]{12})", doc.get("source", ""))
+    if match:
+        record = store.get_brief(match[1])
+        if record:
+            stored = record["result"].get("brand_id", "BXA")
+            return stored if declared is None or declared == stored else None
+    # Proposals outlive their source brief; all legacy unlabelled proposals predate BXC.
+    return declared or "BXA"
+
+
 @router.get("/proposals")
 def proposals(response: Response, p: rbac.Principal = Depends(tester)) -> list[dict]:
     _no_store(response)
     docs = [json.loads(store.backend().read(k) or "{}") for k in store.backend().keys(PROPOSALS)]
     order = {"proposed": 0, "approved": 1, "rejected": 2, "promoted": 3}
-    return sorted((d for d in docs if d), key=lambda d: (order.get(d.get("status"), 9), not d.get("confident"),
+    return sorted((d for d in docs if d and _brand(d) in brand_access.allowed_brands(p)), key=lambda d: (order.get(d.get("status"), 9), not d.get("confident"),
                                                          d.get("created_at") or ""))
 
 
@@ -53,7 +66,7 @@ def decide(proposal_id: str, body: Decision, response: Response, p: rbac.Princip
         raise HTTPException(status_code=404, detail="No such proposal.")
     key = f"{PROPOSALS}{proposal_id}.json"
     doc = json.loads(store.backend().read(key) or "null")
-    if doc is None:
+    if doc is None or _brand(doc) not in brand_access.allowed_brands(p):
         raise HTTPException(status_code=404, detail="No such proposal.")
     if doc.get("status") not in ("proposed", "approved", "rejected"):
         raise HTTPException(status_code=409, detail=f"This proposal is already {doc.get('status')}.")

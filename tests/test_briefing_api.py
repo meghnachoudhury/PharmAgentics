@@ -65,7 +65,7 @@ def test_success_contract_and_no_store():
 
 
 @pytest.mark.parametrize("changes", [
-    {"brand_id": "BXC"}, {"territory_id": "BROOKLYN"},
+    {"brand_id": "BXD"}, {"territory_id": "BROOKLYN"},
     {"intent": "arbitrary_sql"}, {"week_start": "2026-06-09"},
     {"query": "select * from raw.rx_weekly"},
     {"question": "x"},
@@ -128,8 +128,8 @@ def test_service_calls_existing_engine_and_preserves_evidence():
     pipeline = types.ModuleType("briefing_baseline.pipeline")
     seen = {}
 
-    def fake_answer(question, db):
-        seen.update(question=question, db=db)
+    def fake_answer(question, db, brand_id):
+        seen.update(question=question, db=db, brand_id=brand_id)
         return output
 
     pipeline.answer = fake_answer
@@ -142,6 +142,7 @@ def test_service_calls_existing_engine_and_preserves_evidence():
     assert actual.answer == output["answer"]
     assert actual.data_version == "release1"
     assert seen["db"] == service.DB
+    assert seen["brand_id"] == "BXA"
     assert seen["question"].startswith("Week of 2026-06-08 in Pacific:")
 
 
@@ -196,7 +197,7 @@ def test_context_queries_release_instead_of_hardcoding_choices():
     assert actual.available_weeks == [date(2026, 6, 1), date(2026, 6, 8)]
     assert actual.latest_week == date(2026, 6, 8)
     assert actual.territory_ids == ["PACIFIC", "MOUNTAIN"]
-    assert actual.product_ids == ["BXA"]
+    assert actual.product_ids == ["BXA", "BXC"]
     assert actual.supported_intents == ["weekly_brief"]
 
 

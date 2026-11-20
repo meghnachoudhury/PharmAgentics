@@ -17,6 +17,9 @@ DEMO_CREDENTIALS = Path(__file__).with_name("demo-credentials.env")
 DEMO_ACCOUNTS = {
     "uat-briefing-analyst": "UAT_PASSWORD_BRIEFING_ANALYST",
     "uat-briefing-director": "UAT_PASSWORD_BRIEFING_DIRECTOR",
+    # Same shared demo password per persona; distinct accounts prove per-user brand grants.
+    "uat-briefing-analyst-multibrand": "UAT_PASSWORD_BRIEFING_ANALYST",
+    "uat-briefing-director-multibrand": "UAT_PASSWORD_BRIEFING_DIRECTOR",
     "uat-forecast-analyst": "UAT_PASSWORD_FORECAST_ANALYST",
     "uat-forecast-manager": "UAT_PASSWORD_FORECAST_MANAGER",
     "uat-tester": "UAT_PASSWORD_TESTER",  # test view: switches between the analyst and leadership views of both lanes

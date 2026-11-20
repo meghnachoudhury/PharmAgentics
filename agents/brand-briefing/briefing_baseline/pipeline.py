@@ -44,31 +44,31 @@ class Front:
     proj: projection.Projection | None = None
 
 
-def answer(question: str, db=DEFAULT_DB) -> dict:
+def answer(question: str, db=DEFAULT_DB, brand_id: str = "BXA") -> dict:
     reg = Registry(db)
     try:
-        return _brief(reg, question)
+        return _brief(reg, question, brand_id=brand_id)
     finally:
         reg.close()
 
 
-def scope(question: str, db=DEFAULT_DB) -> dict:
+def scope(question: str, db=DEFAULT_DB, brand_id: str = "BXA") -> dict:
     """The brief's scope as the API stores it (brand, territory, week): what a follow-up is in or out of."""
     reg = Registry(db)
     try:
-        p = stages.resolve(reg, question)
+        p = stages.resolve(reg, question, brand_id=brand_id)
     finally:
         reg.close()
-    return {"brand_id": "BXA", "territory_id": p.focus or "NATIONAL", "week_start": p.requested[-1] if p.requested else ""}
+    return {"brand_id": p.brand_id, "territory_id": p.focus or "NATIONAL", "week_start": p.requested[-1] if p.requested else ""}
 
 
-def triage(question: str, db=DEFAULT_DB) -> dict:
+def triage(question: str, db=DEFAULT_DB, brand_id: str = "BXA") -> dict:
     """Stages 1 to 3, then the code triage plan for P1 (brief-002 US8). Its claims are its own run's."""
     from .triage import build_plan
 
     reg = Registry(db)
     try:
-        f = _front(reg, question)
+        f = _front(reg, question, brand_id=brand_id)
         if f is None:
             raise ValueError("That period is outside the release.")
         return build_plan(reg, f)
@@ -76,12 +76,12 @@ def triage(question: str, db=DEFAULT_DB) -> dict:
         reg.close()
 
 
-def run_with_plan(question: str, decision: dict, db=DEFAULT_DB) -> dict:
+def run_with_plan(question: str, decision: dict, db=DEFAULT_DB, brand_id: str = "BXA") -> dict:
     """Stages 4 to 6 on P1's decision: {plan_id, stories: [ids in order]}. Returns the envelope, the
     triage record (who made each call) and the stage flow."""
     from .triage import stage_flow, triage_record
 
-    plan = triage(question, db)  # recomputed by code, in its own registry, so the brief's claim numbering is untouched
+    plan = triage(question, db, brand_id=brand_id)  # recomputed by code, in its own registry, so the brief's claim numbering is untouched
     if decision.get("plan_id") != plan["plan_id"]:
         raise StalePlan("The triage plan changed; review it again.")
     allowed = [c["id"] for c in plan["stories"] if c["proposed"] == "investigate"]
@@ -93,7 +93,7 @@ def run_with_plan(question: str, decision: dict, db=DEFAULT_DB) -> dict:
     left_out = [titles[s] for s in allowed if s not in order]
     reg = Registry(db)
     try:
-        envelope = _brief(reg, question, order=order, left_out=left_out)
+        envelope = _brief(reg, question, order=order, left_out=left_out, brand_id=brand_id)
     finally:
         reg.close()
     record = triage_record(plan, order)
@@ -108,15 +108,15 @@ def default_order(found: list[dict]) -> list[str]:
     return [story_id(s) for s in found[:MAX_STORIES]] + [COMPETITOR]
 
 
-def _front(reg: Registry, question: str) -> Front | None:
-    p = stages.resolve(reg, question)
+def _front(reg: Registry, question: str, brand_id: str = "BXA") -> Front | None:
+    p = stages.resolve(reg, question, brand_id=brand_id)
     if not p.requested:
         return None
     out: list[str] = []
 
     with span("1_load_and_pin", inputs={"question": question}, data_version=reg.data_version) as sp:
         out.append(f"Brief for {stages.describe(p)}. "
-                   f"Data version {reg.data_version}. Product: BXA. Territory questions use only cuts that pass the feed gate.")
+                   f"Data version {reg.data_version}. Product: {p.brand_id}. Territory questions use only cuts that pass the feed gate.")
         if p.note:
             out.append(p.note)
         finish(sp, {"weeks": p.requested, "baseline_weeks": p.baseline, "territory": p.focus, "data_version": reg.data_version})
@@ -139,10 +139,10 @@ def _front(reg: Registry, question: str) -> Front | None:
     return Front(p, out, found, quiet, health, restated, kpis, proj)
 
 
-def _brief(reg: Registry, question: str, order: list[str] | None = None, left_out: list[str] = ()) -> dict:
-    f = _front(reg, question)
+def _brief(reg: Registry, question: str, order: list[str] | None = None, left_out: list[str] = (), brand_id: str = "BXA") -> dict:
+    f = _front(reg, question, brand_id=brand_id)
     if f is None:
-        return _envelope(reg, stages.outside_release(stages.resolve(reg, question)), False)
+        return _envelope(reg, stages.outside_release(stages.resolve(reg, question, brand_id=brand_id)), False, brand_id)
     p = f.p
     abstained, competitor = False, False
     blocks: list[memo.StoryBlock] = []
@@ -184,7 +184,7 @@ def _brief(reg: Registry, question: str, order: list[str] | None = None, left_ou
             numbers=memo.numbers(f.proj, f.kpis, f.restated),
             limits=memo.limits(p, f.proj, f.health),
             next_checks=memo.next_checks(p, told, competitor),
-            appendix=memo.appendix(reg),
+            appendix=memo.appendix(reg, brand_id=p.brand_id),
             stories=blocks, story_notes=notes,
             charts={"2": charts.trend(reg, p), "4": charts.coverage(reg, p)})  # brief-003 FR-024
         template, sections = memo.compose(parts)
@@ -196,14 +196,14 @@ def _brief(reg: Registry, question: str, order: list[str] | None = None, left_ou
         if bad:
             raise AssertionError(f"digit outside a claim token: {bad[:3]}")
     text, spans = reg.render_cited(template)
-    return dict(_envelope(reg, text, abstained), citations=spans,  # citations: where each claim sits (UI only)
+    return dict(_envelope(reg, text, abstained, p.brand_id), citations=spans,  # citations: where each claim sits (UI only)
                 sections=memo.render_sections(sections, reg.claims))
 
 
 def _story(reg, n, s, p) -> tuple[memo.StoryBlock, dict]:
     """One story: head, the checks in order, the closing confidence. Its next check goes to §5."""
     t = s["territory"]
-    checks = run_checks(reg, t, p.weeks, p.baseline)
+    checks = run_checks(reg, t, p.weeks, p.baseline, brand_id=p.brand_id)
     level, lead = confidence(checks)
     head = f"Story {_ord(n)}: {stages.territory_change(reg, p, t)}"
     lines = [head, "Checked, in this order:"] + [f"- {c.text}" for c in checks]
@@ -222,5 +222,5 @@ def _ord(n: int) -> str:
     return {1: "one", 2: "two", 3: "three", 4: "four", 5: "five"}[n]
 
 
-def _envelope(reg: Registry, text: str, abstained: bool) -> dict:
-    return {"system": "briefing_scripted", "answer": text, "claims": reg.claims, "evidence": reg.evidence, "abstained": abstained}
+def _envelope(reg: Registry, text: str, abstained: bool, brand_id: str = "BXA") -> dict:
+    return {"brand_id": brand_id, "system": "briefing_scripted", "answer": text, "claims": reg.claims, "evidence": reg.evidence, "abstained": abstained}

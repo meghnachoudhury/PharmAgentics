@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from datetime import date, timedelta
 
+from .brands import product_id
+
 RX = "reporting.v_reportable_rx"
 TERRITORY_NAMES = {
     "GREAT_LAKES": "Great Lakes", "MID_ATLANTIC": "Mid-Atlantic", "MOUNTAIN": "Mountain",
@@ -50,6 +52,7 @@ def sub(sql: str) -> str:
 
 
 def trx_sum(weeks, terrs=None, plan=None, product="BXA", col="trx") -> str:
+    product_id(product)
     sql = f"select coalesce(sum({col}),0) from {RX} where product_id = '{product}' and week_start in {_dates(weeks)}"
     if terrs:
         sql += " and " + _in("territory_id", terrs)
@@ -67,6 +70,7 @@ def pct_change(new_sql: str, old_sql: str) -> str:
 
 
 def share(weeks, product: str, terrs=None, exclude=None) -> str:
+    product_id(product)
     sql = (f"select 100.0 * sum(trx) filter (where product_id = '{product}') / nullif(sum(trx), 0) "
            f"from {RX} where week_start in {_dates(weeks)}")
     if terrs:
@@ -80,8 +84,9 @@ def feed(week: str, terr: str, col: str) -> str:
     return f"select {col} from reporting.v_feed_health where week_start = DATE '{week}' and territory_id = '{terr}'"
 
 
-def context_mean(table: str, col: str, weeks, terr: str, scale: float = 1.0) -> str:
-    return (f"select {scale} * avg({col}) from raw.{table} where product_id = 'BXA' "
+def context_mean(table: str, col: str, weeks, terr: str, scale: float = 1.0, product: str = "BXA") -> str:
+    product_id(product)
+    return (f"select {scale} * avg({col}) from raw.{table} where product_id = '{product}' "
             f"and territory_id = '{terr}' and week_start in {_dates(weeks)}")
 
 
@@ -113,6 +118,7 @@ def projection_ctes(weeks, product: str = "BXA") -> str:
     """CTEs for the target weeks: each cut's basis and projected TRx, the four clean weeks before each target
     week (every territory passes, no holiday or plan-year reset), each territory's share of national in them,
     and the national: (observed + projected) / (1 - shares of the estimated territories)."""
+    product_id(product)
     targets = ", ".join(f"DATE '{w}'" for w in weeks)
     return (
         f"with wk as (select unnest([{targets}]) as week_start), "
@@ -145,5 +151,6 @@ def projected_territory(weeks, territory: str, product: str = "BXA") -> str:
 
 
 def projection_cell(week: str, territory: str, col: str, product: str = "BXA") -> str:
+    product_id(product)
     return (f"select {col} from {PROJ} where week_start = DATE '{week}' and territory_id = '{territory}' "
             f"and product_id = '{product}'")

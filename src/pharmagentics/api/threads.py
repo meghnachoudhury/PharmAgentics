@@ -21,7 +21,7 @@ from pydantic import BaseModel, Field
 
 from pharmagentics.tools import followup
 
-from . import agent_host, rbac, store
+from . import agent_host, brand_access, rbac, store
 
 router = APIRouter(prefix="/api/briefing/{brief_id}/thread", tags=["threads"])
 MAX_TURNS = 20  # FR-008
@@ -37,6 +37,7 @@ class Ask(BaseModel):
 
 def _agent_answer(result: dict, question: str, section: str | None) -> dict:
     """One Haiku turn (brief-006 slice 4); only when the app runs the agent itself."""
+    brand_access.require_engine(result.get("brand_id", "BXA"), "agent")
     spec = agent_host.model()
     if not spec:
         raise HTTPException(status_code=409, detail="The agent is not available here; ask the scripted engine.")
@@ -90,9 +91,9 @@ def _purge_once() -> None:
 def analyst(brief_id: str, who=Depends(rbac.require_briefing)) -> tuple[rbac.Principal, dict]:
     """Only roles that review briefs (analysts) reach threads; anyone else, and any unknown brief, gets 404."""
     p, role = who
-    record = store.get_brief(brief_id)
-    if "review" not in role.actions or record is None:
+    if "review" not in role.actions:
         raise HTTPException(status_code=404, detail="No such thread.")
+    record = brand_access.brief_for(p, role, brief_id)
     _purge_once()
     return p, record
 

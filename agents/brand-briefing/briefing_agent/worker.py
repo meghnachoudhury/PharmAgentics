@@ -35,6 +35,8 @@ def run_job(job: dict, model: str | None) -> dict:
     import briefing_agent as agent
 
     payload = job["payload"]
+    if (payload.get("query") or {}).get("brand_id", "BXA") != "BXA":
+        raise ValueError("The agent worker supports BXA only; use scripted Briefing for BXC.")
     if job["kind"] == "triage":
         return agent.triage(payload["question"], model)
     return agent.run_with_plan(payload["question"], payload["decision"], payload["plan"], model)

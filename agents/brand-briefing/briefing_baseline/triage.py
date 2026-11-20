@@ -55,12 +55,12 @@ def _card(reg, f: Front, s: dict | None, rank: int, proposed: str) -> dict:
         }
     t = s["territory"]
     if s["kind"] == "plan":
-        x, b = qy.mean_weekly(p.weeks, plan=s["plan"]), qy.mean_weekly(p.baseline, plan=s["plan"])
+        x, b = qy.mean_weekly(p.weeks, plan=s["plan"], product=p.brand_id), qy.mean_weekly(p.baseline, plan=s["plan"], product=p.brand_id)
         change = reg.scalar(qy.pct_change(x, b)) or 0
-        moved = (f"Plan {s['plan']} in {qy.name(t)}: BXA TRx averaged {reg.claim('get_metric', x, 'int', plan=s['plan'])} a week "
+        moved = (f"Plan {s['plan']} in {qy.name(t)}: {p.brand_id} TRx averaged {reg.claim('get_metric', x, 'int', plan=s['plan'])} a week "
                  f"against {reg.claim('get_metric', b, 'int', plan=s['plan'])} before "
                  f"({stages.word(change)} {reg.claim('get_metric', qy.pct_change(x, b), 'pct1', plan=s['plan'])}).")
-        why = "A payer access change on this plan, and its BXA TRx moved past the plan-level threshold (code screen)."
+        why = f"A payer access change on this plan, and its {p.brand_id} TRx moved past the plan-level threshold (code screen)."
         grain = f"Plan {s['plan']}, in {qy.name(t)}."
     else:
         moved = stages.territory_change(reg, p, t)
@@ -98,12 +98,12 @@ def build_plan(reg, f: Front) -> dict:
                         "layer": "code"})
     state = "CALENDAR" if p.calendar else ("TRIAGE_REVIEW" if cards else "ROUTINE")
     proposed_ids = [c["id"] for c in cards if c["proposed"] == "investigate"]
-    plan_id = "t-" + hashlib.sha256("|".join([p.question, reg.data_version, *proposed_ids]).encode()).hexdigest()[:12]
+    plan_id = "t-" + hashlib.sha256("|".join([p.question, reg.data_version, *proposed_ids, *([p.brand_id] if p.brand_id != "BXA" else [])]).encode()).hexdigest()[:12]
     for c in cards:
         for k in ("what_moved", "decision", "population", "granularity", "time"):
             c[k] = reg.render(c[k])
     return {
-        "plan_id": plan_id, "question": p.question, "data_version": reg.data_version, "state": state,
+        "plan_id": plan_id, "brand_id": p.brand_id, "question": p.question, "data_version": reg.data_version, "state": state,
         "weeks": list(p.weeks), "baseline": list(p.baseline), "focus": p.focus,
         "context": reg.render("\n".join(x for x in f.out if x)),  # stages 1 to 3 as the brief will state them
         "stories": cards, "dropped": dropped, "withheld": withheld, "candidates": len(f.found),

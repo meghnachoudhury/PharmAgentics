@@ -180,6 +180,14 @@ def run(state_dir: Path | None = None, baseline: str | None = None, model: str |
         source = f"vote:{v['lane']}/{v['ref']}/{v.get('ts')}"
         if v["lane"] != "briefing" or v["vote"] != "down" or not v.get("comment") or source in seen:
             continue
+        brand = (v.get("scope") or {}).get("brand_id", "BXA")
+        if brand != "BXA":
+            # BXC has no agent yet: never rerun its feedback through the BXA writer.
+            made.append({"id": proposal_id("case", source), "kind": "case", "source": source,
+                         "brand_id": brand, "confident": False,
+                         "reasons": ["scripted-only brand: review the figures before creating a regression case"],
+                         "draft_case": drafts([v])[(v["lane"], v["ref"])]})
+            continue
         text = draft_lesson(spec, v)
         problems = lesson_problems(text)
         question = (v.get("scope") or {}).get("question") or ""
@@ -191,7 +199,7 @@ def run(state_dir: Path | None = None, baseline: str | None = None, model: str |
             after = env.get("answer", "")
             checks_ok = gated_ok(env)
             resolved, why = review(spec, v["comment"], after)
-        lessons.append({"id": proposal_id("lesson", source, text), "kind": "lesson", "source": source, "text": text,
+        lessons.append({"id": proposal_id("lesson", source, text), "kind": "lesson", "source": source, "text": text, "brand_id": brand,
                         "applies_to": "writer", "question": question, "comment": v["comment"],
                         "before": v.get("shown"), "after": after, "problems": problems, "checks_ok": checks_ok,
                         "resolved": resolved, "reviewer_reason": why})
@@ -207,13 +215,17 @@ def run(state_dir: Path | None = None, baseline: str | None = None, model: str |
         source = f"upvote:{lane}/{ref}"
         if source not in seen:
             made.append({"id": proposal_id("case", source), "kind": "case", "source": source, "confident": False,
+                         "brand_id": (d.get("scope") or {}).get("brand_id", "BXA"),
                          "reasons": ["a vote is an opinion: write facts and a reference answer before it counts"],
                          "draft_case": d})
     for t in saved_threads(state_dir):  # two-turn cases from saved threads (brief-006 FR-009)
         source = f"thread:{t['brief_id']}/{t['owner']}"
         if source not in seen:
             first = t["turns"][0]
+            brief = json.loads(backend.read(f"briefs/{t['brief_id']}.json") or "{}")
+            brand = (brief.get("result") or {}).get("brand_id", "BXA")
             made.append({"id": proposal_id("case", source), "kind": "case", "source": source, "confident": False,
+                         "brand_id": brand,
                          "reasons": ["a saved thread is a candidate: write facts and a reference answer"],
                          "draft_case": {"lane": "briefing", "status": "candidate", "brief_id": t["brief_id"],
                                         "follow_up": {"question": first["question"], "section": first.get("section")},

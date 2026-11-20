@@ -6,6 +6,7 @@ from dataclasses import dataclass
 
 from . import queries as q
 from .registry import Registry
+from .brands import briefing_brand
 
 DRIVERS = ("access", "promotion", "supply", "competitor", "data")
 OWNER = {  # function to involve (Evaluation Pack EV-7.3)
@@ -31,14 +32,15 @@ class Check:
     detail: dict | None = None
 
 
-def access_events(reg: Registry, terr: str | None, weeks) -> list[dict]:
+def access_events(reg: Registry, terr: str | None, weeks, brand_id: str = "BXA") -> list[dict]:
     """BXA plans whose tier, prior authorization, step therapy or coverage changed in the months of `weeks`."""
+    brand_id = briefing_brand(brand_id)
     months = sorted({w[:7] + "-01" for w in weeks})
     sql = f"""
     with a as (select plan_id, territory_id, payer_channel, month, formulary_tier t, prior_authorization pa,
         step_therapy st, covered c, lag(formulary_tier) over w pt, lag(prior_authorization) over w ppa,
         lag(step_therapy) over w pst, lag(covered) over w pc
-      from raw.access_status_monthly where product_id = 'BXA' window w as (partition by plan_id order by month))
+      from raw.access_status_monthly where product_id = '{brand_id}' window w as (partition by plan_id order by month))
     select plan_id, territory_id, payer_channel, month::varchar, t > pt or pa > ppa or st > pst or c < pc as restricted
     from a where pt is not null and (t <> pt or pa <> ppa or st <> pst or c <> pc)
       and month in ({",".join(f"DATE '{m}'" for m in months)})"""
@@ -47,12 +49,12 @@ def access_events(reg: Registry, terr: str | None, weeks) -> list[dict]:
     return [dict(plan=r[0], territory=r[1], channel=r[2], month=r[3], restricted=bool(r[4])) for r in reg.rows(sql)]
 
 
-def check_access(reg: Registry, terr: str, W, B) -> Check:
-    events = access_events(reg, terr, W)
+def check_access(reg: Registry, terr: str, W, B, brand_id: str = "BXA") -> Check:
+    events = access_events(reg, terr, W, brand_id=brand_id)
     if not events:
-        return Check("access", "ruled_out", f"Access: ruled out. No BXA access change in the {q.name(terr)} plans in these months.")
+        return Check("access", "ruled_out", f"Access: ruled out. No {brand_id} access change in the {q.name(terr)} plans in these months.")
     e = events[0]
-    plan_w, plan_b = q.mean_weekly(W, plan=e["plan"]), q.mean_weekly(B, plan=e["plan"])
+    plan_w, plan_b = q.mean_weekly(W, plan=e["plan"], product=brand_id), q.mean_weekly(B, plan=e["plan"], product=brand_id)
     change = reg.claim("get_plan_metric", q.pct_change(plan_w, plan_b), "pct1", plan=e["plan"], weeks=len(W))
     lives = reg.claim(
         "lookup_access_events",
@@ -62,39 +64,39 @@ def check_access(reg: Registry, terr: str, W, B) -> Check:
     trend = "fell" if e["restricted"] else "rose"
     return Check("access", "supported",
                  f"Access: supported. Plan {e['plan']} ({e['channel']}, {lives} of the territory's covered lives) {move} "
-                 f"effective {e['month']}. BXA volume on that plan {trend} {change}.", {"plan": e["plan"], "events": events})
+                 f"effective {e['month']}. {brand_id} volume on that plan {trend} {change}.", {"plan": e["plan"], "events": events})
 
 
-def check_promotion(reg: Registry, terr: str, W, B) -> Check:
-    a = reg.claim("lookup_promo", q.context_mean("promo_activity", "rep_calls_aggregated", W, terr), "int", territory=terr)
-    b = reg.claim("lookup_promo", q.context_mean("promo_activity", "rep_calls_aggregated", B, terr), "int", territory=terr)
-    change = (reg.scalar(q.pct_change(q.context_mean("promo_activity", "rep_calls_aggregated", W, terr),
-                                      q.context_mean("promo_activity", "rep_calls_aggregated", B, terr))) or 0)
+def check_promotion(reg: Registry, terr: str, W, B, brand_id: str = "BXA") -> Check:
+    a = reg.claim("lookup_promo", q.context_mean("promo_activity", "rep_calls_aggregated", W, terr, product=brand_id), "int", territory=terr)
+    b = reg.claim("lookup_promo", q.context_mean("promo_activity", "rep_calls_aggregated", B, terr, product=brand_id), "int", territory=terr)
+    change = (reg.scalar(q.pct_change(q.context_mean("promo_activity", "rep_calls_aggregated", W, terr, product=brand_id),
+                                      q.context_mean("promo_activity", "rep_calls_aggregated", B, terr, product=brand_id))) or 0)
     if change <= -30:
-        pct = reg.claim("lookup_promo", q.pct_change(q.context_mean("promo_activity", "rep_calls_aggregated", W, terr),
-                                                      q.context_mean("promo_activity", "rep_calls_aggregated", B, terr)), "pct1", territory=terr)
+        pct = reg.claim("lookup_promo", q.pct_change(q.context_mean("promo_activity", "rep_calls_aggregated", W, terr, product=brand_id),
+                                                      q.context_mean("promo_activity", "rep_calls_aggregated", B, terr, product=brand_id)), "pct1", territory=terr)
         return Check("promotion", "supported",
                      f"Promotion: supported, as an association. Aggregated rep calls averaged {a} a week against {b} before "
                      f"({pct} lower). Method: this territory's weeks before, compared with the same weeks elsewhere.")
     return Check("promotion", "ruled_out", f"Promotion: ruled out. Aggregated rep calls held at {a} a week against {b} before.")
 
 
-def check_supply(reg: Registry, terr: str, W, B) -> Check:
-    fill = reg.scalar(q.context_mean("inventory_weekly", "inventory_fill_rate", W, terr))
-    f = reg.claim("lookup_inventory", q.context_mean("inventory_weekly", "inventory_fill_rate", W, terr), "dec2", territory=terr)
+def check_supply(reg: Registry, terr: str, W, B, brand_id: str = "BXA") -> Check:
+    fill = reg.scalar(q.context_mean("inventory_weekly", "inventory_fill_rate", W, terr, product=brand_id))
+    f = reg.claim("lookup_inventory", q.context_mean("inventory_weekly", "inventory_fill_rate", W, terr, product=brand_id), "dec2", territory=terr)
     if fill is not None and fill < 0.90:
-        back = reg.claim("lookup_inventory", q.context_mean("inventory_weekly", "distribution_backorder_rate", W, terr, 100), "pct1", territory=terr)
-        return Check("supply", "supported", f"Supply: supported. BXA inventory fill averaged {f} (close to full supply is normal), with {back} of orders backordered.")
-    return Check("supply", "ruled_out", f"Supply: ruled out. BXA inventory fill averaged {f}.")
+        back = reg.claim("lookup_inventory", q.context_mean("inventory_weekly", "distribution_backorder_rate", W, terr, 100, product=brand_id), "pct1", territory=terr)
+        return Check("supply", "supported", f"Supply: supported. {brand_id} inventory fill averaged {f} (close to full supply is normal), with {back} of orders backordered.")
+    return Check("supply", "ruled_out", f"Supply: ruled out. {brand_id} inventory fill averaged {f}.")
 
 
 def launch_date(reg: Registry) -> str | None:
     return reg.scalar("select min(effective_start)::varchar from raw.market_basket where product_id = 'BXE'")
 
 
-def check_competitor(reg: Registry, terr: str, W, B) -> Check:
+def check_competitor(reg: Registry, terr: str, W, B, brand_id: str = "BXA") -> Check:
     """Was Metacora already stronger here before the change? Shares inside the affected weeks are not
-    compared: when BXA volume drops, competitor share rises mechanically."""
+    compared: when {brand_id} volume drops, competitor share rises mechanically."""
     launched = launch_date(reg)
     if launched is None or launched > W[-1]:
         return Check("competitor", "ruled_out", f"Competitor launch: ruled out. Metacora did not launch until {launched}.")
@@ -110,7 +112,7 @@ def check_competitor(reg: Registry, terr: str, W, B) -> Check:
                  f"Competitor launch: supported. Before the change Metacora held {h} of the basket here against {e} elsewhere.")
 
 
-def check_data(reg: Registry, terr: str, W, B) -> Check:
+def check_data(reg: Registry, terr: str, W, B, brand_id: str = "BXA") -> Check:
     weeks = sorted(set(W) | set(B))
     flagged = reg.scalar(f"select count(*) from reporting.v_feed_health where territory_id = '{terr}' and health_status = 'FLAG' "
                          f"and week_start in {q._dates(weeks)}")
@@ -140,7 +142,7 @@ def context_baseline(W, B) -> list[str]:
     return B if len(B) >= 13 else [q.shift(W[0], -i) for i in range(13, 0, -1)]
 
 
-def run_checks(reg: Registry, terr: str, W, B) -> list[Check]:
+def run_checks(reg: Registry, terr: str, W, B, brand_id: str = "BXA") -> list[Check]:
     ref = context_baseline(W, B)
-    return [check_data(reg, terr, W, B), check_access(reg, terr, W, B), check_promotion(reg, terr, W, ref),
-            check_supply(reg, terr, W, B), check_competitor(reg, terr, W, ref)]
+    return [check_data(reg, terr, W, B, brand_id), check_access(reg, terr, W, B, brand_id), check_promotion(reg, terr, W, ref, brand_id),
+            check_supply(reg, terr, W, B, brand_id), check_competitor(reg, terr, W, ref, brand_id)]

@@ -20,10 +20,12 @@ export type Overview = {
   stats: Stat[]; territories: TerritoryRow[]; evidence: Evidence[]
 }
 
-export async function getOverview(week?: string): Promise<Overview> {
+export async function getOverview(week?: string, brand = "BXA"): Promise<Overview> {
   if (!BASE) throw new Error("API URL is not configured. Set VITE_PHARMAGENTICS_API_BASE_URL.")
   let response: Response
-  try { response = await fetch(`${BASE}/api/briefing/overview${week ? `?week=${encodeURIComponent(week)}` : ""}`, { cache: "no-store", credentials: "same-origin" }) }
+  const params = new URLSearchParams({ brand_id: brand })
+  if (week) params.set("week", week)
+  try { response = await fetch(`${BASE}/api/briefing/overview?${params}`, { cache: "no-store", credentials: "same-origin" }) }
   catch { throw new Error("Cannot reach PharmAgentics. Check your connection and try again.") }
   const body: unknown = await response.json().catch(() => null)
   if (!response.ok) {
