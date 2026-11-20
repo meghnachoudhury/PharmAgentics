@@ -24,3 +24,7 @@ export const noBrokenValues = always(() => !/\bNaN\b|\bundefined\b|\[object Obje
 export const leadersSeeNoEvidence = always(() =>
   !/Brand (Director|Manager)/.test(accountRole.current) ||
   !/Governed evidence|Source records/.test(visibleText.current));
+
+// The server refuses what a role may not do; the screen should never have asked. Seen once on 2026-11-19:
+// a Forecast analyst screen called the API under a session without that right.
+export const noPermissionErrorsOnScreen = always(() => !/\brole cannot\b/i.test(visibleText.current));

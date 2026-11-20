@@ -64,6 +64,12 @@ def test_territories_are_judged_by_the_triage_rule(june):
     assert ranks == sorted(ranks, key=["material", "normal", "held_back"].index)
 
 
+def test_the_first_week_has_nothing_to_compare_with():
+    first = overview.build("2024-10-14")
+    assert first["baseline"] == [] and {t["status"] for t in first["territories"]} == {"no_baseline"}
+    assert first["stats"][0]["change"] is None
+
+
 def test_every_headline_figure_reruns_to_the_same_value(june):
     evidence = {e["id"]: e for e in june["evidence"]}
     reg = Registry(service.DB)

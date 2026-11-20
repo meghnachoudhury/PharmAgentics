@@ -8,7 +8,7 @@ const int = (v: number | null | undefined) => (v == null ? "–" : Math.round(v)
 const pct = (v: number | null | undefined, signed = true) =>
   v == null ? "–" : `${signed && v > 0 ? "+" : ""}${(v * 100).toFixed(1)}%`
 const day = (iso: string) => new Date(`${iso}T00:00`).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
-const STATUS = { material: "Material change", normal: "Within normal range", held_back: "Held back" } as const
+const STATUS = { material: "Material change", normal: "Within normal range", no_baseline: "No comparison weeks", held_back: "Held back" } as const
 
 function Drawer({ title, kicker, onClose, children }: { title: string, kicker: string, onClose: () => void, children: ReactNode }) {
   const close = useRef<HTMLButtonElement>(null)
@@ -80,7 +80,9 @@ function WeekChart({ series, field, label, baseline }: { series: WeekPoint[], fi
 }
 
 function TerritoryPanel({ t, o, onClose, onGenerate }: { t: TerritoryRow, o: O, onClose: () => void, onGenerate: () => void }) {
-  const sentence = t.status === "held_back"
+  const sentence = t.status === "no_baseline"
+    ? "Not judged: this is the first week of the release, so there are no earlier weeks to compare it with."
+    : t.status === "held_back"
     ? "Not judged this week: a feed-health flag in this week or the 4 comparison weeks keeps it out of like-for-like comparison, as in the brief."
     : `${t.change != null && t.change < 0 ? "Down" : "Up"} ${pct(Math.abs(t.change ?? 0), false)} on the 4 weeks before; its normal range is ±${pct(t.threshold, false)}. `
       + `Against the other territories: ${t.gap != null && t.gap > 0 ? "+" : ""}${((t.gap ?? 0) * 100).toFixed(1)} points.${t.status === "material" ? " Both are past the triage rule, so the brief will open a story on it." : ""}`
@@ -127,7 +129,7 @@ function StatBar({ stats, onOpen }: { stats: Stat[], onOpen: (s: Stat) => void }
 
 function Strip({ t, domain, onOpen }: { t: TerritoryRow, domain: number, onOpen: () => void }) {
   const pos = (v: number) => `${50 + (v / domain) * 50}%`
-  if (t.status === "held_back" || t.change == null || t.threshold == null)
+  if (t.status === "held_back" || t.status === "no_baseline" || t.change == null || t.threshold == null)
     return <div className="relative h-7"><div className="absolute inset-y-1 left-1/2 w-px bg-rule"/><span className="absolute inset-y-0 left-2 flex items-center text-xs text-muted">not judged</span></div>
   const size = 10 + Math.min(8, Math.sqrt(Math.max(t.trx ?? 0, 0)) / 4)
   return <div className="relative h-7">

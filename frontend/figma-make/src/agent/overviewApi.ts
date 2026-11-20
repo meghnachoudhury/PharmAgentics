@@ -6,7 +6,7 @@ export type Stat = Claim & { key: string; label: string; change: (Claim & { labe
 export type Evidence = { id: string; tool: string; params: Record<string, unknown>; query: string; result: unknown; data_version: string }
 export type WeekPoint = { week: string; trx: number; nrx: number; nbrx: number }
 export type TerritoryRow = {
-  id: string; label: string; status: "material" | "normal" | "held_back"
+  id: string; label: string; status: "material" | "normal" | "no_baseline" | "held_back"
   trx: number | null; change: number | null; gap: number | null; threshold: number | null; impact: number
   series: WeekPoint[]
   health: { status: string; reasons: string[]; missing_keys: number; duplicate_keys: number } | null

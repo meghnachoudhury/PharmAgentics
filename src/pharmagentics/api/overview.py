@@ -107,7 +107,8 @@ def build(week: str | None = None) -> dict:
         for t in sorted({*series, *health}):
             x, b = mean_of(t, p.weeks), mean_of(t, p.baseline)
             judged = screened.get(t, {})
-            status = "material" if t in material else "normal" if t in p.ok else "held_back"
+            status = ("material" if t in material else "no_baseline" if not p.baseline
+                      else "normal" if t in p.ok else "held_back")
             total = sum(v for _, v in mix.get(t, []))
             territories.append({
                 "id": t, "label": q.name(t), "status": status,
@@ -119,7 +120,7 @@ def build(week: str | None = None) -> dict:
                 "mix": [{"product": prod, "name": names.get(prod, prod), "trx": v, "share": v / total if total else None}
                         for prod, v in sorted(mix.get(t, []), key=lambda m: -m[1])],
             })
-        order = {"material": 0, "normal": 1, "held_back": 2}
+        order = {"material": 0, "normal": 1, "no_baseline": 2, "held_back": 3}
         territories.sort(key=lambda r: (order[r["status"]], -(r["impact"] if r["status"] == "material" else abs(r["change"] or 0))))
         return {
             "week": week, "first_week": first, "latest_week": latest, "data_version": reg.data_version, "product": PRODUCT,
