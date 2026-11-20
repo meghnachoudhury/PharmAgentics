@@ -1,6 +1,6 @@
 # Handoff: memo brief, slices 2 to 5
 
-**Progress (2026-11-20, 04:10):** slices 1, 2 and 3 are done and committed (`dcf616d`, `68b6a51`). Latest gate runs to compare against: scripted `060132b35cc1`, agent `43c24bc0a892`. Parallel agent runs (`MLFLOW_GENAI_EVAL_MAX_WORKERS=4`) are verified safe. Next: slice 4, then slice 5. `.specify/feature.json` points at `specs/brief-006-follow-ups`. The headless-Chrome check scripts used so far live in the session scratchpad and may be gone; the approach is in `specs/brief-003-narrative-renderer/plan.md` (slice 2) and `specs/brief-006-follow-ups/tasks.md` (T008).
+**Progress (2026-11-20, 05:00):** slices 1 to 4 are done and committed (`dcf616d`, `68b6a51`, `698941c`). Latest gate runs to compare against (30 Briefing cases): scripted `88e13b759f5c`, agent `66920e2b0f8a`. Parallel agent runs (`MLFLOW_GENAI_EVAL_MAX_WORKERS=4`) are verified safe. Next: slice 5 (core-008 FR-019 to FR-022); set `.specify/feature.json` to `specs/core-008-uat-feedback`. The headless-Chrome check scripts used so far live in the session scratchpad and may be gone; the approach is in `specs/brief-003-narrative-renderer/plan.md` (slice 2) and `specs/brief-006-follow-ups/tasks.md` (T008).
 
 For a Claude session that continues this work without Michael present. Every decision below was made with him on 2026-11-19 and 2026-11-20; do not reopen them. If something is not covered here or in the specs, stop and leave a note rather than guess.
 
