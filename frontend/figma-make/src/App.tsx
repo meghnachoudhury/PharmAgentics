@@ -4,6 +4,7 @@ import { BrandMark, Icon, type IconName } from "./agent/primitives"
 import { TelemetryWorkspace } from "./Telemetry"
 import { Overview } from "./Overview"
 import { Memo } from "./Memo"
+import { FeedbackReview } from "./FeedbackReview"
 import { MessageBar, type Chip } from "./MessageBar"
 import { sharedFromLocation } from "./agent/threadApi"
 import { AnswerFeedback, FeedbackProvider, ShareFeedbackLink, useFeedbackActions } from "./Feedback"
@@ -471,7 +472,7 @@ function Shell({me, onBriefingHome, children, startInForecast=false}: {me: Me, o
         </div>
         <AccountMenu me={me}/>
       </header>
-      <section className="min-h-0 flex-1 overflow-y-auto"><div hidden={forecast || telemetry}>{children}</div>{telemetry && <TelemetryWorkspace/>}{forecast && !telemetry && <ForecastWorkspace key={forecastSection} me={me} section={forecastSection} onSection={setForecastSection}/>}</section>
+      <section className="min-h-0 flex-1 overflow-y-auto"><div hidden={forecast || telemetry}>{children}</div>{telemetry && <TelemetryWorkspace/>}{telemetry && me.tester && <FeedbackReview/>}{forecast && !telemetry && <ForecastWorkspace key={forecastSection} me={me} section={forecastSection} onSection={setForecastSection}/>}</section>
       <footer className="shrink-0 border-t border-rule px-5 py-2 text-center text-[11px] text-muted">PharmAgentics can make mistakes. Check important figures {leader ? "with the Commercial Analyst" : "against the evidence"}.</footer>
     </main>
     <Toaster theme="dark" position="bottom-right" toastOptions={{className: "glass !bg-transparent !text-ink !border !border-rule !font-sans !rounded-xl"}}/>

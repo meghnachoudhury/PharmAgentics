@@ -10,6 +10,7 @@ def test_frontend_contains_only_supported_feature_modules():
     assert sorted(p.relative_to(SRC).as_posix() for p in SRC.rglob("*") if p.is_file()) == [
         "App.tsx",
         "Feedback.tsx",
+        "FeedbackReview.tsx",
         "ForecastDrivers.tsx",
         "Memo.tsx",
         "MessageBar.tsx",
@@ -20,6 +21,7 @@ def test_frontend_contains_only_supported_feature_modules():
         "agent/forecastApi.ts",
         "agent/overviewApi.ts",
         "agent/primitives.tsx",
+        "agent/reviewApi.ts",
         "agent/telemetryApi.ts",
         "agent/threadApi.ts",
         "components/ui/dropdown-menu.tsx",

@@ -29,6 +29,7 @@ from briefing_baseline import pipeline as scripted
 from briefing_baseline.triage import stage_flow
 from briefing_lowcode.team import RunLog, _call
 
+from . import lessons
 from . import plan as planmod
 from . import write
 from .investigate import investigate, server
@@ -44,7 +45,7 @@ def load_config() -> dict:
 
 def config_version() -> str:
     h = hashlib.sha256()
-    for f in [HERE / "agent.yaml", *sorted((HERE / "prompts").glob("*.md"))]:
+    for f in [HERE / "agent.yaml", *sorted((HERE / "prompts").glob("*.md")), lessons.FILE]:
         h.update(f.name.encode() + f.read_bytes())
     return h.hexdigest()[:12]
 
@@ -120,7 +121,8 @@ async def _write(cfg: dict, spec: str, question: str, sections: dict, close: dic
     shown = write.sections_text(sections, close, stories)
     gloss_text, glosses = write.glossary(shown, claims, evidence)  # what each number measures, written by code
     prompt = (HERE / cfg["prompts"]["writer"]).read_text(encoding="utf-8").format(
-        question=question.split(":", 1)[-1].strip(), sections=shown, glossary=gloss_text or "(no numbers)")
+        question=question.split(":", 1)[-1].strip(), sections=shown, glossary=gloss_text or "(no numbers)") \
+        + lessons.block("writer")  # approved lessons only (core-008 FR-022); empty adds nothing
     with span("5_writer") as sp:
         raw = await _ask(spec, prompt, log, "writer")
         try:

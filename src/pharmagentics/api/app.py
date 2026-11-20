@@ -86,6 +86,8 @@ app.include_router(overview.router)  # the analyst's brand overview (Weekly brie
 app.include_router(telemetry.router)  # golden-set scores from the exported MLflow snapshot
 from . import threads  # noqa: E402  (brief-006: follow-up threads; own line to keep merges small)
 app.include_router(threads.router)
+from . import review  # noqa: E402  (core-008 FR-021: the Feedback review list, tester admin only)
+app.include_router(review.router)
 
 Briefing = Depends(rbac.require_briefing)
 

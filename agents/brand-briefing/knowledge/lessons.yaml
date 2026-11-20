@@ -1,0 +1,5 @@
+# Approved lessons for the Briefing agents (core-008 FR-021, FR-022; ADR 0003).
+# Proposed by `python -m eval improve`, approved by the tester admin on the Feedback review panel, written here by
+# `python -m eval promote`, and merged by pull request so CI and the eval gate run first. Agents read only this file:
+# never threads or raw feedback. A lesson holds no digit.
+lessons: []
