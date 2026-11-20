@@ -12,12 +12,12 @@ export type ForecastSectionText = { id: string; title: string; text: string }
 export type ForecastDecision = { by: string; action: string; target: string; reason: string }
 export type ForecastCandidate = { id: string; driver: string; territory: string; label: string; first_active: string | null; last_active: string | null; status: string; reason: string | null; comparison: string | null }
 export type ForecastComparison = { id: string; episode: string; method: string; controls: string[]; stats: Record<string, unknown>; flags: string[] }
-export type ForecastScope = { question: string; weeks: string[]; territory: string; territory_name: string; intent: string; intent_label: string; period: string; n_weeks: number; notes: string[]; out_of_scope: string | null; engine: string }
+export type ForecastScope = { question: string; weeks: string[]; territory: string; territory_name: string; intent: string; intent_label: string; period: string; n_weeks: number; notes: string[]; out_of_scope: string | null; engine: string; investigator?: string; read_by?: "model" | "rules" }
 export type ForecastFollowupItem = { id: string; question: string; status: "running" | "done" | "failed"; op: string | null; answer: string | null; child_run_id: string | null }
 export type ForecastStep = { tool: string; args: Record<string, unknown>; result: string }
 export type ForecastReport = { headline: string; territory_id: string; week: number; week_ending: string; window_weeks: number; forecast_trx: number | null; actual_trx: number | null; variance_trx: number | null; variance_pct: number | null; residual_trx: number | null; drivers: ForecastDriver[]; caveats: string[]; what_to_check: { question: string; why: string; owner: string }[]; abstained: boolean; verification?: { verdict?: string; checks?: { id: string; status: string; detail: string }[] }; investigator_mode?: string
   question?: string; intent?: string; summary?: string | null; sections?: ForecastSectionText[]; decisions?: ForecastDecision[]; candidates?: ForecastCandidate[]
-  comparisons?: ForecastComparison[]; set_aside_weeks?: string[]; week_start?: string | null; out_of_scope?: string; bias_trx?: number | null }
+  comparisons?: ForecastComparison[]; summary_by?: "model" | "code"; scope_read_by?: string; set_aside_weeks?: string[]; week_start?: string | null; out_of_scope?: string; bias_trx?: number | null }
 export type ForecastRun = { followups?: ForecastFollowupItem[]; parent_run_id?: string | null; kind?: "question" | "form"; job_status?: "running" | "done" | "failed"; job_error?: string | null; progress?: ForecastStep[]; view: "analyst" | "leadership"; forecast_run_id: string; review_status: string; reviewed_at: string | null; review_note: string | null; report: ForecastReport; stages?: { stage: number; name: string; status: string }[]; history?: { at: string; role: string; action: string; note: string | null }[] }
 
 function object(value: unknown): asserts value is Record<string, unknown> {
@@ -66,7 +66,7 @@ export async function openForecast(
 export async function submitForecast(id: string): Promise<ForecastRun> { return run(await api(`/api/forecast/runs/${encodeURIComponent(id)}/submit`, post())) }
 export async function reviewForecast(id: string, decision: "approved" | "rejected" | "returned", note?: string): Promise<ForecastRun> { return run(await api(`/api/forecast/runs/${encodeURIComponent(id)}/review`, post({ decision, note: note || null }))) }
 
-export type ForecastAsk = { question: string; territory_id?: string | null; week_from?: string | null; week_to?: string | null; view?: "analyst" | "leadership" }
+export type ForecastAsk = { question: string; territory_id?: string | null; week_from?: string | null; week_to?: string | null; intent?: string | null; view?: "analyst" | "leadership" }
 export async function forecastScope(ask: ForecastAsk): Promise<ForecastScope> { const value: unknown = await api("/api/forecast/scope", post(ask)); object(value); if (typeof value.intent !== "string" || !Array.isArray(value.weeks)) throw new Error("The question could not be read."); return value as unknown as ForecastScope }
 export async function askForecast(ask: ForecastAsk): Promise<ForecastRun> { return run(await api("/api/forecast/ask", post(ask))) }
 export async function askFollowup(id: string, question: string): Promise<ForecastRun> { return run(await api(`/api/forecast/runs/${encodeURIComponent(id)}/followups`, post({question}))) }

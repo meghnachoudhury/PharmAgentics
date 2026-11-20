@@ -157,6 +157,8 @@ class ForecastAsk(BaseModel):
     territory_id: Territory | None = None
     week_from: date | None = None
     week_to: date | None = None
+    intent: Literal["reliability", "screen", "where", "drivers", "attribution", "unknowns", "next_checks",
+                    "assumptions", "audit", "communicate"] | None = None
     view: Literal["analyst", "leadership"] | None = None
 
     @field_validator("question")

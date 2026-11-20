@@ -22,6 +22,16 @@ NAMES = {"NATIONAL": "", "MID_ATLANTIC": "Mid-Atlantic", "GREAT_LAKES": "Great L
          "NEW_ENGLAND": "New England"}
 
 
+def _mondays(a: str, b: str) -> list[str]:
+    from datetime import date, timedelta
+
+    d, end, out = date.fromisoformat(a), date.fromisoformat(b), []
+    while d <= end:
+        out.append(d.isoformat())
+        d += timedelta(days=7)
+    return out
+
+
 def probes() -> list[dict]:
     return yaml.safe_load(LABELS.read_text(encoding="utf-8"))["probes"]
 
@@ -84,7 +94,10 @@ def run(system: str, model: str | None = None) -> str:
         mlflow.log_params({"system": system, "model": model or "none", "labels": "draft",
                            "agent_config_version": pkg.config_version()})
         for p in probes():
-            out = pkg.answer(question(p), model=model if system == "forecast_agent" else None)
+            # The probe's scope is given, as if confirmed on the scope card, so only the investigation differs.
+            weeks = [w for w in _mondays(str(p["weeks"][0]), str(p["weeks"][1]))]
+            out = pkg.answer(question(p), model=model, territory=p["territory"], weeks=weeks, intent="attribution", writer=False,
+                             investigator="model" if system == "forecast_investigator" else "rules")
             rep = out.get("report") or {}
             rows.append({"id": p["id"], "question": question(p), "expect": p["expect"],
                          "got": sorted(accepted(rep, p["territory"])),

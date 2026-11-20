@@ -1,0 +1,48 @@
+# Question-reading probes for the Forecast lane (fcst-002 step 1). DRAFT until Alvin and Sienna confirm them.
+# Each is a paraphrase of a persona question (CA, BM, FM stories) or an everyday one, with the scope a careful
+# reader would take. The release ends 2026-10-05, so "last August" is August 2026. A month is the weeks whose
+# Monday falls in it. A first or last week within seven days of the label counts as right. `intent` lists every
+# acceptable reading.
+status: draft
+latest: 2026-10-05
+probes:
+  - {q: "Can I trust the New England actual for the week of May 4, 2026, or is it a feed problem?", weeks: [2026-05-04, 2026-05-04], territory: NEW_ENGLAND, intent: [reliability]}
+  - {q: "Was New England's drop in early May 2026 real or a data glitch?", weeks: [2026-05-04, 2026-05-11], territory: NEW_ENGLAND, intent: [reliability]}
+  - {q: "Which territories drove the national shortfall in the week of Aug 24, 2026?", weeks: [2026-08-24, 2026-08-24], territory: NATIONAL, intent: [where]}
+  - {q: "Where was the miss concentrated from July 6 to August 31, 2026?", weeks: [2026-07-06, 2026-08-31], territory: NATIONAL, intent: [where]}
+  - {q: "In the Pacific during June 2026, what evidence supports or contradicts each possible cause?", weeks: [2026-06-01, 2026-06-29], territory: PACIFIC, intent: [drivers]}
+  - {q: "How much of Mid-Atlantic's miss from August to October 2025 comes from the payer change?", weeks: [2025-08-04, 2025-10-27], territory: MID_ATLANTIC, intent: [attribution]}
+  - {q: "Split the miss for the week of 2026-08-24 by driver.", weeks: [2026-08-24, 2026-08-24], territory: NATIONAL, intent: [attribution]}
+  - {q: "How sure are we about the drivers for the week of August 24, 2026, and what don't we know?", weeks: [2026-08-24, 2026-08-24], territory: NATIONAL, intent: [unknowns]}
+  - {q: "Who should follow up on the August 24, 2026 miss, and on what?", weeks: [2026-08-24, 2026-08-24], territory: NATIONAL, intent: [next_checks]}
+  - {q: "Give me a summary of the Aug 24, 2026 miss I can send to leadership.", weeks: [2026-08-24, 2026-08-24], territory: NATIONAL, intent: [communicate]}
+  - {q: "How much of South Central's September 2026 gap is unexplained?", weeks: [2026-09-07, 2026-09-28], territory: SOUTH_CENTRAL, intent: [unknowns]}
+  - {q: "Should Forecasting revisit its assumptions given March to October 2026?", weeks: [2026-03-02, 2026-10-05], territory: NATIONAL, intent: [assumptions]}
+  - {q: "What were the most likely commercial drivers between March and September 2026?", weeks: [2026-03-02, 2026-09-28], territory: NATIONAL, intent: [drivers]}
+  - {q: "Can every number in the Aug 24, 2026 report be traced and reproduced?", weeks: [2026-08-24, 2026-08-24], territory: NATIONAL, intent: [audit]}
+  - {q: "Why were we so far below plan in the Southeast last August?", weeks: [2026-08-03, 2026-08-31], territory: SOUTHEAST, intent: [drivers, attribution]}
+  - {q: "What happened to Cardiovela in the Pacific in June 2026?", weeks: [2026-06-01, 2026-06-29], territory: PACIFIC, intent: [drivers, attribution]}
+  - {q: "Which region hurt us most this summer?", weeks: [2026-06-01, 2026-08-31], territory: NATIONAL, intent: [where, screen]}
+  - {q: "How much of the Q3 2026 shortfall is Metacora?", weeks: [2026-07-06, 2026-09-28], territory: NATIONAL, intent: [attribution]}
+  - {q: "Was the Mid-Atlantic dip in fall 2025 a payer issue?", weeks: [2025-09-01, 2025-11-24], territory: MID_ATLANTIC, intent: [drivers, attribution]}
+  - {q: "Break down the national miss for the week of Aug 24, 2026", weeks: [2026-08-24, 2026-08-24], territory: NATIONAL, intent: [attribution]}
+  - {q: "Top five territory gaps over the last three months", weeks: [2026-07-13, 2026-10-05], territory: NATIONAL, intent: [screen]}
+  - {q: "Rank the territories by forecast miss in Q2 2026", weeks: [2026-04-06, 2026-06-29], territory: NATIONAL, intent: [screen]}
+  - {q: "Why did Great Lakes fall behind forecast in February and March 2026?", weeks: [2026-02-02, 2026-03-30], territory: GREAT_LAKES, intent: [drivers, attribution]}
+  - {q: "Is the Great Lakes actual for the week of July 6, 2026 reliable?", weeks: [2026-07-06, 2026-07-06], territory: GREAT_LAKES, intent: [reliability]}
+  - {q: "Did we miss forecast nationally in the first week of October 2026?", weeks: [2026-10-05, 2026-10-05], territory: NATIONAL, intent: [attribution, where, reliability]}
+  - {q: "Explain the Southeast miss in the week of 2026-08-10", weeks: [2026-08-10, 2026-08-10], territory: SOUTHEAST, intent: [attribution, drivers]}
+  - {q: "What drove the Pacific shortfall last June?", weeks: [2026-06-01, 2026-06-29], territory: PACIFIC, intent: [drivers, attribution]}
+  - {q: "How confident is the Pacific supply explanation for June 2026?", weeks: [2026-06-01, 2026-06-29], territory: PACIFIC, intent: [unknowns]}
+  - {q: "Which team should check the Southeast gap in August 2026?", weeks: [2026-08-03, 2026-08-31], territory: SOUTHEAST, intent: [next_checks]}
+  - {q: "Write a defensible leadership summary for the Mid-Atlantic miss from Aug to Oct 2025", weeks: [2025-08-04, 2025-10-27], territory: MID_ATLANTIC, intent: [communicate]}
+  - {q: "Has the national forecast been systematically too high since the Metacora launch in March 2026?", weeks: [2026-03-02, 2026-10-05], territory: NATIONAL, intent: [assumptions]}
+  - {q: "How big was the national miss in the summer of 2025, and where was it?", weeks: [2025-06-02, 2025-08-25], territory: NATIONAL, intent: [where]}
+  - {q: "Why did the Northwest miss in the week of 2026-09-14?", weeks: [2026-09-14, 2026-09-14], territory: NORTHWEST, intent: [drivers, attribution]}
+  - {q: "Was the Mountain territory's miss in January 2025 driven by anything?", weeks: [2025-01-06, 2025-01-27], territory: MOUNTAIN, intent: [drivers, attribution]}
+  - {q: "What portion of the Southeast miss from July 6 to September 28, 2026 can't we explain?", weeks: [2026-07-06, 2026-09-28], territory: SOUTHEAST, intent: [unknowns]}
+  - {q: "List the biggest misses by territory in 2026 so far", weeks: [2026-01-05, 2026-10-05], territory: NATIONAL, intent: [screen]}
+  - {q: "How much did the Labor Day week affect the national forecast in 2025?", weeks: [2025-09-01, 2025-09-01], territory: NATIONAL, intent: [attribution, drivers]}
+  - {q: "Can we reproduce the attribution for the week of 2026-07-27?", weeks: [2026-07-27, 2026-07-27], territory: NATIONAL, intent: [audit]}
+  - {q: "Did the New England miss in May 2026 come from bad data?", weeks: [2026-05-04, 2026-05-25], territory: NEW_ENGLAND, intent: [reliability]}
+  - {q: "What should we tell the brand lead about Q3 2026?", weeks: [2026-07-06, 2026-09-28], territory: NATIONAL, intent: [communicate]}

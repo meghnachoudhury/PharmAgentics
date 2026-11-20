@@ -120,6 +120,12 @@ def question_model() -> str | None:
     return hosted if hosted.startswith("anthropic:") and os.environ.get("ANTHROPIC_API_KEY") else None
 
 
+def investigator_mode() -> str:
+    """Who investigates (step 6): the rules by default; FORECAST_INVESTIGATOR=model makes the model the investigator
+    (the comparison arm, for trials only)."""
+    return "model" if os.environ.get("FORECAST_INVESTIGATOR", "rules").strip() == "model" and question_model() else "rules"
+
+
 def _weeks(ask: ForecastAsk) -> list[str] | None:
     if not ask.week_from:
         return None
@@ -135,7 +141,8 @@ def _weeks(ask: ForecastAsk) -> list[str] | None:
     return out
 
 
-def _scope_card(ask: ForecastAsk) -> dict:
+def _scope_card(ask: ForecastAsk, model: str | None) -> dict:
+    """Step 1: the model reads the question when one is configured (code checks every field); else the keyword rules."""
     agent = _agent()
     first, latest = agent.context(service.DB)
     weeks = _weeks(ask)
@@ -143,7 +150,13 @@ def _scope_card(ask: ForecastAsk) -> dict:
         weeks = [w for w in weeks if first <= w <= latest]
     from forecast_agent.scope import parse_scope
 
-    return parse_scope(ask.question, first, latest, territory=ask.territory_id, weeks=weeks).card()
+    if model and not weeks and not ask.territory_id:
+        from forecast_agent.reader import read_scope
+
+        scope, read_by = read_scope(ask.question, first, latest, model)
+    else:
+        scope, read_by = parse_scope(ask.question, first, latest, territory=ask.territory_id, weeks=weeks), "rules"
+    return {**scope.card(), "read_by": read_by}
 
 
 @router.post("/scope")
@@ -154,7 +167,7 @@ def scope(ask: ForecastAsk, response: Response, who=Forecast) -> dict:
     if not service.DB.is_file():
         raise HTTPException(status_code=503, detail="DuckDB has not been built. Run the data loader first.")
     model = question_model()
-    return {**_scope_card(ask), "engine": model or "rules"}
+    return {**_scope_card(ask, model), "engine": model or "rules", "investigator": investigator_mode()}
 
 
 def _result(rid: str, out: dict, model: str | None) -> dict:
@@ -178,7 +191,8 @@ def _investigate(rid: str, ask: ForecastAsk, weeks: list[str] | None, model: str
         forecast_store.update(rid, progress=list(steps))
 
     try:
-        out = agent.answer(ask.question, model=model, db=service.DB, territory=ask.territory_id, weeks=weeks, on_step=on_step)
+        out = agent.answer(ask.question, model=model, db=service.DB, territory=ask.territory_id, weeks=weeks, on_step=on_step,
+                           intent=ask.intent, investigator=investigator_mode())
         forecast_store.update(rid, result=_result(rid, out, model), job_status="done", progress=list(steps))
     except Exception as exc:  # noqa: BLE001 - the run records the failure; the request has already returned
         log.exception("forecast question failed")
@@ -204,12 +218,14 @@ def ask(payload: ForecastAsk, response: Response, who=Forecast) -> dict:
         version = data_version(reg.con)
     finally:
         reg.close()
-    rid = forecast_store.question_id(payload.question, payload.territory_id, weeks, model or "rules", version)
+    rid = forecast_store.question_id(payload.question + f"|{payload.intent}", payload.territory_id, weeks,
+                                     f"{model or 'rules'}|{investigator_mode()}", version)
     existing = forecast_store.get(rid)
     if existing and existing.get("job_status") in ("running", "done"):
         return views.forecast_record(existing, view)
     request = {"question": payload.question, "territory_id": payload.territory_id, "weeks": weeks and [weeks[0], weeks[-1]]}
-    record = forecast_store.start_question(rid, request, rbac.pseudonym(p.sub), model or "rules")
+    record = forecast_store.start_question(rid, request, rbac.pseudonym(p.sub),
+                                           "rules" if investigator_mode() == "rules" else f"agent ({model})")
     threading.Thread(target=_investigate, args=(rid, payload, weeks, model), daemon=True, name=f"forecast-{rid}").start()
     store.record_event("forecast_ask", **_who(p, role), forecast_run_id=rid, view=view, engine=model or "rules")
     return views.forecast_record(record, view)
@@ -265,7 +281,7 @@ def _run_followup(rid: str, fid: str, question: str, model: str | None, by: str)
                                            week_to=date.fromisoformat(weeks[-1])))
             drop = sorted(set(plan.get("drop_controls") or []))
             out = agent.answer(report["question"], model=model, db=service.DB, territory=territory, weeks=weeks,
-                               drop_controls=drop)
+                               drop_controls=drop, intent=report.get("intent"), investigator=investigator_mode())
             child_q = report["question"] + f" [follow-up: {question}]"
             cid = forecast_store.question_id(child_q, territory, weeks, model or "rules", "followup")
             forecast_store.start_question(cid, {"question": child_q, "territory_id": territory,
@@ -321,7 +337,7 @@ def status(response: Response, p: rbac.Principal = Depends(rbac.require_user)) -
     role = p.role("forecast")
     return {
         "lane": "forecast", "available": rbac.lane_available("forecast"), "engine": engine_mode(),
-        "question_engine": question_model() or "rules",
+        "question_engine": question_model() or "rules", "investigator": investigator_mode(),
         "role": role.name if role else None, "persona": role.persona if role else None,
         "label": role.label if role else None, "views": list(role.views) if role else [], "writer": _writer_info(),
         "actions": list(role.actions) if role else [],

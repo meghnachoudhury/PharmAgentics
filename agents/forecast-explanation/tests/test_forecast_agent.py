@@ -119,19 +119,31 @@ def test_a_dropped_control_changes_the_estimate_and_is_recorded():
     assert "SOUTH_CENTRAL" not in dropped.controls and round(dropped.effect) == -204 and round(default.effect) == -213
 
 
-def test_a_failed_model_falls_back_to_the_rules(monkeypatch):
+@pytest.fixture
+def no_language_model(monkeypatch):
+    """Reading and writing without a model server: the reader and the writer report a model error."""
+    import forecast_agent.prose as prose
+    import forecast_agent.reader as reader
+    from forecast_agent.scope import parse_scope as rules
+
+    monkeypatch.setattr(reader, "read_scope", lambda q, f, l, spec: (rules(q, f, l), "rules"))
+    monkeypatch.setattr(prose, "write_summary", lambda w, parts, spec: (None, "model_error"))
+
+
+def test_a_failed_model_falls_back_to_the_rules(monkeypatch, no_language_model):
     import forecast_agent.agent as agent
 
     def broken(spec):
         raise RuntimeError("no model server")
 
     monkeypatch.setattr(agent, "chat_client", broken)
-    out = answer("Week of 2026-08-24: How much of the miss does each driver explain?", model="ollama:none")
+    out = answer("Week of 2026-08-24: How much of the miss does each driver explain?", model="ollama:none",
+                 investigator="model")
     assert out["trajectory"]["fallback"] and "rules fallback" in out["report"]["investigator_mode"]
     assert {d["driver"] for d in out["report"]["drivers"]} == {"competitor", "promotion"}
 
 
-def test_candidates_a_model_leaves_open_are_decided_by_the_rules_and_labelled(monkeypatch):
+def test_candidates_a_model_leaves_open_are_decided_by_the_rules_and_labelled(monkeypatch, no_language_model):
     import forecast_agent.agent as agent
 
     class Silent:  # a model that answers without calling any tool
@@ -144,7 +156,46 @@ def test_candidates_a_model_leaves_open_are_decided_by_the_rules_and_labelled(mo
     monkeypatch.setattr(agent, "Agent", Silent)
     monkeypatch.setattr(agent, "chat_client", lambda spec: None)
     monkeypatch.setattr(agent, "chat_options", lambda spec: {})
-    out = answer("Week of 2026-08-24: How much of the miss does each driver explain?", model="ollama:none")
+    out = answer("Week of 2026-08-24: How much of the miss does each driver explain?", model="ollama:none",
+                 investigator="model")
     assert out["trajectory"]["left_undecided"] == 2 and not out["trajectory"]["fallback"]
     assert {d["by"] for d in out["report"]["decisions"]} == {"rules (agent left it undecided)"}
     assert {d["driver"] for d in out["report"]["drivers"]} == {"competitor", "promotion"}
+
+
+def test_with_a_model_the_rules_still_investigate_by_default(no_language_model):
+    out = answer("Week of 2026-08-24: How much of the miss does each driver explain?", model="ollama:none")
+    assert out["report"]["investigator_mode"] == "rules" and out["trajectory"]["investigator"] == "rules"
+    assert out["report"]["summary_by"] == "code" and out["trajectory"]["writer_status"] == "model_error"
+
+
+def test_a_confirmed_scope_skips_reading(no_language_model):
+    out = answer("Why did we miss?", model="ollama:none", territory="PACIFIC", weeks=["2026-06-01", "2026-06-08"],
+                 intent="drivers")
+    r = out["report"]
+    assert r["scope_read_by"] == "confirmed" and r["intent"] == "drivers" and r["territory_id"] == "PACIFIC"
+
+
+@pytest.mark.parametrize("start,end,weeks", [
+    ("2026-08-24", "2026-08-24", ["2026-08-24"]),
+    ("2026-05-06", "2026-05-06", ["2026-05-04"]),
+    ("2026-08-01", "2026-08-31", ["2026-08-03", "2026-08-10", "2026-08-17", "2026-08-24", "2026-08-31"]),
+    ("2027-01-01", "2027-02-01", []),
+])
+def test_the_reader_turns_calendar_dates_into_release_weeks(start, end, weeks):
+    from forecast_agent.reader import _period
+    assert _period(start, end, FIRST, LATEST) == weeks
+
+
+def test_the_summary_check_refuses_what_a_model_must_not_write():
+    from forecast_agent.prose import check
+    tokens = [{"token": "{c1}", "means": "miss"}, {"token": "{c2}", "means": "residual"}]
+    allowed = {"drivers": {"promotion"}, "territories": {"NATIONAL", "SOUTHEAST"}, "residual": "{c2}"}
+    ok = "Cardiovela missed by {c1}, mostly from the Southeast rep coverage lapse; {c2} is not explained yet."
+    assert check(ok, tokens, allowed) is None
+    assert check(ok.replace("{c1}", "about 1,000"), tokens, allowed) == "digit_outside_token"
+    assert check(ok + " Also {c9}.", tokens, allowed) == "unknown_token"
+    assert check("Cardiovela missed by {c1} in the Southeast.", tokens, allowed) == "residual_missing"
+    assert check(ok + " We should cut the budget there.", tokens, allowed) == "commercial_action"
+    assert check(ok + " Supply was tight too.", tokens, allowed) == "new_driver"
+    assert check(ok + " Pacific also fell.", tokens, allowed) == "new_territory"

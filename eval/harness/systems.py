@@ -152,16 +152,22 @@ class ForecastRules:
 
 
 class ForecastAgent(ForecastRules):
-    """Forecast redesign (fcst-001), agent arm: the same engine with a model choosing comparisons and verdicts."""
+    """Forecast product (fcst-002): a model reads the question and writes the summary; the rules investigate."""
 
     name = "forecast_agent"
     uses_llm = True
+    investigator = "rules"
 
     def __init__(self, cases: list[Case], model: str | None = None):
         super().__init__(cases)
         from pharmagentics.llm import model_spec
 
         self.model = model_spec(model)
+        self.params["investigator"] = self.investigator
+
+    def predict(self, question: str) -> dict:
+        return AnswerEnvelope.model_validate(self._answer(question, model=self.model,
+                                                          investigator=self.investigator)).model_dump()
 
     def runtime(self) -> dict:
         from pharmagentics.llm import ollama_runtime
@@ -169,6 +175,14 @@ class ForecastAgent(ForecastRules):
         return ollama_runtime(self.model)
 
 
+class ForecastInvestigator(ForecastAgent):
+    """Forecast comparison arm (fcst-002): the model also investigates (step 6), to test whether it adds anything."""
+
+    name = "forecast_investigator"
+    investigator = "model"
+
+
 SYSTEMS = {"reference": ReferenceSystem, "naive_llm": NaiveLLMSystem, "briefing_scripted": BriefingScripted,
            "forecast_scripted": ForecastScripted, "briefing_lowcode": BriefingLowCode, "briefing_agent": BriefingAgent,
-           "forecast_rules": ForecastRules, "forecast_agent": ForecastAgent}
+           "forecast_rules": ForecastRules, "forecast_agent": ForecastAgent,
+           "forecast_investigator": ForecastInvestigator}

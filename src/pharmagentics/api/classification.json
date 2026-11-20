@@ -16,7 +16,6 @@
     "forecast.new": "confidential",
     "forecast.review": "proprietary",
     "forecast.approved": "proprietary",
-    "forecast.drivers": "proprietary",
     "forecast.view.analyst": "confidential",
     "forecast.view.leadership": "proprietary"
   },

@@ -2,6 +2,7 @@
 only free text from a model is a decision reason, which the engine already refused if it held a digit."""
 from __future__ import annotations
 
+import re
 from datetime import date, timedelta
 
 from pharmagentics.tools.queries import name, shift
@@ -434,7 +435,7 @@ def _verify(case: Case, w: Writer, parts: list[dict], template: str) -> dict:
     return {"verdict": verdict, "checks": checks}
 
 
-def compose(case: Case, mode: str, trajectory: dict | None = None) -> dict:
+def compose(case: Case, mode: str, trajectory: dict | None = None, writer_model: str | None = None) -> dict:
     """The answer envelope (answer, claims, evidence) plus the structured report the UI and API read."""
     w = Writer(case)
     intent = case.scope.intent
@@ -467,6 +468,18 @@ def compose(case: Case, mode: str, trajectory: dict | None = None) -> dict:
     for s in sections:
         s["text"] = reg.render(s["text"])
     summary = reg.render(made["summary"]) if "summary" in made else reg.render(w.summary(parts)) if intent != "screen" else None
+    code_summary, summary_by, writer_status = summary, "code", "skipped"
+    if writer_model and summary and parts and not case.abstained:
+        from .prose import write_summary
+
+        text, writer_status = write_summary(w, parts, writer_model)
+        if text:
+            summary, summary_by = re.sub(r"%\s+percent\b", "%", reg.render(text)), "model"
+            for s in sections:
+                if s["id"] == "summary":
+                    s["text"] = summary
+    if trajectory is not None:
+        trajectory["writer_status"] = writer_status
     var = case.variance() if case.weeks else {}
     drivers = []
     for p in parts:
@@ -486,7 +499,7 @@ def compose(case: Case, mode: str, trajectory: dict | None = None) -> dict:
                     (f"{_names(stand)} stand{'s' if len(stand) == 1 else ''} out beyond the broad miss." if stand
                      else "the miss is broad, with no territory well beyond the others."))
     else:
-        headline = (summary.split(". ")[0].rstrip(".") + "." if summary else sections[0]["text"].split("\n")[0][:160])
+        headline = (code_summary.split(". ")[0].rstrip(".") + "." if code_summary else sections[0]["text"].split("\n")[0][:160])
     report = {
         "headline": headline, "question": case.scope.question, "intent": intent, "scope": case.scope.card(),
         "territory_id": case.cut, "week_start": case.weeks[0] if case.weeks else None,
@@ -499,7 +512,7 @@ def compose(case: Case, mode: str, trajectory: dict | None = None) -> dict:
             "Local estimates compare a territory with control territories over the same weeks: an association, not proof of cause.",
             "Weeks with a provisional actual are set aside." if case.provisional else None] if s],
         "abstained": bool(case.abstained), "verification": verification, "investigator_mode": mode,
-        "summary": summary, "sections": sections, "decisions": case.decisions,
+        "summary": summary, "summary_by": summary_by, "writer_status": writer_status, "sections": sections, "decisions": case.decisions,
         "candidates": [{**e.brief(case.weeks), "reason": e.reason, "comparison": e.comparison} for e in case.episodes.values()],
         "comparisons": [{"id": k.id, "episode": k.episode, "method": k.method, "controls": k.controls, "stats": k.stats,
                          "flags": k.flags} for k in case.comparisons.values()],

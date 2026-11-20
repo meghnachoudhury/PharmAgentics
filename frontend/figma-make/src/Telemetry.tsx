@@ -1,10 +1,12 @@
 import { useEffect, useState, type ReactNode } from "react"
+import { ForecastDriverRecovery } from "./ForecastDrivers"
 import { getTelemetry, getUsage, type LaneUsage, type Spread, type Telemetry as T, type TelemetryRun, type Usage } from "./agent/telemetryApi"
 
 const PANEL = "rounded-xl border border-rule bg-sheet"
 const NAMES: Record<string, string> = {
   briefing_agent: "Briefing agent", briefing_scripted: "Briefing, scripted baseline", briefing_lowcode: "Briefing, low-code agent",
-  forecast_scripted: "Forecast, scripted baseline", reference: "Reference answers (control)", naive_llm: "Model without data (control)",
+  forecast_scripted: "Forecast, scripted baseline", forecast_rules: "Forecast, rules (no model)",
+  forecast_agent: "Forecast agent (model reads and writes)", forecast_investigator: "Forecast, model investigates (comparison)", reference: "Reference answers (control)", naive_llm: "Model without data (control)",
 }
 const label = (k: string) => k.replace(/[_.]/g, " ").replace(/^./, c => c.toUpperCase())
 const pct = (v: number) => (v <= 1 && v >= 0 ? `${Math.round(v * 100)}%` : v.toFixed(2))
@@ -123,5 +125,6 @@ export function TelemetryWorkspace() {
             <td className="pr-4 tabular-nums">{r.metrics.golden_number_recall != null ? pct(r.metrics.golden_number_recall) : "–"}</td><td className="tabular-nums">{r.metrics.claims_reconcile != null ? pct(r.metrics.claims_reconcile) : "–"}</td></tr>)}</tbody>
         </table></div></details>}
     </>}
+    <ForecastDriverRecovery/>
   </div>
 }

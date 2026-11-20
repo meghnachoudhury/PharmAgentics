@@ -16,7 +16,7 @@ import {
   type Stage, type TriageDecision, type TriagePlan, type TriageRecord,
 } from "./agent/briefingApi"
 import {
-  askFollowup, askForecast, forecastContext, forecastDrivers, type DriverBoard, forecastScope, listForecasts, openForecast, reviewForecast, submitForecast,
+  askFollowup, askForecast, forecastContext, forecastScope, listForecasts, openForecast, reviewForecast, submitForecast,
   type ForecastContext, type ForecastRun, type ForecastScope, type ForecastSummary,
 } from "./agent/forecastApi"
 
@@ -206,7 +206,7 @@ function SectionText({text}: {text: string}) {
   return <div className="mt-2 space-y-2 text-sm leading-relaxed">{blocks}</div>
 }
 
-const ENGINE_LABEL = (mode?: string) => !mode ? "" : mode === "rules" ? "Rules (no model)" : mode === "code" ? "Code only" : mode.startsWith("agent") ? `Agent · ${mode.replace(/^agent \(|\)$/g, "").replace(/\) with rules fallback$/, " · rules fallback")}` : mode
+const ENGINE_LABEL = (mode?: string) => !mode ? "" : mode === "rules" ? "Rules investigation" : mode === "code" ? "Code only" : mode.startsWith("agent") ? `Agent · ${mode.replace(/^agent \(|\)$/g, "").replace(/\) with rules fallback$/, " · rules fallback")}` : mode
 const CONF_TONE: Record<string, string> = { high: "text-ink", medium: "text-ink", low: "text-amber", inconclusive: "text-amber" }
 
 const FOLLOWUP_EXAMPLES = ["Why was this driver accepted?", "Show it week by week", "Drop South Central from the controls and rerun", "Same question for Pacific"]
@@ -239,7 +239,7 @@ function ForecastQuestionReport({run, onFollowup, onOpen}: {run: ForecastRun, on
   return <div className="space-y-4">
     <article className="rounded-xl border border-rule bg-sheet p-6">
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 text-xs text-muted">
-        <span>{forecastReviewLabel(run.review_status)}{report.investigator_mode ? ` · ${ENGINE_LABEL(report.investigator_mode)}` : ""}</span>
+        <span>{forecastReviewLabel(run.review_status)}{report.investigator_mode ? ` · ${ENGINE_LABEL(report.investigator_mode)}` : ""}{report.summary_by === "model" ? " · summary worded by the model" : ""}</span>
         <ClassLabel tab={`forecast.view.${run.view}`}/>
       </div>
       {report.question && <p className="mt-3 text-sm text-muted">“{report.question}”</p>}
@@ -293,6 +293,13 @@ function ViewToggle({value, busy=false, onChange}: {value: "analyst" | "leadersh
   </div>
 }
 
+const FORECAST_INTENTS: [string, string][] = [
+  ["reliability", "Is the miss real, or a data issue?"], ["screen", "Rank the largest gaps"], ["where", "Where is the miss concentrated?"],
+  ["drivers", "Which drivers plausibly contributed?"], ["attribution", "How much does each driver explain?"],
+  ["unknowns", "How confident are we, and what is unexplained?"], ["next_checks", "What should be checked next, and by whom?"],
+  ["assumptions", "Should forecast assumptions be reviewed?"], ["audit", "Can every finding be verified?"], ["communicate", "A summary for leadership"],
+]
+
 const FORECAST_EXAMPLES = [
   "Week of 2026-08-24: How much of the miss does each driver explain?",
   "Top 5 largest gaps in the last 3 months",
@@ -302,28 +309,7 @@ const FORECAST_EXAMPLES = [
   "Mar to Oct 2026: Should any forecast assumptions be reviewed?",
 ]
 
-// Driver recovery: does each system accept the drivers that act in a window, and no others? (eval drivers, draft labels)
-function DriverRecovery() {
-  const [board,setBoard] = useState<DriverBoard | null>(null)
-  const [error,setError] = useState<string | null>(null)
-  useEffect(()=>{ forecastDrivers().then(setBoard).catch(e=>setError(message(e))) }, [])
-  if (error) return <div role="alert" className="rounded-xl bg-amberbg px-5 py-4 text-sm text-amber">{error}</div>
-  if (!board) return <ListSkeleton/>
-  const systems = Object.entries(board.systems)
-  if (!systems.length) return <p className="text-sm text-muted">No driver-recovery run has been exported yet. Run <code>python -m eval drivers --system forecast_rules</code>.</p>
-  return <div className="space-y-4">
-    <p className="text-sm text-muted">Each probe asks a system to explain the miss in a window where the user stories say which drivers act (or that none does). A hit accepts exactly those drivers. The labels are a <span className="text-ink">{board.labels}</span> until the Forecast team confirms them.</p>
-    {systems.map(([name, sys])=><section key={name} className="rounded-xl border border-rule bg-sheet p-6">
-      <div className="flex flex-wrap items-baseline justify-between gap-2"><h3 className="text-sm font-semibold">{name === "forecast_rules" ? "Rules (no model)" : `Agent · ${sys.model ?? ""}`}</h3><span className="text-xs text-muted">run {sys.run_id} · {sys.exported.replace("T", " ")}</span></div>
-      <dl className="mt-4 grid grid-cols-3 divide-x divide-rule border-y border-rule">{[["Drivers recovered", `${Math.round(sys.metrics.driver_recall * 100)}%`], ["False drivers", String(sys.metrics.false_drivers)], ["Exact answers", `${Math.round(sys.metrics.exact_set_share * sys.metrics.probes)} of ${sys.metrics.probes}`]].map(([k,v])=><div key={k} className="px-4 py-3 first:pl-0"><dt className="text-xs text-muted">{k}</dt><dd className="mt-0.5 text-lg font-medium tabular-nums">{v}</dd></div>)}</dl>
-      <div className="mt-4 overflow-x-auto"><table className="text-xs tabular-nums"><thead><tr><th className="pr-4 text-left font-medium text-muted">true \ accepted</th>{sys.drivers.map(d=><th key={d} className="px-3 text-right font-medium text-muted">{d}</th>)}</tr></thead>
-        <tbody>{sys.drivers.map(t=><tr key={t}><td className="pr-4 py-1 text-muted">{t}</td>{sys.drivers.map(d=>{ const n = sys.confusion[t]?.[d] ?? 0; return <td key={d} className={`px-3 py-1 text-right ${n ? (t === d ? "text-ink font-medium" : "text-amber font-medium") : "text-muted"}`}>{n}</td> })}</tr>)}</tbody></table></div>
-      <ul className="mt-4 divide-y divide-rule text-sm">{sys.probes.map(p=>{ const ok = [...p.expect].sort().join() === [...p.got].sort().join(); return <li key={p.id} className="flex flex-wrap items-baseline justify-between gap-2 py-2"><span className="min-w-0"><span className={`${chip} mr-2 ${ok ? "bg-paper text-muted" : "bg-amberbg text-amber"}`}>{ok ? "hit" : "miss"}</span>{p.question}</span><span className="text-xs text-muted">expected {p.expect.join(", ") || "none"} · accepted {p.got.join(", ") || "none"}</span></li> })}</ul>
-    </section>)}
-  </div>
-}
-
-type ForecastSection = "workbench" | "approved" | "drivers"
+type ForecastSection = "workbench" | "approved"
 function ForecastWorkspace({me, section, onSection}: {me: Me, section: ForecastSection, onSection: (s: ForecastSection) => void}) {
   const r = me.lanes.forecast
   const analyst = !!r?.actions.includes("run")
@@ -336,6 +322,7 @@ function ForecastWorkspace({me, section, onSection}: {me: Me, section: ForecastS
   const [territory,setTerritory] = useState<string>("")
   const [weekFrom,setWeekFrom] = useState("")
   const [weekTo,setWeekTo] = useState("")
+  const [intent,setIntent] = useState("")
   const [loading,setLoading] = useState(true)
   const [busy,setBusy] = useState(false)
   const [error,setError] = useState<string | null>(null)
@@ -346,9 +333,10 @@ function ForecastWorkspace({me, section, onSection}: {me: Me, section: ForecastS
   const refresh = async () => { setLoading(true); setError(null); try { const status = section === "approved" ? "approved" : analyst ? undefined : "pending_review"; const values = await Promise.all([listForecasts(status), analyst && section === "workbench" ? forecastContext() : Promise.resolve(null)]); setRuns(values[0]); setContext(values[1]) } catch(e) { setError(message(e)) } finally { setLoading(false) } }
   useEffect(()=>{ void refresh() }, [analyst, section])
   // Step one reads the question into a scope card; step two runs the investigation on the (possibly edited) scope.
-  const readScope = async (q: string) => { setBusy(true); setError(null); try { const sc = await forecastScope({question: q}); setScope(sc); setTerritory(sc.territory); setWeekFrom(sc.weeks[0] ?? ""); setWeekTo(sc.weeks[sc.weeks.length - 1] ?? "") } catch(e) { setError(message(e)) } finally { setBusy(false) } }
+  const readScope = async (q: string) => { setBusy(true); setError(null); try { const sc = await forecastScope({question: q}); setScope(sc); setIntent(sc.intent); setTerritory(sc.territory); setWeekFrom(sc.weeks[0] ?? ""); setWeekTo(sc.weeks[sc.weeks.length - 1] ?? "") } catch(e) { setError(message(e)) } finally { setBusy(false) } }
   const onAsk = async (event: React.FormEvent) => { event.preventDefault(); if (question.trim().length >= 3) await readScope(question.trim()) }
-  const investigate = async () => { if (!scope) return; setBusy(true); setError(null); try { const edited = territory !== scope.territory || weekFrom !== (scope.weeks[0] ?? "") || weekTo !== (scope.weeks[scope.weeks.length - 1] ?? ""); setSelected(await askForecast({question: scope.question, ...(edited ? {territory_id: territory, week_from: weekFrom || null, week_to: weekTo || null} : {})})); setScope(null); await refresh() } catch(e) { setError(message(e)) } finally { setBusy(false) } }
+  // The confirmed scope always travels with the question, so the run uses exactly what the analyst saw.
+  const investigate = async () => { if (!scope) return; setBusy(true); setError(null); try { setSelected(await askForecast({question: scope.question, territory_id: territory, week_from: weekFrom || null, week_to: weekTo || null, intent: intent || null})); setScope(null); await refresh() } catch(e) { setError(message(e)) } finally { setBusy(false) } }
   const followup = async (q: string) => { if (!selected) return; setError(null); try { setSelected(await askFollowup(selected.forecast_run_id, q)) } catch(e) { setError(message(e)) } }
   const followupsRunning = !!selected?.followups?.some(f=>f.status === "running")
   // A running investigation, or one with a follow-up in flight, is polled until it finishes.
@@ -368,8 +356,7 @@ function ForecastWorkspace({me, section, onSection}: {me: Me, section: ForecastS
   const decide = async (decision: "approved" | "rejected" | "returned") => { if (!selected) return; setBusy(true); setError(null); try { setSelected(await reviewForecast(selected.forecast_run_id, decision, note)); setNote(""); await refresh() } catch(e) { setError(message(e)) } finally { setBusy(false) } }
   return <div className="workspace-content space-y-6 py-8 sm:py-10 pa-rise">
     {!selected && <Greeting detail={context ? `Forecast versus actual, through ${labelWeek(context.latest_week)}.` : undefined}/>}
-    <SubTabs label="Forecast explanation" value={section} onChange={onSection} options={[["workbench", analyst ? "New explanation" : "To review", analyst ? "forecast.new" : "forecast.review"], ["approved", "Approved explanations", "forecast.approved"], ["drivers", "Driver recovery", "forecast.drivers"]] as const}/>
-    {section === "drivers" ? <DriverRecovery/> : <>
+    <SubTabs label="Forecast explanation" value={section} onChange={onSection} options={[["workbench", analyst ? "New explanation" : "To review", analyst ? "forecast.new" : "forecast.review"], ["approved", "Approved explanations", "forecast.approved"]] as const}/>
     {error && <div role="alert" className="rounded-xl bg-amberbg px-5 py-4 text-sm text-amber">{error}</div>}
     {selected ? <>
       <div className="flex flex-wrap items-center justify-between gap-3">
@@ -397,15 +384,16 @@ function ForecastWorkspace({me, section, onSection}: {me: Me, section: ForecastS
         {!scope && <div className="flex justify-end border-t border-rule pt-4"><button type="submit" disabled={busy || question.trim().length < 3} className={BTN}>{busy ? "Reading…" : "Read my question"}</button></div>}
       </form>
       {scope && <section className={`${PANEL} space-y-4 p-6 pa-rise`}>
-        <div><h3 className="text-sm font-semibold">How the agent reads your question</h3><p className="mt-1 text-xs text-muted">Check the scope before anything runs. Change the territory or weeks if this is not what you meant.</p></div>
+        <div><h3 className="text-sm font-semibold">How the agent reads your question</h3><p className="mt-1 text-xs text-muted">Check the scope before anything runs. Change what the question asks, the territory or the weeks if this is not what you meant.</p></div>
         {scope.out_of_scope ? <div className="rounded-lg bg-amberbg px-4 py-3 text-sm text-amber">{scope.out_of_scope}</div> : <>
           <dl className="grid gap-x-4 gap-y-2 text-sm sm:grid-cols-[120px_1fr]">
-            <dt className="text-muted">Asks</dt><dd>{scope.intent_label}</dd>
+            <dt className="text-muted">Read by</dt><dd>{scope.read_by === "model" ? `the model (${scope.engine}); code checked every field` : "keyword rules (no model is configured, or the model's reading was unusable)"}</dd>
             <dt className="text-muted">Period</dt><dd>{scope.period} · {scope.n_weeks} week{scope.n_weeks === 1 ? "" : "s"}</dd>
             <dt className="text-muted">Where</dt><dd>{scope.territory_name}</dd>
-            <dt className="text-muted">Engine</dt><dd>{scope.engine === "rules" ? "Rules (no model). Set FORECAST_AGENT_MODEL to run the agent." : `Agent on ${scope.engine}`}</dd>
+            <dt className="text-muted">Investigation</dt><dd>{scope.investigator === "model" ? "the model investigates (comparison arm)" : "the rules investigate; code computes every number"}</dd>
           </dl>
           {!!scope.notes.length && <ul className="list-disc space-y-0.5 pl-5 text-xs text-muted">{scope.notes.map(n=><li key={n}>{n}</li>)}</ul>}
+          <label className={LABEL}>The question asks<select value={intent} onChange={e=>setIntent(e.target.value)} disabled={busy} className={FIELD}>{FORECAST_INTENTS.map(([k,v])=><option key={k} value={k}>{v}</option>)}</select></label>
           <div className="grid gap-4 sm:grid-cols-3">
             <label className={LABEL}>Territory<select value={territory} onChange={e=>setTerritory(e.target.value)} disabled={!context || busy} className={FIELD}>{(context?.territory_ids ?? [scope.territory]).map(id=><option key={id} value={id}>{labelTerritory(id)}</option>)}</select></label>
             <label className={LABEL}>First week<select value={weekFrom} onChange={e=>setWeekFrom(e.target.value)} disabled={!context || busy} className={FIELD}>{(context?.available_weeks ?? [weekFrom]).map(w=><option key={w} value={w}>{labelWeek(w)}</option>)}</select></label>
@@ -416,7 +404,6 @@ function ForecastWorkspace({me, section, onSection}: {me: Me, section: ForecastS
       </section>}
     </>}
     <section><h3 className="text-sm font-semibold">{section === "approved" ? "Approved explanations" : analyst ? "Your forecast runs" : "Waiting for your review"}</h3>{loading ? <div className="mt-2"><ListSkeleton/></div> : runs.length ? <ul className={`${PANEL} pa-stagger mt-2 divide-y divide-rule`}>{runs.map(run=><li key={run.forecast_run_id}><button disabled={busy} onClick={()=>void open(run.forecast_run_id)} className="group flex w-full items-center justify-between gap-4 px-5 py-3.5 text-left transition-colors hover:bg-paper/60"><span className="min-w-0"><span className="block text-sm">{run.question ?? run.headline}</span><span className="mt-0.5 block text-xs text-muted tabular-nums">{run.job_status === "running" ? "Investigating…" : run.job_status === "failed" ? "Failed" : <>{labelTerritory(run.territory_id)} · miss {formatNumber(run.variance_trx)} TRx · {forecastReviewLabel(run.review_status)}</>}</span></span><Icon name="chevronRight" className="h-4 w-4 shrink-0 text-muted transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-agent"/></button></li>)}</ul> : <p className="mt-2 text-sm text-muted">{section === "approved" ? "No approved explanations yet. They appear here once the Brand Manager approves one." : analyst ? "No forecast questions yet. Ask one above, or start from an example." : "Nothing is waiting for your review."}</p>}</section></>}
-    </>}
   </div>
 }
 

@@ -61,15 +61,17 @@ The team sees, per system, whether it accepts the drivers that act in a window a
 
 ### Functional Requirements
 
-- **FR-001**: Code MUST read a question into a scope (weeks, territory, intent) and show it before any investigation runs; the analyst MAY edit territory and weeks.
+- **FR-001**: A model, when configured, MUST read a question into a scope (weeks, territory, intent) through one tool call; code MUST check every field against the release and fall back to the keyword rules when the reading is unusable. The scope MUST be shown before any investigation runs; the analyst MAY edit intent, territory and weeks, and the run MUST use the confirmed scope.
 - **FR-002**: A week whose actual is provisional in any territory MUST NOT enter a comparison; if every week asked about is provisional, the answer MUST abstain.
 - **FR-003**: Candidate episodes MUST be discovered from the agent-visible context tables (promotion, inventory, access, market basket, calendar), not from a hand-written calendar.
 - **FR-004**: A local driver's contribution MUST be the territory's miss beyond the control territories' rate over the episode's usable weeks; a broad launch's contribution MUST be the relative basket-share loss applied to the forecast; the usual bias MUST be the pre-launch national error rate.
 - **FR-005**: The answer MUST report a residual so that the parts plus the residual equal the miss; every figure MUST be a claim token from one governed query.
 - **FR-006**: Confidence MUST be set per driver by code and may only be lowered: no control group, association only, few or contaminated controls, a gap that predates the episode, control noise, a failed leave-one-out or recovery check, overlap.
-- **FR-007**: The investigator (rules or a model) MUST act only through engine operations (compare, accept, reject, abstain, finish) with a step budget and a wall-clock cap; a model MUST NOT supply a number.
+- **FR-007**: The rules MUST investigate by default. A model MAY investigate only as the comparison arm (`FORECAST_INVESTIGATOR=model`), acting only through engine operations (compare, accept, reject, abstain, finish) with a step budget and a wall-clock cap; candidates it leaves open are decided by the rules and labelled so. A model MUST NOT supply a number.
 - **FR-008**: Follow-ups MUST map to one operation (rerun, explain, weekly) run by code; a rerun MUST be stored as a linked run that can be submitted.
 - **FR-009**: The leadership view MUST NOT include the decision log, comparisons, candidates, progress or evidence.
+- **FR-011**: A model MAY word the summary using claim tokens only; code MUST refuse the text (and keep the code summary) if it holds a stray digit or unknown token, omits the residual, adds a driver or territory, recommends a commercial action, or uses a banned term.
+- **FR-012**: The whole pipeline MUST run with no model configured, with the same numbers.
 - **FR-010**: Both arms MUST be scored on the golden set and on driver recovery, and a merge MUST pass `eval gate` against the previous Forecast run.
 
 ### Key Entities
@@ -84,6 +86,7 @@ The team sees, per system, whether it accepts the drivers that act in a window a
 
 - **SC-001**: Golden number recall on the Forecast golden set at or above the old scripted baseline (0.29 on 2026-11-20); measured 0.59 for the rules arm.
 - **SC-002**: Driver recovery on the draft probes: no false driver, and every expected driver recovered by the rules arm.
+- **SC-004**: The model reader beats the keyword rules on the draft paraphrases (`python -m eval scopes`). Measured 2026-11-20 on the forty: rules 35% fully right (period 40%, intent 80%); local Qwen 4B 90% (period 90%, intent 100%), about fifteen seconds a question, never falling back. On the eighteen golden questions the product with Qwen scored 0.57 golden number recall against 0.59 for the rules, because Qwen read three intents differently; the analyst corrects these on the scope card. [NEEDS CLARIFICATION: rerun with the hosted model (Haiku) once a key is available locally (open item for Michael)]
 - **SC-003**: The agent arm earns its place only if it beats the rules arm on driver recovery, exact answers or analyst ratings at an agreed cost. [NEEDS CLARIFICATION: cost budget per question, and which model (Haiku needs the team key) (open item for Alvin)]
 
 ## Assumptions

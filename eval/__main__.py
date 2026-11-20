@@ -18,7 +18,8 @@ def main(argv=None) -> int:
 
     run = sub.add_parser("run", help="score a system on the golden set and log it to MLflow")
     run.add_argument("--system", required=True, choices=["reference", "naive_llm", "briefing_scripted", "forecast_scripted",
-                                                          "briefing_lowcode", "briefing_agent", "forecast_rules", "forecast_agent"])
+                                                          "briefing_lowcode", "briefing_agent", "forecast_rules", "forecast_agent",
+                                                          "forecast_investigator"])
     run.add_argument("--lane", default="all", choices=["all", "briefing", "forecast"])
     run.add_argument("--reruns", type=int, default=1)
     run.add_argument("--stories", help="comma-separated story IDs, e.g. P1-Q2,CA-Q1")
@@ -40,8 +41,12 @@ def main(argv=None) -> int:
     uat.add_argument("--state-dir", type=Path, help="downloaded state folder (default: local/uat-export)")
 
     drv = sub.add_parser("drivers", help="Forecast driver recovery on the draft probes, with a confusion matrix (fcst-001)")
-    drv.add_argument("--system", required=True, choices=["forecast_rules", "forecast_agent"])
-    drv.add_argument("--model", help="model for forecast_agent, e.g. ollama:qwen3:4b-instruct-2507-q4_K_M")
+    drv.add_argument("--system", required=True, choices=["forecast_rules", "forecast_investigator"])
+    drv.add_argument("--model", help="model for forecast_investigator, e.g. ollama:qwen3:4b-instruct-2507-q4_K_M")
+
+    sco = sub.add_parser("scopes", help="Forecast question reading on draft paraphrases: rules or a model (fcst-002)")
+    sco.add_argument("--reader", required=True, choices=["rules", "model"])
+    sco.add_argument("--model", help="model for --reader model, e.g. ollama:qwen3:4b-instruct-2507-q4_K_M")
 
     ui = sub.add_parser("ui", help="open the MLflow dashboard on eval/mlflow")
     ui.add_argument("--port", default="5000")
@@ -118,7 +123,13 @@ def main(argv=None) -> int:
         from .harness.drivers import run as drivers_run
         from pharmagentics.llm import model_spec
 
-        drivers_run(args.system, model_spec(args.model) if args.system == "forecast_agent" else None)
+        drivers_run(args.system, model_spec(args.model) if args.system == "forecast_investigator" else None)
+        return 0
+    if args.cmd == "scopes":
+        from .harness.scopes import run as scopes_run
+        from pharmagentics.llm import model_spec
+
+        scopes_run(args.reader, model_spec(args.model) if args.reader == "model" else None)
         return 0
     if args.cmd == "ui":
         from .harness.paths import MLFLOW_DIR, tracking_uri

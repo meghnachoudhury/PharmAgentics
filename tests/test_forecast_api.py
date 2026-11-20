@@ -248,3 +248,15 @@ def test_the_driver_board_is_readable_by_both_forecast_roles():
         sign_in(user)
         body = CLIENT.get("/api/forecast/drivers").json()
         assert body["labels"] == "draft" and isinstance(body["systems"], dict)
+
+
+def test_the_scope_card_says_who_read_it_and_the_confirmed_intent_is_used(monkeypatch):
+    monkeypatch.setenv("FORECAST_AGENT_MODEL", "rules")
+    sign_in("dev-forecast-analyst")
+    card = CLIENT.post("/api/forecast/scope", json={"question": "Week of 2026-08-24: Where is the miss?"}).json()
+    assert card["read_by"] == "rules" and card["investigator"] == "rules" and card["intent"] == "where"
+    started = CLIENT.post("/api/forecast/ask", json={"question": "Week of 2026-08-24: Where is the miss?", "territory_id": "NATIONAL",
+                                                     "week_from": "2026-08-24", "week_to": "2026-08-24", "intent": "attribution"}).json()
+    report = _wait(started["forecast_run_id"])["report"]
+    assert report["intent"] == "attribution" and report["scope_read_by"] == "confirmed"
+    assert CLIENT.post("/api/forecast/ask", json={"question": "Week of 2026-08-24", "intent": "guess"}).status_code == 422
