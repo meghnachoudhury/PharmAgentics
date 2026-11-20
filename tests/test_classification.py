@@ -37,7 +37,7 @@ def test_every_role_has_a_clearance():
 
 
 def test_every_tab_the_ui_shows_is_classified_and_every_key_is_used():
-    used = set(re.findall(r'"((?:briefing|forecast)\.[a-z]+(?:\.[a-z]+)?)"', APP_TSX.read_text(encoding="utf-8")))
+    used = set(re.findall(r'"((?:briefing|forecast|evaluation)\.[a-z]+(?:\.[a-z]+)?)"', APP_TSX.read_text(encoding="utf-8")))
     used |= {f"{lane}.view.{v}" for lane in ("briefing", "forecast") for v in ("analyst", "leadership")}  # built from the view name
     assert used == set(C["tabs"])
 

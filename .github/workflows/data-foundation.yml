@@ -52,7 +52,7 @@ jobs:
       - run: uv run python src/pharmagentics/data/load_duckdb.py
       # Roles and views, sign-in, triage review, the agent build's pure parts (no model), and the job queue.
       - run: >
-          uv run pytest tests/test_rbac.py tests/test_briefing_api.py tests/test_briefing_smoke.py
+          uv run pytest tests/test_classification.py tests/test_rbac.py tests/test_briefing_api.py tests/test_briefing_smoke.py
           tests/test_frontend_scope.py tests/test_deploy.py tests/test_triage.py tests/test_jobs.py
           tests/test_agent_build3.py tests/test_feedback.py -q
 
