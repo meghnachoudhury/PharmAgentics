@@ -111,6 +111,11 @@ class Registry:
             finish(sp, {"value": self.claims[-1]["value"], "evidence_id": eid})
         return "{c%d}" % len(self.claims)
 
+    def table(self, tool: str, sql: str, **params) -> tuple[list[tuple], str]:
+        """A governed multi-row query, recorded as one evidence item (its result is the row count)."""
+        rows = self.rows(sql)
+        return rows, self._evidence(tool, sql, f"{len(rows)} rows", params)
+
     def fact(self, tool: str, sql: str, **params):
         """A non-numeric or internal value that the narrative states in words; recorded as evidence."""
         value = self.scalar(sql)

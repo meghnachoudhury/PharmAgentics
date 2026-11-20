@@ -87,6 +87,14 @@
     /* re-centres smoothly, in step with the sidebar's own width change */
     transition: margin-left 300ms cubic-bezier(0.16, 1, 0.3, 1);
   }
+  /* Dashboards (Overview, Evaluation) take a wider measure, centred the same way. */
+  .workspace-wide {
+    max-width: 72rem;
+    margin-left: max(0px, calc((100% - 72rem) / 2 - var(--shift, 0px) / 2));
+    margin-right: auto;
+    padding-inline: 1.25rem;
+    transition: margin-left 300ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
   /* Motion: state only, 150-300 ms, exponential ease-out from a visible default. */
   .pa-fade { animation: pa-fade 220ms cubic-bezier(0.16, 1, 0.3, 1) both; }
   .pa-tabbar { transition: left 280ms cubic-bezier(0.16, 1, 0.3, 1), width 280ms cubic-bezier(0.16, 1, 0.3, 1); }
@@ -120,7 +128,7 @@
   @media (prefers-reduced-motion: reduce) {
     .pa-rise, .pa-slide, .pa-pulse, .pa-fade, .pa-stagger > *, .pa-skeleton { animation: none; }
     .pa-draw path { animation: none; stroke-dashoffset: 0; }
-    .workspace-content, .pa-tabbar { transition: none; }
+    .workspace-content, .workspace-wide, .pa-tabbar { transition: none; }
   }
 }
 

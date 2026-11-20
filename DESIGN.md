@@ -36,6 +36,15 @@ Use the shared class constants in `App.tsx`, not one-off styles:
 - Chips only for status (in review, approved, paused).
 - Data classification (core-009) is a quiet uppercase text label, never a coloured pill; only Sensitive takes a colour.
 
+## Dashboards and charts
+
+- A dashboard opens with one stat bar: up to four figures in one panel, divided by `rule`. A change line under each figure; only an adverse change takes `amber`, and it always says "Down" or "Up" in words.
+- Lists of entities are rows in one panel; a chart that belongs to each row lives in a column of that row (the Overview's dot against each territory's normal range), with the axis in the column header. No separate chart-plus-list.
+- One series per chart, one axis per chart. Different scales (TRx, NRx, NBRx) are small multiples, never a dual axis.
+- Meaning never rides on colour alone: teal and `muted` are too close to tell apart (normal-vision ΔE 8.2), so state is filled versus hollow, plus a word. Every mark has a hover readout and an accessible name.
+- Every figure opens what produced it: a slide-out panel with its governed query and the pinned data version.
+- Marks: 2px lines, dots at least 10px, recessive bands and gridlines in `rule`.
+
 ## Surfaces and depth
 
 - Frosted glass (`.glass`) only on things that float over the page: the sidebar while it hovers open, menus, the phone drawer, toasts.
@@ -45,6 +54,7 @@ Use the shared class constants in `App.tsx`, not one-off styles:
 
 - Sidebar: a 64px icon rail that opens over the page on hover or focus; the pin keeps it open (248px). The "Pa" mark is the only logo, in the rail.
 - Content (`.workspace-content`, max 52rem) is centred on the whole page, using `--rail` (the sidebar's width), and clears the sidebar when the screen is narrow.
+- Dashboards (the Overview tab, Evaluation) use `.workspace-wide` (max 72rem), centred the same way. Reading pages stay at 52rem.
 
 ## Avoid
 
