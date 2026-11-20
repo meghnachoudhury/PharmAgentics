@@ -113,7 +113,7 @@ def _left_out(plan: dict, order: list[str]) -> list[str]:
 
 
 async def _write(cfg: dict, spec: str, question: str, sections: dict, close: dict, stories: list[dict],
-                 claims: list[dict], evidence: list[dict], log: RunLog) -> tuple[str, dict, bool, list[str]]:
+                 claims: list[dict], evidence: list[dict], log: RunLog) -> tuple[str, dict, dict, bool, list[str]]:
     n_claims = len(claims)
     story_tokens = {s["id"]: write.tokens(s["section"]) for s in stories}
     story_tokens["_sections"] = write.section_tokens(sections, close)
@@ -144,8 +144,10 @@ async def _write(cfg: dict, spec: str, question: str, sections: dict, close: dic
                 pass
             revised = True
         answer_text, sentences, dropped = write.clean(reply, story_tokens, n_claims, glosses)
-        finish(sp, {"problems": bad, "revised": revised, "dropped": dropped})
-    return answer_text, sentences, revised, dropped
+        chart_lines, chart_dropped = write.chart_explanations(reply, close, stories, n_claims, glosses)
+        dropped += chart_dropped
+        finish(sp, {"problems": bad, "revised": revised, "dropped": dropped, "chart_lines": sorted(chart_lines)})
+    return answer_text, sentences, chart_lines, revised, dropped
 
 
 async def _run(question: str, plan: dict, order: list[str], spec: str, reviewed: bool, log: RunLog) -> dict:
@@ -170,10 +172,10 @@ async def _run(question: str, plan: dict, order: list[str], spec: str, reviewed:
         dropped_line = await _call(mcp, "dropped_line")
         run = json.loads(await _call(mcp, "export_run"))
     claims = run["claims"]
-    answer_text, sentences, revised, dropped = await _write(cfg, spec, question, sections, close, stories, claims,
+    answer_text, sentences, chart_lines, revised, dropped = await _write(cfg, spec, question, sections, close, stories, claims,
                                                             run["evidence"], log)
     template, memo_sections = write.assemble(sections, close, stories, answer_text, sentences,
-                                             _left_out(plan, order), dropped_line)
+                                             _left_out(plan, order), dropped_line, chart_lines)
     if (bad := digits_outside_tokens(template)):  # code sections are clean; this guards the assembly itself
         raise AssertionError(f"digit outside a claim token: {bad[:3]}")
     text, used, citations, index = write.render(template, claims)

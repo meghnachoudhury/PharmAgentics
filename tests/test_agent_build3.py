@@ -43,8 +43,6 @@ def test_sections_match_the_scripted_brief():
     render = lambda lines: s.reg.render("\n".join(lines)).splitlines()  # noqa: E731
     # FR-020: the agent's code sections are the scripted brief's, word for word
     assert render(sec["title"]) == scripted["title"]
-    assert render(sec["numbers"]) == scripted["The numbers"]
-    assert render(sec["limits"]) == scripted["What the data can't tell us"]
     stories = []
     for n, t in enumerate(("PACIFIC", "MID_ATLANTIC"), 1):  # the scripted brief's stories, in its order
         for check in (s.check_data, s.check_access, s.check_promotion, s.check_supply, s.check_competitor):
@@ -52,12 +50,16 @@ def test_sections_match_the_scripted_brief():
         stories += s.reg.render(s.story_section(t, n)).splitlines()
     # every driver tested, so each story's head and checks read as the scripted one's; the closing line names the
     # territory in the agent's wording; neither carries "Next:" (it lives in §5)
-    body = lambda lines: [x for x in lines if not x.startswith("Confidence")]  # noqa: E731
-    assert body(stories) == body(scripted["What changed and why"][:len(stories)])
+    body = lambda lines: [x for x in lines if not x.startswith(("Confidence", "Chart:", "In the week of"))]  # noqa: E731
+    assert body(stories) == body(scripted["What changed and why"])[:len(body(stories))]
     assert stories[0].startswith("Story one: Pacific. BXA TRx averaged 737") and not any("Next:" in x for x in stories)
     close = s.memo_close(competitor=True)
     assert render(close["bottom_line"]) == scripted["Bottom line"]
     assert render(close["next_checks"]) == scripted["Next checks"]
+    from pharmagentics.tools.memo import chart_lines  # slice 2: the same charts, by the same builders
+    assert render(sec["numbers"] + chart_lines(close["charts"]["2"])) == scripted["The numbers"]
+    assert render(sec["limits"] + chart_lines(close["charts"]["4"])) == scripted["What the data can't tell us"]
+    assert set(close["charts"]["stories"]) == {"PACIFIC", "MID_ATLANTIC"} and close["charts"]["competitor"]["kind"] == "share"
     assert s.reg.render(s.dropped_line()).startswith("Considered and dropped:")
     s.close()
 

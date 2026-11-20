@@ -3,6 +3,9 @@ import { Toaster, toast } from "sonner"
 import { BrandMark, Icon, type IconName } from "./agent/primitives"
 import { TelemetryWorkspace } from "./Telemetry"
 import { Overview } from "./Overview"
+import { Memo } from "./Memo"
+import { MessageBar, type Chip } from "./MessageBar"
+import { sharedFromLocation } from "./agent/threadApi"
 import { AnswerFeedback, FeedbackProvider, ShareFeedbackLink, useFeedbackActions } from "./Feedback"
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuRadioGroup, DropdownMenuRadioItem,
@@ -503,7 +506,7 @@ function SummaryCard({brief, preview=false}: {brief: LeadershipBrief, preview?: 
         {brief.abstained && <span className={`${chip} bg-amberbg text-amber`}>Unresolved findings</span>}
       </div>
     </div>
-    <div className="px-6 py-6"><pre className="max-w-[68ch] whitespace-pre-wrap break-words font-serif text-[16px] leading-[1.7] text-ink">{brief.summary}</pre></div>
+    <div className="px-6 py-6">{brief.sections?.length ? <Memo sections={brief.sections} briefId={brief.brief_id}/> : <pre className="max-w-[68ch] whitespace-pre-wrap break-words font-serif text-[16px] leading-[1.7] text-ink">{brief.summary}</pre>}</div>
     <div className="border-t border-rule px-6 py-4 text-xs text-muted">Every figure comes from the approved analyst brief. Evidence and source queries stay with the Commercial Analyst.</div>
   </article>
   <AnswerFeedback lane="briefing" refId={brief.brief_id} view="leadership" agent={brief.engine==="agent"}/></>
@@ -672,8 +675,9 @@ function CitedText({result, onOpen}: {result: BriefingResult, onOpen: (evidenceI
   return <>{parts}</>
 }
 
-function AnalystBrief({result, onChange}: {result: BriefingResult, onChange: (r: BriefingResult) => void}) {
+function AnalystBrief({result, onChange, onAsk, openEvidence}: {result: BriefingResult, onChange: (r: BriefingResult) => void, onAsk?: (c: Chip) => void, openEvidence?: {id: string} | null}) {
   const [evidenceId,setEvidenceId] = useState<string | null>(null)
+  useEffect(()=>{ if(openEvidence) setEvidenceId(openEvidence.id) },[openEvidence])
   const [mode,setMode] = useState<"analyst" | "leadership">("analyst")
   const [preview,setPreview] = useState<LeadershipBrief | null>(null)
   const [previewError,setPreviewError] = useState<string | null>(null)
@@ -692,7 +696,7 @@ function AnalystBrief({result, onChange}: {result: BriefingResult, onChange: (r:
         <p className="mt-1.5 text-sm text-muted">{result.brand_id}</p>
         <div className="mt-3 flex flex-wrap items-center gap-2"><span key={result.review_status} className={`${REVIEW_CHIP[result.review_status][0]} inline-flex items-center gap-1 pa-fade`}>{result.review_status==="approved" && <svg viewBox="0 0 24 24" className="pa-draw h-3.5 w-3.5" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>}{REVIEW_CHIP[result.review_status][1]}</span>{result.abstained && <span className={`${chip} bg-amberbg text-amber`}>Unresolved findings</span>}</div>
       </div>
-      <div className="px-6 py-6"><div className="max-w-[68ch] whitespace-pre-wrap break-words font-serif text-[16px] leading-[1.7] text-ink"><CitedText result={result} onOpen={setEvidenceId}/></div>
+      <div className="px-6 py-6">{result.sections?.length ? <Memo sections={result.sections} briefId={result.brief_id} claims={result.claims} evidence={result.evidence} onOpen={setEvidenceId} onAsk={onAsk}/> : <div className="max-w-[68ch] whitespace-pre-wrap break-words font-serif text-[16px] leading-[1.7] text-ink"><CitedText result={result} onOpen={setEvidenceId}/></div>}
         <p className="mt-4 text-[11px] text-muted">Each underlined number is a claim: click it, or its source number, to open the query and record behind it.</p></div>
       <section className="flex flex-wrap items-center justify-between gap-2 border-t border-rule bg-paper/60 px-6 py-3">
         {result.evidence.length>0 ? <button className="flex items-center gap-2 text-xs font-medium text-agentdeep underline-offset-4 hover:underline" onClick={()=>setEvidenceId(result.evidence[0].id)}><Icon name="evidence"/>All {result.evidence.length} sources ({result.claims.length} numbers)</button> : <span className="text-xs text-muted">No numeric claims in this brief.</span>}
@@ -726,6 +730,9 @@ function AnalystApp({me}: {me: Me}) {
   const [agent,setAgent] = useState<AgentStatus | null>(null)
   const [triageJob,setTriageJob] = useState<string | null>(null)
   const [jobNote,setJobNote] = useState<string | null>(null)
+  const [chip,setChip] = useState<Chip | null>(null)  // brief-006: the message bar
+  const [barEvidence,setBarEvidence] = useState<{id: string} | null>(null)
+  const [autoAsk,setAutoAsk] = useState(false)
   useEffect(()=>{
     let live = true
     const poll = () => getAgentStatus().then(s=>{ if(live) setAgent(s) }).catch(()=>{ if(live) setAgent(null) })
@@ -758,6 +765,8 @@ function AnalystApp({me}: {me: Me}) {
     finally {setLoadingContext(false)}
   }
   useEffect(()=>{void refresh()},[])
+  useEffect(()=>{ const s=sharedFromLocation(); if(s) void openApproved(s.briefId) },[])  // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(()=>{ if(autoAsk && engine==="agent"){ setAutoAsk(false); void submit() } },[autoAsk,engine,ask])  // eslint-disable-line react-hooks/exhaustive-deps
 
   const submit = async (event?: React.FormEvent) => {
     event?.preventDefault()
@@ -842,8 +851,11 @@ function AnalystApp({me}: {me: Me}) {
             <div className="pa-skeleton h-5 w-2/5"/><div className={`${PANEL} space-y-3 p-6`}><div className="pa-skeleton h-6 w-3/5"/><div className="pa-skeleton h-3 w-full"/><div className="pa-skeleton h-3 w-11/12"/><div className="pa-skeleton h-3 w-4/5"/></div></div>)}
       {runError && <div role="alert" className="rounded-xl bg-amberbg px-5 py-4 text-sm text-amber"><strong>{view==="triage" ? "The triage plan could not be built." : "Briefing could not be generated."}</strong><p className="mt-2">{runError}</p><p className="mt-2">No mock result was substituted.</p>{view==="result" && plan && <button className="mt-2 underline" onClick={()=>{setRunError(null);setView("triage")}}>Back to the triage plan</button>}</div>}
       {view==="triage" && plan && !pending && <TriageReview plan={plan} busy={pending} onApprove={d=>void approvePlan(d)}/>}
-      {view==="result" && result && <AnalystBrief result={result} onChange={setResult}/>}
+      {view==="result" && result && <AnalystBrief result={result} onChange={setResult} onAsk={setChip} openEvidence={barEvidence}/>}
     </div>}
+    {view!=="approved" && <div className="workspace-content"><MessageBar briefId={view==="result" && result ? result.brief_id : null} pending={pending} chip={chip} onClearChip={()=>setChip(null)}
+      canGenerate={view==="home" && agent?.configured===true} onGenerate={q=>{setEngine("agent");setAsk(q);setAutoAsk(true)}}
+      onOfferScope={o=>{ if(o.territory) setTerritory(o.territory); if(o.week) setWeek(o.week); setView("home") }} onOpenEvidence={id=>setBarEvidence({id})}/></div>}
   </Shell>
 }
 

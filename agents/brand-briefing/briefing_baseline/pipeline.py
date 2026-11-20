@@ -17,7 +17,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 
 from pharmagentics.tools import DEFAULT_DB, Registry
-from pharmagentics.tools import memo, projection, stages
+from pharmagentics.tools import charts, memo, projection, stages
 from pharmagentics.tools.checks import confidence, run_checks
 from pharmagentics.tools.queries import name
 from pharmagentics.tools.registry import digits_outside_tokens
@@ -148,7 +148,8 @@ def _brief(reg: Registry, question: str, order: list[str] | None = None, left_ou
                 if sid == COMPETITOR:
                     comp = stages.competitor_status(reg, p, lead=f"Story {_ord(len(blocks) + 1)}: competitor Metacora")
                     if comp:
-                        blocks.append(memo.StoryBlock(COMPETITOR, "Competitor Metacora", [memo.without_next(comp)]))
+                        blocks.append(memo.StoryBlock(COMPETITOR, "Competitor Metacora", [memo.without_next(comp)],
+                                                      chart=charts.competitor(reg, p)))
                         competitor = True
                     continue
                 s = by_id[sid]
@@ -174,7 +175,8 @@ def _brief(reg: Registry, question: str, order: list[str] | None = None, left_ou
             limits=memo.limits(p, f.proj, f.health),
             next_checks=memo.next_checks(p, told, competitor),
             appendix=memo.appendix(reg),
-            stories=blocks, story_notes=notes)
+            stories=blocks, story_notes=notes,
+            charts={"2": charts.trend(reg, p), "4": charts.coverage(reg, p)})  # brief-003 FR-024
         template, sections = memo.compose(parts)
         finish(sp, {"template_chars": len(template), "claims": len(reg.claims), "sections": [s["number"] for s in sections]})
 
@@ -201,7 +203,9 @@ def _story(reg, n, s, p) -> tuple[memo.StoryBlock, dict]:
     else:
         verb = "Leading driver" if level == "High" else "Candidate drivers"
         lines.append(f"Confidence: {level}. {verb}: {lead}.")
-    return memo.StoryBlock(story_id(s), name(t), lines), {"territory": t, "confidence": level, "drivers": supported}
+    plan = next((c.detail["plan"] for c in checks if c.driver == "access" and c.detail), None)
+    chart = charts.story(reg, p, t, supported if level != "Low" else [], plan)
+    return memo.StoryBlock(story_id(s), name(t), lines, chart=chart), {"territory": t, "confidence": level, "drivers": supported}
 
 
 def _ord(n: int) -> str:

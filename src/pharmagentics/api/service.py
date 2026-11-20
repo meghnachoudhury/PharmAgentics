@@ -166,7 +166,7 @@ def run_briefing(request: BriefingQuery) -> BriefingResult:
         week_start=request.week_start,
         answer=raw["answer"], claims=claims, evidence=evidence,
         data_version=_traceable(claims, evidence),
-        abstained=bool(raw.get("abstained", False)), citations=raw.get("citations"), **extra,
+        abstained=bool(raw.get("abstained", False)), citations=raw.get("citations"), sections=raw.get("sections"), **extra,
     )
 
 
@@ -198,6 +198,7 @@ def accept_agent_brief(query: BriefingQuery, posted: dict) -> BriefingResult:
         brand_id=query.brand_id, territory_id=query.territory_id, week_start=query.week_start,
         answer=env.get("answer", ""), claims=claims, evidence=evidence, data_version=version,
         abstained=bool(env.get("abstained", False)), triage=posted.get("triage"), flow=posted.get("flow"),
+        sections=env.get("sections"),
         citations=_valid_citations(env.get("answer", ""), claims, env.get("citations")),
     )
 

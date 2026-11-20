@@ -20,7 +20,7 @@ from mcp.server.mcpserver.exceptions import ToolError
 
 from pharmagentics.tools import DEFAULT_DB, Registry
 from pharmagentics.tools import queries as q
-from pharmagentics.tools import memo, projection, stages
+from pharmagentics.tools import charts, memo, projection, stages
 from pharmagentics.tools.checks import (DRIVERS, OWNER, Check, check_access, check_competitor, check_data,
                                         check_promotion, check_supply, confidence, context_baseline)
 
@@ -221,8 +221,16 @@ class RunSession:
         told = [{"territory": t, "confidence": st["confidence"],
                  "drivers": [d for d, v in st["verdicts"].items() if v == "supported"]}
                 for t, st in self.stories.items() if st["closed"]]
+        story_charts = {}
+        for s in told:  # brief-003 FR-024: same builders as the scripted brief
+            access = self.checks.get(s["territory"], {}).get("access")
+            plan = (access.detail or {}).get("plan") if access else None
+            drivers = s["drivers"] if s["confidence"] != "Low" else []
+            story_charts[s["territory"]] = charts.story(reg, p, s["territory"], drivers, plan)
         return {"bottom_line": memo.bottom_line(reg, p, self.proj, told, self.restated),
-                "next_checks": memo.next_checks(p, told, competitor)}
+                "next_checks": memo.next_checks(p, told, competitor),
+                "charts": {"2": charts.trend(reg, p), "4": charts.coverage(reg, p), "stories": story_charts,
+                           "competitor": charts.competitor(reg, p) if competitor else None}}
 
     def story_section(self, territory: str, n: int) -> str:
         """One story as the agents left it: head, the checks they ran in the order run, the closing confidence."""

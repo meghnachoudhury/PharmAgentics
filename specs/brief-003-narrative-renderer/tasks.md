@@ -132,3 +132,19 @@ MVP is US7 + US2 on the scripted engine (T001 to T015 plus T020), which already 
 - Baselines (T001), at `c15ccde`, worktree MLflow store: `briefing_scripted` `71e565e279a0`; `briefing_agent` on `anthropic:claude-haiku-5-5` `be655807ea8a`. Every gated check 1.000, 0 run errors.
 - First candidates (T029, T030), before the assumption wording: scripted `6f48cbaba034`, gate exit 0; agent `1d9b819bf45b`, gate exit 0. The agent's `needed_revision` rose from 0 to 0.167: the new writer prompt said "do not repeat those numbers", so four answers named "the week before" without its token and the comparison check caught them (two §1 answers dropped). Fixed in the prompt, not by loosening the check.
 - Final candidates on the committed code, after the assumption wording and the writer prompt fix: scripted `ca90ac39769c` (gate exit 0 against `71e565e279a0`), agent `83e4bb6adb0f` (gate exit 0 against `be655807ea8a`; `needed_revision` 0.042). Full test suite: 564 passed.
+
+---
+
+## Slice 2: charts, data behind each section, sections in the UI (FR-024 to FR-027)
+
+- [X] T033 [US8] Chart builders from governed rows in src/pharmagentics/tools/charts.py (trend, story with baseline band and driver panel, Metacora shares, coverage strip), each table recorded as evidence
+- [X] T034 [US8] Captions name only the marks a chart shows (hollow, crossed, dotted, ringed), and say "an assumption" for projected or estimated points
+- [X] T035 [US8] Sections carry charts; flattened answer carries captions and explanations; per-section citations in src/pharmagentics/tools/memo.py
+- [X] T036 [US8] Scripted pipeline attaches charts in agents/brand-briefing/briefing_baseline/pipeline.py
+- [X] T037 [US8] MCP `memo_close` returns the same charts; investigate.py carries each story's territory; the writer may replace a chart explanation (agents/brand-briefing/briefing_agent/write.py, __init__.py, prompts/writer.md)
+- [X] T038 [US8] API carries `sections`; leadership cut `views.leadership_sections` (src/pharmagentics/api/schemas.py, service.py, views.py)
+- [X] T039 [US8] UI: frontend/figma-make/src/Memo.tsx and types in src/agent/briefingApi.ts; App.tsx uses it when sections exist
+- [X] T040 [US8] tests/test_charts.py; FR-020 equality test updated for charts (tests/test_agent_build3.py)
+- [X] T041 [US8] Real-app check: local app with dev auth, headless Chrome, analyst and leadership views of Pacific 2026-06-08 and New England 2026-05-04; no leaks in the leadership view
+- [ ] T042 Gate: scripted and agent candidates against `ca90ac39769c` and `83e4bb6adb0f`; agent run with 4 workers if every case logs one trace
+- [ ] T043 Commit slice 2 by path

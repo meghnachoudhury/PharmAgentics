@@ -128,7 +128,38 @@ def sections_text(sections: dict, close: dict, stories: list[dict]) -> str:
              "[the numbers]", *sections["numbers"], "[what the data can't tell us]", *sections["limits"]]
     for s in stories:
         parts += [f"[story {s['id']}]", s["section"]]
+    for key, chart in chart_targets(close, stories).items():
+        parts += [f"[chart {key}]", f"Caption: {chart['caption']}", f"Explanation, by code: {chart['explanation']}"]
     return "\n".join(parts)
+
+
+def chart_targets(close: dict, stories: list[dict]) -> dict[str, dict]:
+    """The charts the writer may explain, by key: "2", "4" and each story id (brief-003 FR-024)."""
+    charts = close.get("charts") or {}
+    out = {k: charts[k] for k in ("2", "4") if charts.get(k)}
+    for s in stories:
+        chart = charts.get("competitor") if s["id"].startswith("competitor:") else (charts.get("stories") or {}).get(s.get("territory") or "")
+        if chart:
+            out[s["id"]] = chart
+    return out
+
+
+def chart_explanations(reply: dict, close: dict, stories: list[dict], n_claims: int,
+                       glosses: dict[str, dict] | None = None) -> tuple[dict[str, str], list[str]]:
+    """The writer's chart lines that pass the same checks as its sentences, using only that chart's tokens.
+    A failing line is not revised: the chart keeps the explanation code wrote."""
+    targets, kept, dropped = chart_targets(close, stories), {}, []
+    for key, line in (reply.get("charts") or {}).items():
+        key, line = str(key).strip(), str(line).strip()
+        if key not in targets or not line:
+            continue
+        allowed = tokens(targets[key]["caption"] + "\n" + targets[key]["explanation"])
+        bad = problems(line, allowed, n_claims, glosses)
+        if bad:
+            dropped.append(f"chart {key}: {'; '.join(bad)}")
+        else:
+            kept[key] = line
+    return kept, dropped
 
 
 def section_tokens(sections: dict, close: dict) -> set[str]:
@@ -144,13 +175,15 @@ def _story_title(sid: str) -> str:
 
 
 def assemble(sections: dict, close: dict, stories: list[dict], answer: str, sentences: dict[str, str],
-             left_out: list[str], dropped_line: str) -> tuple[str, list[dict]]:
+             left_out: list[str], dropped_line: str, chart_lines: dict[str, str] | None = None) -> tuple[str, list[dict]]:
     """The memo (brief-003): code sections from the MCP session, the writer's answer as §1 prose and its story
     sentences as §3 prose, composed by the same code as the scripted brief."""
     from pharmagentics.tools import memo
 
+    targets = {k: dict(c, explanation=(chart_lines or {}).get(k) or c["explanation"])
+               for k, c in chart_targets(close, stories).items()}
     blocks = [memo.StoryBlock(s["id"], _story_title(s["id"]), memo.without_next(s["section"]).split("\n"),
-                              sentences.get(s["id"], "")) for s in stories]
+                              sentences.get(s["id"], ""), chart=targets.get(s["id"])) for s in stories]
     notes: list[str] = []
     if sections.get("calendar"):
         notes.append("No story is opened for a calendar week. Expect a rebound in the next regular week.")
@@ -163,7 +196,8 @@ def assemble(sections: dict, close: dict, stories: list[dict], answer: str, sent
             notes.append(dropped_line)
     parts = memo.MemoParts(title=sections["title"], bottom_line=close["bottom_line"], numbers=sections["numbers"],
                            limits=sections["limits"], next_checks=close["next_checks"], appendix=sections["appendix"],
-                           stories=blocks, story_notes=notes, answer=answer)
+                           stories=blocks, story_notes=notes, answer=answer,
+                           charts={k: targets[k] for k in ("2", "4") if k in targets})
     return memo.compose(parts)
 
 

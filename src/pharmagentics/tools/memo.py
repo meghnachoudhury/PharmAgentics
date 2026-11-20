@@ -44,6 +44,7 @@ class StoryBlock:
     title: str
     lines: list[str]  # head line, checks, closing confidence; no "Next:" (it lives in §5)
     prose: str = ""  # one sentence by the writer; empty for the scripted engine
+    chart: dict | None = None  # tools/charts.story or charts.competitor (slice 2)
 
 
 @dataclass
@@ -57,6 +58,12 @@ class MemoParts:
     stories: list[StoryBlock] = field(default_factory=list)
     story_notes: list[str] = field(default_factory=list)  # calendar, left out, considered and dropped, routine
     answer: str = ""  # §1 prose
+    charts: dict[str, dict] = field(default_factory=dict)  # section number -> chart (tools/charts, slice 2)
+
+
+def chart_lines(chart: dict | None) -> list[str]:
+    """A chart in the flattened answer: its caption and explanation, so the gated scorers check their numbers."""
+    return [f"Chart: {chart['caption']}", chart["explanation"]] if chart else []
 
 
 def compose(parts: MemoParts) -> tuple[str, list[dict]]:
@@ -75,35 +82,47 @@ def compose(parts: MemoParts) -> tuple[str, list[dict]]:
             out.append(HEADING_PREFIX + title)
             for s in parts.stories:
                 story_lines = [x for x in s.lines if x]
-                out += story_lines[:1] + ([s.prose] if s.prose else []) + story_lines[1:]
+                out += story_lines[:1] + ([s.prose] if s.prose else []) + story_lines[1:] + chart_lines(s.chart)
             if not lines and not parts.stories:
                 lines = [EMPTY["3"]]
             out += lines
             sections.append({"number": number, "title": title, "lines": lines, "prose": ""})
-            sections += [{"number": f"3.{i}", "title": s.title, "lines": [x for x in s.lines if x], "prose": s.prose}
-                         for i, s in enumerate(parts.stories, 1)]
+            sections += [{"number": f"3.{i}", "title": s.title, "lines": [x for x in s.lines if x], "prose": s.prose,
+                          "chart": s.chart} for i, s in enumerate(parts.stories, 1)]
             continue
         if not lines and not prose.get(number) and EMPTY[number]:
             lines = [EMPTY[number]]
         out.append(HEADING_PREFIX + title)
-        out += lines + ([prose[number]] if prose.get(number) else [])
-        sections.append({"number": number, "title": title, "lines": lines, "prose": prose.get(number, "")})
+        chart = parts.charts.get(number)
+        out += lines + ([prose[number]] if prose.get(number) else []) + chart_lines(chart)
+        sections.append({"number": number, "title": title, "lines": lines, "prose": prose.get(number, ""), "chart": chart})
     return "\n".join(out), sections
 
 
 def render_sections(sections: list[dict], claims: list[dict], index: dict[int, int] | None = None) -> list[dict]:
-    """Fill each section's tokens. `claims` are the claims the tokens number; `index` maps a token number to
-    its position in the envelope's claims when the envelope keeps only the claims it uses (the agent)."""
-    def fill(text: str) -> str:
-        return TOKEN.sub(lambda m: claims[int(m.group(1)) - 1]["value"] if 0 < int(m.group(1)) <= len(claims) else m.group(0), text)
+    """Fill each section's tokens, with where each claim sits (inline citations). `claims` are the claims the
+    tokens number; `index` maps a token number to its position in the envelope's claims when the envelope keeps
+    only the claims it uses (the agent)."""
+    from .registry import cite
+
+    def fill(text: str) -> tuple[str, list[dict]]:
+        return cite(text, claims, index)
 
     out = []
     for s in sections:
-        text = "\n".join(s["lines"])
-        used = list(dict.fromkeys(int(n) for n in TOKEN.findall(text + "\n" + s["prose"])))
+        text, prose, chart = "\n".join(s["lines"]), s["prose"], s.get("chart")
+        extra = (chart["caption"] + "\n" + chart["explanation"]) if chart else ""
+        used = list(dict.fromkeys(int(n) for n in TOKEN.findall(text + "\n" + prose + "\n" + extra)))
         refs = [index[n] if index is not None else n - 1 for n in used
                 if 0 < n <= len(claims) and (index is None or n in index)]
-        out.append({"number": s["number"], "title": s["title"], "text": fill(text), "prose": fill(s["prose"]), "claims": refs})
+        (t, t_spans), (pr, p_spans) = fill(text), fill(prose)
+        item = {"number": s["number"], "title": s["title"], "text": t, "prose": pr, "claims": refs,
+                "text_citations": t_spans, "prose_citations": p_spans, "chart": None}
+        if chart:
+            explanation, e_spans = fill(chart["explanation"])
+            item["chart"] = {**chart, "caption": fill(chart["caption"])[0], "explanation": explanation,
+                             "explanation_citations": e_spans}
+        out.append(item)
     return out
 
 
@@ -181,7 +200,8 @@ def _least_sure(reg: Registry, p, proj: Projection, stories: list[dict]) -> str 
         x, b = q.mean_weekly(p.weeks, terrs=[t]), q.mean_weekly(p.baseline, terrs=[t])
         change = reg.scalar(q.pct_change(x, b)) or 0
         pct = reg.claim("get_metric", q.pct_change(x, b), "pct1", territory=t)
-        return f"Least sure: the {q.name(t)} change ({stages.word(change)} {pct}), because its confidence is {s['confidence']}."
+        return (f"Least sure: the {q.name(t)} change ({stages.word(change)} {pct}); its confidence, {s['confidence']}, "
+                "is the lowest of this brief's stories.")
     if len(p.weeks) == 1 and p.baseline:
         w, prev = p.weeks[0], p.baseline[-1]
         sql = q.pct_change(q.trx_sum([w]), q.trx_sum([prev]))

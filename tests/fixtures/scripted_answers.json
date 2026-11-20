@@ -1,6 +1,6 @@
 {
  "Week of 2026-06-08 in Pacific: Generate the weekly brand-performance briefing.": {
-  "answer": "Brief for week of 2026-06-08. Product: BXA.\n## Bottom line\nProjected national BXA TRx is 3,860 for the week of 2026-06-08.\nLike for like on 8 of 8 territories, BXA TRx is down 11.7% against the four weeks before.\nBXA held 31.1% of the four-brand market basket.\nLeast sure: the Pacific change (down 31.2%), because its confidence is High.\n## The numbers\nProjected national BXA TRx for the week of 2026-06-08: 3,860.\nBy territory, all observed:\n- Great Lakes: 576\n- Mid-Atlantic: 603\n- Mountain: 316\n- New England: 376\n- Northwest: 339\n- Pacific: 464\n- South Central: 569\n- Southeast: 617\nKPIs: BXA TRx averaged 3,860 a week across 8 of 8 territories (like for like), down 11.7% against the weeks before.\nWeek over week, summed over reportable cuts: BXA TRx is 3,860 against 4,269 the week before (down 9.6%).\n## What changed and why\nStory one: Pacific. BXA TRx averaged 464 a week against 674 before (down 31.2%), while the other territories were down 8.2%.\nChecked, in this order:\n- Data artifact: ruled out. Every Pacific cut in these weeks passes the feed gate.\n- Access: ruled out. No BXA access change in the Pacific plans in these months.\n- Promotion: ruled out. Aggregated rep calls held at 64 a week against 52 before.\n- Supply: supported. BXA inventory fill averaged 0.69 (close to full supply is normal), with 22.5% of orders backordered.\n- Competitor launch: ruled out as a local cause. Before the change Metacora held 7.3% of the basket here against 7.5% elsewhere.\nConfidence: High. Leading driver: supply.\nStory two: competitor Metacora (launched 2026-03-02). This is a continuing story, week 14 since launch, still growing. Metacora held 12.5% of the four-brand basket and BXA held 31.1%, against 35.4% for BXA in the four weeks before launch. Confidence: Medium. The share loss is measured; its effect on volume is not separated from other drivers.\nConsidered and dropped: 7 territories moved within their normal range.\n## What the data can't tell us\nData health: 8 of 8 territories pass the feed gate for 2026-06-08. No cut is withheld.\n## Next checks\n- Pacific: confirm the supply finding. Owner: supply chain and trade. Unlocks: whether to escalate supply with trade partners.\n- Metacora: track the basket shares each week. Owner: marketing and sales. Unlocks: whether to adjust the response to Metacora.\n## Appendix\nMethod: like-for-like figures use only territories whose feed passed the gate in every week compared. The projected national divides each territory's observed TRx by its panel coverage, and estimates a territory that cannot be read from its recent share of national. Changes, stories and drivers use like-for-like cuts only.\nData version 47bcfd650564. Product: BXA (Cardiovela), synthetic data.\nGlossary:\n- Like for like: a comparison that uses only territories whose feed passed its checks in every week compared.\n- Panel coverage: the share of a territory's expected prescription records that arrived in a given week.\n- Projected national: national TRx built territory by territory, each territory's observed TRx divided by its panel coverage, summed.",
+  "answer": "Brief for week of 2026-06-08. Product: BXA.\n## Bottom line\nProjected national BXA TRx is 3,860 for the week of 2026-06-08.\nLike for like on 8 of 8 territories, BXA TRx is down 11.7% against the four weeks before.\nBXA held 31.1% of the four-brand market basket.\nLeast sure: the Pacific change (down 31.2%); its confidence, High, is the lowest of this brief's stories.\n## The numbers\nProjected national BXA TRx for the week of 2026-06-08: 3,860.\nBy territory, all observed:\n- Great Lakes: 576\n- Mid-Atlantic: 603\n- Mountain: 316\n- New England: 376\n- Northwest: 339\n- Pacific: 464\n- South Central: 569\n- Southeast: 617\nKPIs: BXA TRx averaged 3,860 a week across 8 of 8 territories (like for like), down 11.7% against the weeks before.\nWeek over week, summed over reportable cuts: BXA TRx is 3,860 against 4,269 the week before (down 9.6%).\nChart: BXA TRx a week, 2026-03-16 to 2026-06-08: projected national and Pacific. Hollow points are projected or estimated, an assumption (weeks of 2026-04-06, 2026-05-04). No forecast is drawn.\nProjected national moved from 4,709 in the week of 2026-03-16 to 3,860 in the week of 2026-06-08.\n## What changed and why\nStory one: Pacific. BXA TRx averaged 464 a week against 674 before (down 31.2%), while the other territories were down 8.2%.\nChecked, in this order:\n- Data artifact: ruled out. Every Pacific cut in these weeks passes the feed gate.\n- Access: ruled out. No BXA access change in the Pacific plans in these months.\n- Promotion: ruled out. Aggregated rep calls held at 64 a week against 52 before.\n- Supply: supported. BXA inventory fill averaged 0.69 (close to full supply is normal), with 22.5% of orders backordered.\n- Competitor launch: ruled out as a local cause. Before the change Metacora held 7.3% of the basket here against 7.5% elsewhere.\nConfidence: High. Leading driver: supply.\nChart: Pacific BXA TRx a week, 2026-03-16 to 2026-06-08, against the band of its baseline weeks (544 to 809). Second panel: BXA inventory fill rate, the driver the checks support.\nIn the week of 2026-06-08, Pacific had 464 BXA TRx, below its baseline band.\nStory two: competitor Metacora (launched 2026-03-02). This is a continuing story, week 14 since launch, still growing. Metacora held 12.5% of the four-brand basket and BXA held 31.1%, against 35.4% for BXA in the four weeks before launch. Confidence: Medium. The share loss is measured; its effect on volume is not separated from other drivers.\nChart: Shares of the four-brand basket, 2026-03-16 to 2026-06-08, every reportable territory.\nMetacora held 12.5% of the basket in the week of 2026-06-08.\nConsidered and dropped: 7 territories moved within their normal range.\n## What the data can't tell us\nData health: 8 of 8 territories pass the feed gate for 2026-06-08. No cut is withheld.\nChart: Feed coverage by territory and week, 2026-03-16 to 2026-06-08. Hollow cells are projected and crossed cells are estimated, both assumptions.\n2 territory-weeks in this window are not observed counts.\n## Next checks\n- Pacific: confirm the supply finding. Owner: supply chain and trade. Unlocks: whether to escalate supply with trade partners.\n- Metacora: track the basket shares each week. Owner: marketing and sales. Unlocks: whether to adjust the response to Metacora.\n## Appendix\nMethod: like-for-like figures use only territories whose feed passed the gate in every week compared. The projected national divides each territory's observed TRx by its panel coverage, and estimates a territory that cannot be read from its recent share of national. Changes, stories and drivers use like-for-like cuts only.\nData version 47bcfd650564. Product: BXA (Cardiovela), synthetic data.\nGlossary:\n- Like for like: a comparison that uses only territories whose feed passed its checks in every week compared.\n- Panel coverage: the share of a territory's expected prescription records that arrived in a given week.\n- Projected national: national TRx built territory by territory, each territory's observed TRx divided by its panel coverage, summed.",
   "claims": [
    {
     "value": "8",
@@ -115,24 +115,40 @@
     "evidence_id": "e28"
    },
    {
-    "value": "14",
-    "evidence_id": "e29"
-   },
-   {
-    "value": "12.5%",
+    "value": "544",
     "evidence_id": "e30"
    },
    {
-    "value": "31.1%",
+    "value": "809",
     "evidence_id": "e31"
    },
    {
+    "value": "464",
+    "evidence_id": "e33"
+   },
+   {
+    "value": "14",
+    "evidence_id": "e34"
+   },
+   {
+    "value": "12.5%",
+    "evidence_id": "e35"
+   },
+   {
+    "value": "31.1%",
+    "evidence_id": "e36"
+   },
+   {
     "value": "35.4%",
-    "evidence_id": "e32"
+    "evidence_id": "e37"
+   },
+   {
+    "value": "12.5%",
+    "evidence_id": "e35"
    },
    {
     "value": "7",
-    "evidence_id": "e33"
+    "evidence_id": "e39"
    },
    {
     "value": "8",
@@ -148,11 +164,23 @@
    },
    {
     "value": "31.1%",
-    "evidence_id": "e31"
+    "evidence_id": "e36"
    },
    {
     "value": "31.2%",
     "evidence_id": "e27"
+   },
+   {
+    "value": "4,709",
+    "evidence_id": "e41"
+   },
+   {
+    "value": "3,860",
+    "evidence_id": "e10"
+   },
+   {
+    "value": "2",
+    "evidence_id": "e43"
    }
   ],
   "evidence": [
@@ -444,6 +472,60 @@
    },
    {
     "id": "e29",
+    "tool": "chart_story",
+    "params": {
+     "territory": "PACIFIC"
+    },
+    "query": "select week_start::varchar, sum(trx) from reporting.v_reportable_rx where product_id = 'BXA' and territory_id = 'PACIFIC' and week_start in (DATE '2026-03-16',DATE '2026-03-23',DATE '2026-03-30',DATE '2026-04-06',DATE '2026-04-13',DATE '2026-04-20',DATE '2026-04-27',DATE '2026-05-04',DATE '2026-05-11',DATE '2026-05-18',DATE '2026-05-25',DATE '2026-06-01',DATE '2026-06-08') group by 1 order by 1",
+    "result": "13 rows",
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e30",
+    "tool": "chart_story",
+    "params": {
+     "territory": "PACIFIC",
+     "scope": "baseline band"
+    },
+    "query": "select min(s) from (select week_start, sum(trx) s from reporting.v_reportable_rx where product_id = 'BXA' and territory_id = 'PACIFIC' and week_start in (DATE '2026-05-11',DATE '2026-05-18',DATE '2026-05-25',DATE '2026-06-01') group by 1)",
+    "result": 544.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e31",
+    "tool": "chart_story",
+    "params": {
+     "territory": "PACIFIC",
+     "scope": "baseline band"
+    },
+    "query": "select max(s) from (select week_start, sum(trx) s from reporting.v_reportable_rx where product_id = 'BXA' and territory_id = 'PACIFIC' and week_start in (DATE '2026-05-11',DATE '2026-05-18',DATE '2026-05-25',DATE '2026-06-01') group by 1)",
+    "result": 809.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e32",
+    "tool": "chart_supply",
+    "params": {
+     "territory": "PACIFIC",
+     "driver": "supply"
+    },
+    "query": "select week_start::varchar, avg(inventory_fill_rate) from raw.inventory_weekly where product_id = 'BXA' and territory_id = 'PACIFIC' and week_start in (DATE '2026-03-16',DATE '2026-03-23',DATE '2026-03-30',DATE '2026-04-06',DATE '2026-04-13',DATE '2026-04-20',DATE '2026-04-27',DATE '2026-05-04',DATE '2026-05-11',DATE '2026-05-18',DATE '2026-05-25',DATE '2026-06-01',DATE '2026-06-08') group by 1 order by 1",
+    "result": "13 rows",
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e33",
+    "tool": "chart_story",
+    "params": {
+     "territory": "PACIFIC",
+     "week": "2026-06-08"
+    },
+    "query": "select coalesce(sum(trx), 0) from reporting.v_reportable_rx where product_id = 'BXA' and territory_id = 'PACIFIC' and week_start = DATE '2026-06-08'",
+    "result": 464.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e34",
     "tool": "compare_competitors",
     "params": {},
     "query": "select datediff('week', DATE '2026-03-02', week_start) from raw.calendar where week_start = DATE '2026-06-08'",
@@ -451,7 +533,7 @@
     "data_version": "47bcfd650564"
    },
    {
-    "id": "e30",
+    "id": "e35",
     "tool": "compare_competitors",
     "params": {
      "product": "BXE"
@@ -461,7 +543,7 @@
     "data_version": "47bcfd650564"
    },
    {
-    "id": "e31",
+    "id": "e36",
     "tool": "compare_competitors",
     "params": {
      "product": "BXA"
@@ -471,7 +553,7 @@
     "data_version": "47bcfd650564"
    },
    {
-    "id": "e32",
+    "id": "e37",
     "tool": "compare_competitors",
     "params": {
      "product": "BXA",
@@ -482,7 +564,15 @@
     "data_version": "47bcfd650564"
    },
    {
-    "id": "e33",
+    "id": "e38",
+    "tool": "chart_competitor",
+    "params": {},
+    "query": "select week_start::varchar, 100.0 * sum(trx) filter (where product_id = 'BXA') / nullif(sum(trx), 0), 100.0 * sum(trx) filter (where product_id = 'BXE') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-03-16',DATE '2026-03-23',DATE '2026-03-30',DATE '2026-04-06',DATE '2026-04-13',DATE '2026-04-20',DATE '2026-04-27',DATE '2026-05-04',DATE '2026-05-11',DATE '2026-05-18',DATE '2026-05-25',DATE '2026-06-01',DATE '2026-06-08') group by 1 order by 1",
+    "result": "13 rows",
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e39",
     "tool": "detect_changes",
     "params": {
      "scope": "territories with no material change"
@@ -490,12 +580,51 @@
     "query": "select count(distinct territory_id) from reporting.v_reportable_rx where week_start in (DATE '2026-06-08') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','SOUTHEAST','SOUTH_CENTRAL')",
     "result": 7.0,
     "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e40",
+    "tool": "chart_trend",
+    "params": {
+     "territory": "PACIFIC"
+    },
+    "query": "with wk as (select unnest([DATE '2026-03-16', DATE '2026-03-23', DATE '2026-03-30', DATE '2026-04-06', DATE '2026-04-13', DATE '2026-04-20', DATE '2026-04-27', DATE '2026-05-04', DATE '2026-05-11', DATE '2026-05-18', DATE '2026-05-25', DATE '2026-06-01', DATE '2026-06-08']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select n.week_start::varchar, n.national, (select case when bool_or(c.basis = 'estimated') then 'estimated' when bool_or(c.basis = 'projected') then 'projected' else 'observed' end from cut c where c.week_start = n.week_start), exists (select 1 from raw.restatement_log r where r.product_id = 'BXA' and r.week_start = n.week_start and r.revised_at <= DATE '2026-06-15'), (select case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.week_start = n.week_start and c.territory_id = 'PACIFIC'), (select c.basis from cut c where c.week_start = n.week_start and c.territory_id = 'PACIFIC') from nat n order by 1",
+    "result": "13 rows",
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e41",
+    "tool": "project_national",
+    "params": {
+     "week": "2026-03-16",
+     "scope": "projected national"
+    },
+    "query": "with wk as (select unnest([DATE '2026-03-16']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(national) from nat",
+    "result": 4709.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e42",
+    "tool": "chart_coverage",
+    "params": {},
+    "query": "select v.territory_id, v.week_start::varchar, v.basis, exists (select 1 from raw.restatement_log r where r.product_id = 'BXA' and r.week_start = v.week_start and r.territory_id = v.territory_id and r.revised_at <= DATE '2026-06-15') from reporting.v_rx_projection v where v.product_id = 'BXA' and v.week_start in (DATE '2026-03-16',DATE '2026-03-23',DATE '2026-03-30',DATE '2026-04-06',DATE '2026-04-13',DATE '2026-04-20',DATE '2026-04-27',DATE '2026-05-04',DATE '2026-05-11',DATE '2026-05-18',DATE '2026-05-25',DATE '2026-06-01',DATE '2026-06-08') order by 1, 2",
+    "result": "104 rows",
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e43",
+    "tool": "chart_coverage",
+    "params": {
+     "scope": "territory-weeks not observed"
+    },
+    "query": "select count(*) from reporting.v_rx_projection where product_id = 'BXA' and basis <> 'observed' and week_start in (DATE '2026-03-16',DATE '2026-03-23',DATE '2026-03-30',DATE '2026-04-06',DATE '2026-04-13',DATE '2026-04-20',DATE '2026-04-27',DATE '2026-05-04',DATE '2026-05-11',DATE '2026-05-18',DATE '2026-05-25',DATE '2026-06-01',DATE '2026-06-08')",
+    "result": 2.0,
+    "data_version": "47bcfd650564"
    }
   ],
   "abstained": false
  },
  "Week of 2026-07-13 in Mid-Atlantic: Generate the weekly brand-performance briefing.": {
-  "answer": "Brief for week of 2026-07-13. Product: BXA.\n## Bottom line\nData note: an earlier week was restated. The new value and the reason are in The numbers.\nProjected national BXA TRx is 4,240 for the week of 2026-07-13.\nLike for like on 7 of 8 territories, BXA TRx is up 3.3% against the four weeks before.\nBXA held 32.6% of the four-brand market basket.\nLeast sure: the Pacific change (up 45.3%), because its confidence is Low.\n## The numbers\nProjected national BXA TRx for the week of 2026-07-13: 4,240.\nBy territory, all observed:\n- Great Lakes: 622\n- Mid-Atlantic: 636\n- Mountain: 383\n- New England: 336\n- Northwest: 384\n- Pacific: 737\n- South Central: 533\n- Southeast: 609\nKPIs: BXA TRx averaged 3,618 a week across 7 of 8 territories (like for like), up 3.3% against the weeks before.\nWeek over week, summed over reportable cuts: BXA TRx is 4,240 against 3,665 the week before (up 15.7%).\nOn the 7 territories that report both weeks, BXA TRx went from 3,665 to 3,618 (down 1.3%).\nRestated: Mid-Atlantic BXA TRx for the week of 2026-04-06 was 692 when first reported and is now 742 (restated 2026-07-13; reason: synthetic late claims adjustment). Quote the new value with this note.\n## What changed and why\nStory one: Pacific. BXA TRx averaged 737 a week against 507 before (up 45.3%), while the other territories were down 3.8%.\nChecked, in this order:\n- Data artifact: ruled out. Every Pacific cut in these weeks passes the feed gate.\n- Access: ruled out. No BXA access change in the Pacific plans in these months.\n- Promotion: ruled out. Aggregated rep calls held at 50 a week against 52 before.\n- Supply: ruled out. BXA inventory fill averaged 1.00.\n- Competitor launch: ruled out as a local cause. Before the change Metacora held 11.2% of the basket here against 10.8% elsewhere.\nConfidence: Low. Unresolved, investigate next. No driver is named.\nStory two: Mid-Atlantic. BXA TRx averaged 636 a week against 680 before (down 6.5%), while the other territories were up 5.7%.\nChecked, in this order:\n- Data artifact: ruled out. Every Mid-Atlantic cut in these weeks passes the feed gate.\n- Access: ruled out. No BXA access change in the Mid-Atlantic plans in these months.\n- Promotion: ruled out. Aggregated rep calls held at 54 a week against 52 before.\n- Supply: ruled out. BXA inventory fill averaged 0.97.\n- Competitor launch: ruled out as a local cause. Before the change Metacora held 11.2% of the basket here against 10.8% elsewhere.\nConfidence: Low. Unresolved, investigate next. No driver is named.\nStory three: competitor Metacora (launched 2026-03-02). This is a continuing story, week 19 since launch, still growing. Metacora held 13.2% of the four-brand basket and BXA held 32.6%, against 35.4% for BXA in the four weeks before launch. Confidence: Medium. The share loss is measured; its effect on volume is not separated from other drivers.\nConsidered and dropped: 5 territories moved within their normal range.\n## What the data can't tell us\nData health: 8 of 8 territories pass the feed gate for 2026-07-13. No cut is withheld.\n## Next checks\n- Pacific: split by plan and specialty, and ask for local context. Owner: sales leadership. Unlocks: whether to open a deeper review of the territory.\n- Mid-Atlantic: split by plan and specialty, and ask for local context. Owner: sales leadership. Unlocks: whether to open a deeper review of the territory.\n- Metacora: track the basket shares each week. Owner: marketing and sales. Unlocks: whether to adjust the response to Metacora.\n## Appendix\nMethod: like-for-like figures use only territories whose feed passed the gate in every week compared. The projected national divides each territory's observed TRx by its panel coverage, and estimates a territory that cannot be read from its recent share of national. Changes, stories and drivers use like-for-like cuts only.\nData version 47bcfd650564. Product: BXA (Cardiovela), synthetic data.\nGlossary:\n- Like for like: a comparison that uses only territories whose feed passed its checks in every week compared.\n- Panel coverage: the share of a territory's expected prescription records that arrived in a given week.\n- Projected national: national TRx built territory by territory, each territory's observed TRx divided by its panel coverage, summed.",
+  "answer": "Brief for week of 2026-07-13. Product: BXA.\n## Bottom line\nData note: an earlier week was restated. The new value and the reason are in The numbers.\nProjected national BXA TRx is 4,240 for the week of 2026-07-13.\nLike for like on 7 of 8 territories, BXA TRx is up 3.3% against the four weeks before.\nBXA held 32.6% of the four-brand market basket.\nLeast sure: the Pacific change (up 45.3%); its confidence, Low, is the lowest of this brief's stories.\n## The numbers\nProjected national BXA TRx for the week of 2026-07-13: 4,240.\nBy territory, all observed:\n- Great Lakes: 622\n- Mid-Atlantic: 636\n- Mountain: 383\n- New England: 336\n- Northwest: 384\n- Pacific: 737\n- South Central: 533\n- Southeast: 609\nKPIs: BXA TRx averaged 3,618 a week across 7 of 8 territories (like for like), up 3.3% against the weeks before.\nWeek over week, summed over reportable cuts: BXA TRx is 4,240 against 3,665 the week before (up 15.7%).\nOn the 7 territories that report both weeks, BXA TRx went from 3,665 to 3,618 (down 1.3%).\nRestated: Mid-Atlantic BXA TRx for the week of 2026-04-06 was 692 when first reported and is now 742 (restated 2026-07-13; reason: synthetic late claims adjustment). Quote the new value with this note.\nChart: BXA TRx a week, 2026-04-20 to 2026-07-13: projected national and Mid-Atlantic. Hollow points are projected or estimated, an assumption (weeks of 2026-05-04, 2026-07-06). No forecast is drawn.\nProjected national moved from 4,728 in the week of 2026-04-20 to 4,240 in the week of 2026-07-13.\n## What changed and why\nStory one: Pacific. BXA TRx averaged 737 a week against 507 before (up 45.3%), while the other territories were down 3.8%.\nChecked, in this order:\n- Data artifact: ruled out. Every Pacific cut in these weeks passes the feed gate.\n- Access: ruled out. No BXA access change in the Pacific plans in these months.\n- Promotion: ruled out. Aggregated rep calls held at 50 a week against 52 before.\n- Supply: ruled out. BXA inventory fill averaged 1.00.\n- Competitor launch: ruled out as a local cause. Before the change Metacora held 11.2% of the basket here against 10.8% elsewhere.\nConfidence: Low. Unresolved, investigate next. No driver is named.\nChart: Pacific BXA TRx a week, 2026-04-20 to 2026-07-13, against the band of its baseline weeks (406 to 699). No driver was supported, so only TRx is shown.\nIn the week of 2026-07-13, Pacific had 737 BXA TRx, above its baseline band.\nStory two: Mid-Atlantic. BXA TRx averaged 636 a week against 680 before (down 6.5%), while the other territories were up 5.7%.\nChecked, in this order:\n- Data artifact: ruled out. Every Mid-Atlantic cut in these weeks passes the feed gate.\n- Access: ruled out. No BXA access change in the Mid-Atlantic plans in these months.\n- Promotion: ruled out. Aggregated rep calls held at 54 a week against 52 before.\n- Supply: ruled out. BXA inventory fill averaged 0.97.\n- Competitor launch: ruled out as a local cause. Before the change Metacora held 11.2% of the basket here against 10.8% elsewhere.\nConfidence: Low. Unresolved, investigate next. No driver is named.\nChart: Mid-Atlantic BXA TRx a week, 2026-04-20 to 2026-07-13, against the band of its baseline weeks (640 to 712). No driver was supported, so only TRx is shown.\nIn the week of 2026-07-13, Mid-Atlantic had 636 BXA TRx, below its baseline band.\nStory three: competitor Metacora (launched 2026-03-02). This is a continuing story, week 19 since launch, still growing. Metacora held 13.2% of the four-brand basket and BXA held 32.6%, against 35.4% for BXA in the four weeks before launch. Confidence: Medium. The share loss is measured; its effect on volume is not separated from other drivers.\nChart: Shares of the four-brand basket, 2026-04-20 to 2026-07-13, every reportable territory.\nMetacora held 13.2% of the basket in the week of 2026-07-13.\nConsidered and dropped: 5 territories moved within their normal range.\n## What the data can't tell us\nData health: 8 of 8 territories pass the feed gate for 2026-07-13. No cut is withheld.\nChart: Feed coverage by territory and week, 2026-04-20 to 2026-07-13. Hollow cells are projected and crossed cells are estimated, both assumptions.\n2 territory-weeks in this window are not observed counts.\n## Next checks\n- Pacific: split by plan and specialty, and ask for local context. Owner: sales leadership. Unlocks: whether to open a deeper review of the territory.\n- Mid-Atlantic: split by plan and specialty, and ask for local context. Owner: sales leadership. Unlocks: whether to open a deeper review of the territory.\n- Metacora: track the basket shares each week. Owner: marketing and sales. Unlocks: whether to adjust the response to Metacora.\n## Appendix\nMethod: like-for-like figures use only territories whose feed passed the gate in every week compared. The projected national divides each territory's observed TRx by its panel coverage, and estimates a territory that cannot be read from its recent share of national. Changes, stories and drivers use like-for-like cuts only.\nData version 47bcfd650564. Product: BXA (Cardiovela), synthetic data.\nGlossary:\n- Like for like: a comparison that uses only territories whose feed passed its checks in every week compared.\n- Panel coverage: the share of a territory's expected prescription records that arrived in a given week.\n- Projected national: national TRx built territory by territory, each territory's observed TRx divided by its panel coverage, summed.",
   "claims": [
    {
     "value": "8",
@@ -630,60 +759,88 @@
     "evidence_id": "e33"
    },
    {
-    "value": "54",
-    "evidence_id": "e34"
-   },
-   {
-    "value": "52",
+    "value": "406",
     "evidence_id": "e35"
    },
    {
-    "value": "0.97",
+    "value": "699",
     "evidence_id": "e36"
    },
    {
-    "value": "11.2%",
+    "value": "737",
     "evidence_id": "e37"
    },
    {
-    "value": "10.8%",
+    "value": "54",
     "evidence_id": "e38"
    },
    {
-    "value": "636",
+    "value": "52",
     "evidence_id": "e39"
    },
    {
-    "value": "680",
+    "value": "0.97",
     "evidence_id": "e40"
    },
    {
-    "value": "6.5%",
+    "value": "11.2%",
     "evidence_id": "e41"
    },
    {
-    "value": "5.7%",
+    "value": "10.8%",
     "evidence_id": "e42"
    },
    {
-    "value": "19",
+    "value": "636",
     "evidence_id": "e43"
    },
    {
-    "value": "13.2%",
+    "value": "680",
     "evidence_id": "e44"
    },
    {
-    "value": "32.6%",
+    "value": "6.5%",
     "evidence_id": "e45"
    },
    {
-    "value": "35.4%",
+    "value": "5.7%",
     "evidence_id": "e46"
    },
    {
+    "value": "640",
+    "evidence_id": "e48"
+   },
+   {
+    "value": "712",
+    "evidence_id": "e49"
+   },
+   {
+    "value": "636",
+    "evidence_id": "e50"
+   },
+   {
+    "value": "19",
+    "evidence_id": "e51"
+   },
+   {
+    "value": "13.2%",
+    "evidence_id": "e52"
+   },
+   {
+    "value": "32.6%",
+    "evidence_id": "e53"
+   },
+   {
+    "value": "35.4%",
+    "evidence_id": "e54"
+   },
+   {
+    "value": "13.2%",
+    "evidence_id": "e52"
+   },
+   {
     "value": "5",
-    "evidence_id": "e47"
+    "evidence_id": "e56"
    },
    {
     "value": "7",
@@ -699,11 +856,23 @@
    },
    {
     "value": "32.6%",
-    "evidence_id": "e45"
+    "evidence_id": "e53"
    },
    {
     "value": "45.3%",
     "evidence_id": "e32"
+   },
+   {
+    "value": "4,728",
+    "evidence_id": "e58"
+   },
+   {
+    "value": "4,240",
+    "evidence_id": "e16"
+   },
+   {
+    "value": "2",
+    "evidence_id": "e60"
    }
   ],
   "evidence": [
@@ -1049,6 +1218,49 @@
    },
    {
     "id": "e34",
+    "tool": "chart_story",
+    "params": {
+     "territory": "PACIFIC"
+    },
+    "query": "select week_start::varchar, sum(trx) from reporting.v_reportable_rx where product_id = 'BXA' and territory_id = 'PACIFIC' and week_start in (DATE '2026-04-20',DATE '2026-04-27',DATE '2026-05-04',DATE '2026-05-11',DATE '2026-05-18',DATE '2026-05-25',DATE '2026-06-01',DATE '2026-06-08',DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06',DATE '2026-07-13') group by 1 order by 1",
+    "result": "13 rows",
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e35",
+    "tool": "chart_story",
+    "params": {
+     "territory": "PACIFIC",
+     "scope": "baseline band"
+    },
+    "query": "select min(s) from (select week_start, sum(trx) s from reporting.v_reportable_rx where product_id = 'BXA' and territory_id = 'PACIFIC' and week_start in (DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06') group by 1)",
+    "result": 406.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e36",
+    "tool": "chart_story",
+    "params": {
+     "territory": "PACIFIC",
+     "scope": "baseline band"
+    },
+    "query": "select max(s) from (select week_start, sum(trx) s from reporting.v_reportable_rx where product_id = 'BXA' and territory_id = 'PACIFIC' and week_start in (DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06') group by 1)",
+    "result": 699.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e37",
+    "tool": "chart_story",
+    "params": {
+     "territory": "PACIFIC",
+     "week": "2026-07-13"
+    },
+    "query": "select coalesce(sum(trx), 0) from reporting.v_reportable_rx where product_id = 'BXA' and territory_id = 'PACIFIC' and week_start = DATE '2026-07-13'",
+    "result": 737.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e38",
     "tool": "lookup_promo",
     "params": {
      "territory": "MID_ATLANTIC"
@@ -1058,7 +1270,7 @@
     "data_version": "47bcfd650564"
    },
    {
-    "id": "e35",
+    "id": "e39",
     "tool": "lookup_promo",
     "params": {
      "territory": "MID_ATLANTIC"
@@ -1068,7 +1280,7 @@
     "data_version": "47bcfd650564"
    },
    {
-    "id": "e36",
+    "id": "e40",
     "tool": "lookup_inventory",
     "params": {
      "territory": "MID_ATLANTIC"
@@ -1078,7 +1290,7 @@
     "data_version": "47bcfd650564"
    },
    {
-    "id": "e37",
+    "id": "e41",
     "tool": "compare_competitors",
     "params": {
      "territory": "MID_ATLANTIC",
@@ -1089,7 +1301,7 @@
     "data_version": "47bcfd650564"
    },
    {
-    "id": "e38",
+    "id": "e42",
     "tool": "compare_competitors",
     "params": {
      "scope": "other territories",
@@ -1100,7 +1312,7 @@
     "data_version": "47bcfd650564"
    },
    {
-    "id": "e39",
+    "id": "e43",
     "tool": "get_metric",
     "params": {
      "territory": "MID_ATLANTIC"
@@ -1110,7 +1322,7 @@
     "data_version": "47bcfd650564"
    },
    {
-    "id": "e40",
+    "id": "e44",
     "tool": "get_metric",
     "params": {
      "territory": "MID_ATLANTIC"
@@ -1120,7 +1332,7 @@
     "data_version": "47bcfd650564"
    },
    {
-    "id": "e41",
+    "id": "e45",
     "tool": "get_metric",
     "params": {
      "territory": "MID_ATLANTIC"
@@ -1130,7 +1342,7 @@
     "data_version": "47bcfd650564"
    },
    {
-    "id": "e42",
+    "id": "e46",
     "tool": "get_metric",
     "params": {
      "scope": "other territories"
@@ -1140,7 +1352,50 @@
     "data_version": "47bcfd650564"
    },
    {
-    "id": "e43",
+    "id": "e47",
+    "tool": "chart_story",
+    "params": {
+     "territory": "MID_ATLANTIC"
+    },
+    "query": "select week_start::varchar, sum(trx) from reporting.v_reportable_rx where product_id = 'BXA' and territory_id = 'MID_ATLANTIC' and week_start in (DATE '2026-04-20',DATE '2026-04-27',DATE '2026-05-04',DATE '2026-05-11',DATE '2026-05-18',DATE '2026-05-25',DATE '2026-06-01',DATE '2026-06-08',DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06',DATE '2026-07-13') group by 1 order by 1",
+    "result": "13 rows",
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e48",
+    "tool": "chart_story",
+    "params": {
+     "territory": "MID_ATLANTIC",
+     "scope": "baseline band"
+    },
+    "query": "select min(s) from (select week_start, sum(trx) s from reporting.v_reportable_rx where product_id = 'BXA' and territory_id = 'MID_ATLANTIC' and week_start in (DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06') group by 1)",
+    "result": 640.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e49",
+    "tool": "chart_story",
+    "params": {
+     "territory": "MID_ATLANTIC",
+     "scope": "baseline band"
+    },
+    "query": "select max(s) from (select week_start, sum(trx) s from reporting.v_reportable_rx where product_id = 'BXA' and territory_id = 'MID_ATLANTIC' and week_start in (DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06') group by 1)",
+    "result": 712.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e50",
+    "tool": "chart_story",
+    "params": {
+     "territory": "MID_ATLANTIC",
+     "week": "2026-07-13"
+    },
+    "query": "select coalesce(sum(trx), 0) from reporting.v_reportable_rx where product_id = 'BXA' and territory_id = 'MID_ATLANTIC' and week_start = DATE '2026-07-13'",
+    "result": 636.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e51",
     "tool": "compare_competitors",
     "params": {},
     "query": "select datediff('week', DATE '2026-03-02', week_start) from raw.calendar where week_start = DATE '2026-07-13'",
@@ -1148,7 +1403,7 @@
     "data_version": "47bcfd650564"
    },
    {
-    "id": "e44",
+    "id": "e52",
     "tool": "compare_competitors",
     "params": {
      "product": "BXE"
@@ -1158,7 +1413,7 @@
     "data_version": "47bcfd650564"
    },
    {
-    "id": "e45",
+    "id": "e53",
     "tool": "compare_competitors",
     "params": {
      "product": "BXA"
@@ -1168,7 +1423,7 @@
     "data_version": "47bcfd650564"
    },
    {
-    "id": "e46",
+    "id": "e54",
     "tool": "compare_competitors",
     "params": {
      "product": "BXA",
@@ -1179,7 +1434,15 @@
     "data_version": "47bcfd650564"
    },
    {
-    "id": "e47",
+    "id": "e55",
+    "tool": "chart_competitor",
+    "params": {},
+    "query": "select week_start::varchar, 100.0 * sum(trx) filter (where product_id = 'BXA') / nullif(sum(trx), 0), 100.0 * sum(trx) filter (where product_id = 'BXE') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-04-20',DATE '2026-04-27',DATE '2026-05-04',DATE '2026-05-11',DATE '2026-05-18',DATE '2026-05-25',DATE '2026-06-01',DATE '2026-06-08',DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06',DATE '2026-07-13') group by 1 order by 1",
+    "result": "13 rows",
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e56",
     "tool": "detect_changes",
     "params": {
      "scope": "territories with no material change"
@@ -1187,12 +1450,51 @@
     "query": "select count(distinct territory_id) from reporting.v_reportable_rx where week_start in (DATE '2026-07-13') and territory_id in ('MOUNTAIN','NEW_ENGLAND','NORTHWEST','SOUTHEAST','SOUTH_CENTRAL')",
     "result": 5.0,
     "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e57",
+    "tool": "chart_trend",
+    "params": {
+     "territory": "MID_ATLANTIC"
+    },
+    "query": "with wk as (select unnest([DATE '2026-04-20', DATE '2026-04-27', DATE '2026-05-04', DATE '2026-05-11', DATE '2026-05-18', DATE '2026-05-25', DATE '2026-06-01', DATE '2026-06-08', DATE '2026-06-15', DATE '2026-06-22', DATE '2026-06-29', DATE '2026-07-06', DATE '2026-07-13']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select n.week_start::varchar, n.national, (select case when bool_or(c.basis = 'estimated') then 'estimated' when bool_or(c.basis = 'projected') then 'projected' else 'observed' end from cut c where c.week_start = n.week_start), exists (select 1 from raw.restatement_log r where r.product_id = 'BXA' and r.week_start = n.week_start and r.revised_at <= DATE '2026-07-20'), (select case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.week_start = n.week_start and c.territory_id = 'MID_ATLANTIC'), (select c.basis from cut c where c.week_start = n.week_start and c.territory_id = 'MID_ATLANTIC') from nat n order by 1",
+    "result": "13 rows",
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e58",
+    "tool": "project_national",
+    "params": {
+     "week": "2026-04-20",
+     "scope": "projected national"
+    },
+    "query": "with wk as (select unnest([DATE '2026-04-20']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(national) from nat",
+    "result": 4728.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e59",
+    "tool": "chart_coverage",
+    "params": {},
+    "query": "select v.territory_id, v.week_start::varchar, v.basis, exists (select 1 from raw.restatement_log r where r.product_id = 'BXA' and r.week_start = v.week_start and r.territory_id = v.territory_id and r.revised_at <= DATE '2026-07-20') from reporting.v_rx_projection v where v.product_id = 'BXA' and v.week_start in (DATE '2026-04-20',DATE '2026-04-27',DATE '2026-05-04',DATE '2026-05-11',DATE '2026-05-18',DATE '2026-05-25',DATE '2026-06-01',DATE '2026-06-08',DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06',DATE '2026-07-13') order by 1, 2",
+    "result": "104 rows",
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e60",
+    "tool": "chart_coverage",
+    "params": {
+     "scope": "territory-weeks not observed"
+    },
+    "query": "select count(*) from reporting.v_rx_projection where product_id = 'BXA' and basis <> 'observed' and week_start in (DATE '2026-04-20',DATE '2026-04-27',DATE '2026-05-04',DATE '2026-05-11',DATE '2026-05-18',DATE '2026-05-25',DATE '2026-06-01',DATE '2026-06-08',DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06',DATE '2026-07-13')",
+    "result": 2.0,
+    "data_version": "47bcfd650564"
    }
   ],
   "abstained": true
  },
  "Week of 2026-05-04 in New England: Generate the weekly brand-performance briefing.": {
-  "answer": "Brief for week of 2026-05-04. Product: BXA.\n## Bottom line\nData warning: New England's feed for 2026-05-04 is incomplete, so its TRx is projected from panel coverage, an assumption. No story is given for it.\nProjected national BXA TRx is 4,491 for the week of 2026-05-04.\nLike for like on 6 of 8 territories, BXA TRx is down 5.2% against the four weeks before.\nBXA held 33.0% of the four-brand market basket.\nLeast sure: New England's TRx of 407 is an assumption, projected from panel coverage of 0.656.\n## The numbers\nProjected national BXA TRx for the week of 2026-05-04: 4,491.\nBy territory, observed unless marked; a projected or estimated level is an assumption, not an observed count:\n- Great Lakes: 550\n- Mid-Atlantic: 722\n- Mountain: 307\n- New England: 407 (projected, an assumption: 267 observed at panel coverage 0.656)\n- Northwest: 486\n- Pacific: 683\n- South Central: 711\n- Southeast: 625\nKPIs: BXA TRx averaged 3,362 a week across 6 of 8 territories (like for like), down 5.2% against the weeks before.\nWeek over week, summed over reportable cuts: BXA TRx is 4,084 against 4,590 the week before (down 11.0%).\nOn the 7 territories that report both weeks, BXA TRx went from 4,193 to 4,084 (down 2.6%).\n## What changed and why\nStory one: competitor Metacora (launched 2026-03-02). This is a continuing story, week 9 since launch, still growing. Metacora held 9.5% of the four-brand basket and BXA held 33.0%, against 35.4% for BXA in the four weeks before launch. Confidence: Medium. The share loss is measured; its effect on volume is not separated from other drivers.\nConsidered and dropped: 6 territories moved within their normal range.\n## What the data can't tell us\nData health: 7 of 8 territories pass the feed gate for 2026-05-04. Withheld cuts are left out of every like-for-like figure and story, and never read as zero demand:\n- New England, week of 2026-05-04: not reportable (missing keys, row counts that do not reconcile, low panel coverage, late delivery, incomplete source); 84 rows against 128 expected, 44 missing keys, panel coverage 0.656, 10.29 days after week end.\nNew England has withheld cuts in these weeks, so no like-for-like story is given for it.\nNew England is projected: observed TRx divided by panel coverage, because part of the feed is missing.\nAssumption: a projected or estimated level is not an observed count, so the projected national rests on it. It is a level only: no story or driver is given for it.\n## Next checks\n- New England, week of 2026-05-04: re-run when the corrected feed lands, and disclose the restated week. Owner: the data vendor and commercial analytics. Unlocks: whether the restated week changes any figure already reported.\n- Metacora: track the basket shares each week. Owner: marketing and sales. Unlocks: whether to adjust the response to Metacora.\n## Appendix\nMethod: like-for-like figures use only territories whose feed passed the gate in every week compared. The projected national divides each territory's observed TRx by its panel coverage, and estimates a territory that cannot be read from its recent share of national. Changes, stories and drivers use like-for-like cuts only.\nData version 47bcfd650564. Product: BXA (Cardiovela), synthetic data.\nGlossary:\n- Like for like: a comparison that uses only territories whose feed passed its checks in every week compared.\n- Panel coverage: the share of a territory's expected prescription records that arrived in a given week.\n- Projected national: national TRx built territory by territory, each territory's observed TRx divided by its panel coverage, summed.\n- Estimated territory: a territory whose coverage is too low to project, or whose count failed its checks, filled from its own recent share of national and labelled as estimated, an assumption.\n- Withheld cut: a territory or week whose data failed its checks, so no story or driver is given for it.",
+  "answer": "Brief for week of 2026-05-04. Product: BXA.\n## Bottom line\nData warning: New England's feed for 2026-05-04 is incomplete, so its TRx is projected from panel coverage, an assumption. No story is given for it.\nProjected national BXA TRx is 4,491 for the week of 2026-05-04.\nLike for like on 6 of 8 territories, BXA TRx is down 5.2% against the four weeks before.\nBXA held 33.0% of the four-brand market basket.\nLeast sure: New England's TRx of 407 is an assumption, projected from panel coverage of 0.656.\n## The numbers\nProjected national BXA TRx for the week of 2026-05-04: 4,491.\nBy territory, observed unless marked; a projected or estimated level is an assumption, not an observed count:\n- Great Lakes: 550\n- Mid-Atlantic: 722\n- Mountain: 307\n- New England: 407 (projected, an assumption: 267 observed at panel coverage 0.656)\n- Northwest: 486\n- Pacific: 683\n- South Central: 711\n- Southeast: 625\nKPIs: BXA TRx averaged 3,362 a week across 6 of 8 territories (like for like), down 5.2% against the weeks before.\nWeek over week, summed over reportable cuts: BXA TRx is 4,084 against 4,590 the week before (down 11.0%).\nOn the 7 territories that report both weeks, BXA TRx went from 4,193 to 4,084 (down 2.6%).\nChart: BXA TRx a week, 2026-02-09 to 2026-05-04: projected national and New England. Hollow points are projected or estimated, an assumption (weeks of 2026-04-06, 2026-05-04). No forecast is drawn.\nProjected national moved from 4,952 in the week of 2026-02-09 to 4,491 in the week of 2026-05-04.\n## What changed and why\nStory one: competitor Metacora (launched 2026-03-02). This is a continuing story, week 9 since launch, still growing. Metacora held 9.5% of the four-brand basket and BXA held 33.0%, against 35.4% for BXA in the four weeks before launch. Confidence: Medium. The share loss is measured; its effect on volume is not separated from other drivers.\nChart: Shares of the four-brand basket, 2026-02-09 to 2026-05-04, every reportable territory.\nMetacora held 9.5% of the basket in the week of 2026-05-04.\nConsidered and dropped: 6 territories moved within their normal range.\n## What the data can't tell us\nData health: 7 of 8 territories pass the feed gate for 2026-05-04. Withheld cuts are left out of every like-for-like figure and story, and never read as zero demand:\n- New England, week of 2026-05-04: not reportable (missing keys, row counts that do not reconcile, low panel coverage, late delivery, incomplete source); 84 rows against 128 expected, 44 missing keys, panel coverage 0.656, 10.29 days after week end.\nNew England has withheld cuts in these weeks, so no like-for-like story is given for it.\nNew England is projected: observed TRx divided by panel coverage, because part of the feed is missing.\nAssumption: a projected or estimated level is not an observed count, so the projected national rests on it. It is a level only: no story or driver is given for it.\nChart: Feed coverage by territory and week, 2026-02-09 to 2026-05-04. Hollow cells are projected and crossed cells are estimated, both assumptions.\n2 territory-weeks in this window are not observed counts.\n## Next checks\n- New England, week of 2026-05-04: re-run when the corrected feed lands, and disclose the restated week. Owner: the data vendor and commercial analytics. Unlocks: whether the restated week changes any figure already reported.\n- Metacora: track the basket shares each week. Owner: marketing and sales. Unlocks: whether to adjust the response to Metacora.\n## Appendix\nMethod: like-for-like figures use only territories whose feed passed the gate in every week compared. The projected national divides each territory's observed TRx by its panel coverage, and estimates a territory that cannot be read from its recent share of national. Changes, stories and drivers use like-for-like cuts only.\nData version 47bcfd650564. Product: BXA (Cardiovela), synthetic data.\nGlossary:\n- Like for like: a comparison that uses only territories whose feed passed its checks in every week compared.\n- Panel coverage: the share of a territory's expected prescription records that arrived in a given week.\n- Projected national: national TRx built territory by territory, each territory's observed TRx divided by its panel coverage, summed.\n- Estimated territory: a territory whose coverage is too low to project, or whose count failed its checks, filled from its own recent share of national and labelled as estimated, an assumption.\n- Withheld cut: a territory or week whose data failed its checks, so no story or driver is given for it.",
   "claims": [
    {
     "value": "7",
@@ -1327,8 +1629,12 @@
     "evidence_id": "e33"
    },
    {
+    "value": "9.5%",
+    "evidence_id": "e31"
+   },
+   {
     "value": "6",
-    "evidence_id": "e34"
+    "evidence_id": "e35"
    },
    {
     "value": "6",
@@ -1345,6 +1651,18 @@
    {
     "value": "33.0%",
     "evidence_id": "e32"
+   },
+   {
+    "value": "4,952",
+    "evidence_id": "e37"
+   },
+   {
+    "value": "4,491",
+    "evidence_id": "e19"
+   },
+   {
+    "value": "2",
+    "evidence_id": "e39"
    }
   ],
   "evidence": [
@@ -1692,6 +2010,14 @@
    },
    {
     "id": "e34",
+    "tool": "chart_competitor",
+    "params": {},
+    "query": "select week_start::varchar, 100.0 * sum(trx) filter (where product_id = 'BXA') / nullif(sum(trx), 0), 100.0 * sum(trx) filter (where product_id = 'BXE') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-02-09',DATE '2026-02-16',DATE '2026-02-23',DATE '2026-03-02',DATE '2026-03-09',DATE '2026-03-16',DATE '2026-03-23',DATE '2026-03-30',DATE '2026-04-06',DATE '2026-04-13',DATE '2026-04-20',DATE '2026-04-27',DATE '2026-05-04') group by 1 order by 1",
+    "result": "13 rows",
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e35",
     "tool": "detect_changes",
     "params": {
      "scope": "territories with no material change"
@@ -1699,12 +2025,51 @@
     "query": "select count(distinct territory_id) from reporting.v_reportable_rx where week_start in (DATE '2026-05-04') and territory_id in ('GREAT_LAKES','MOUNTAIN','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')",
     "result": 6.0,
     "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e36",
+    "tool": "chart_trend",
+    "params": {
+     "territory": "NEW_ENGLAND"
+    },
+    "query": "with wk as (select unnest([DATE '2026-02-09', DATE '2026-02-16', DATE '2026-02-23', DATE '2026-03-02', DATE '2026-03-09', DATE '2026-03-16', DATE '2026-03-23', DATE '2026-03-30', DATE '2026-04-06', DATE '2026-04-13', DATE '2026-04-20', DATE '2026-04-27', DATE '2026-05-04']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select n.week_start::varchar, n.national, (select case when bool_or(c.basis = 'estimated') then 'estimated' when bool_or(c.basis = 'projected') then 'projected' else 'observed' end from cut c where c.week_start = n.week_start), exists (select 1 from raw.restatement_log r where r.product_id = 'BXA' and r.week_start = n.week_start and r.revised_at <= DATE '2026-05-11'), (select case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.week_start = n.week_start and c.territory_id = 'NEW_ENGLAND'), (select c.basis from cut c where c.week_start = n.week_start and c.territory_id = 'NEW_ENGLAND') from nat n order by 1",
+    "result": "13 rows",
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e37",
+    "tool": "project_national",
+    "params": {
+     "week": "2026-02-09",
+     "scope": "projected national"
+    },
+    "query": "with wk as (select unnest([DATE '2026-02-09']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(national) from nat",
+    "result": 4952.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e38",
+    "tool": "chart_coverage",
+    "params": {},
+    "query": "select v.territory_id, v.week_start::varchar, v.basis, exists (select 1 from raw.restatement_log r where r.product_id = 'BXA' and r.week_start = v.week_start and r.territory_id = v.territory_id and r.revised_at <= DATE '2026-05-11') from reporting.v_rx_projection v where v.product_id = 'BXA' and v.week_start in (DATE '2026-02-09',DATE '2026-02-16',DATE '2026-02-23',DATE '2026-03-02',DATE '2026-03-09',DATE '2026-03-16',DATE '2026-03-23',DATE '2026-03-30',DATE '2026-04-06',DATE '2026-04-13',DATE '2026-04-20',DATE '2026-04-27',DATE '2026-05-04') order by 1, 2",
+    "result": "104 rows",
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e39",
+    "tool": "chart_coverage",
+    "params": {
+     "scope": "territory-weeks not observed"
+    },
+    "query": "select count(*) from reporting.v_rx_projection where product_id = 'BXA' and basis <> 'observed' and week_start in (DATE '2026-02-09',DATE '2026-02-16',DATE '2026-02-23',DATE '2026-03-02',DATE '2026-03-09',DATE '2026-03-16',DATE '2026-03-23',DATE '2026-03-30',DATE '2026-04-06',DATE '2026-04-13',DATE '2026-04-20',DATE '2026-04-27',DATE '2026-05-04')",
+    "result": 2.0,
+    "data_version": "47bcfd650564"
    }
   ],
   "abstained": false
  },
  "Week of 2026-04-06: Generate the weekly brand-performance briefing.": {
-  "answer": "Brief for week of 2026-04-06. Product: BXA.\n## Bottom line\nData warning: Mid-Atlantic's feed for 2026-04-06 failed its checks, so its TRx is estimated from its recent share of national, an assumption. No story is given for it.\nData note: an earlier week was restated. The new value and the reason are in The numbers.\nProjected national BXA TRx is 4,571 for the week of 2026-04-06.\nLike for like on 7 of 8 territories, BXA TRx is down 4.7% against the four weeks before.\nBXA held 33.7% of the four-brand market basket.\nLeast sure: Mid-Atlantic's TRx of 711 is an assumption, estimated from its recent share of national, because its feed failed its checks.\n## The numbers\nProjected national BXA TRx for the week of 2026-04-06: 4,571.\nBy territory, observed unless marked; a projected or estimated level is an assumption, not an observed count:\n- Great Lakes: 503\n- Mid-Atlantic: 711 (estimated, an assumption: its share of national in the four clean weeks before; its feed failed the gate)\n- Mountain: 346\n- New England: 422\n- Northwest: 380\n- Pacific: 728\n- South Central: 752\n- Southeast: 729\nKPIs: BXA TRx averaged 3,860 a week across 7 of 8 territories (like for like), down 4.7% against the weeks before.\nThe headline total of reportable cuts is down 19.5%, but that move comes mostly from withheld cuts, so it is a data artifact, not a business change.\nWeek over week, summed over reportable cuts: BXA TRx is 3,860 against 4,729 the week before (down 18.4%).\nOn the 7 territories that report both weeks, BXA TRx went from 4,005 to 3,860 (down 3.6%).\nRestated: Mid-Atlantic BXA TRx for the week of 2026-04-06 was 692 when first reported and is now 742 (restated 2026-07-13; reason: synthetic late claims adjustment). Quote the new value with this note.\n## What changed and why\nStory one: competitor Metacora (launched 2026-03-02). This is a continuing story, week 5 since launch, still growing. Metacora held 6.4% of the four-brand basket and BXA held 33.7%, against 35.4% for BXA in the four weeks before launch. Confidence: Medium. The share loss is measured; its effect on volume is not separated from other drivers.\nConsidered and dropped: 7 territories moved within their normal range.\n## What the data can't tell us\nData health: 7 of 8 territories pass the feed gate for 2026-04-06. Withheld cuts are left out of every like-for-like figure and story, and never read as zero demand:\n- Mid-Atlantic, week of 2026-04-06: not reportable (restatement review).\nMid-Atlantic is estimated from its share of national in the four latest weeks in which every territory passed the gate, because the cut failed for reasons that make its own count unusable (restatement review).\nAssumption: a projected or estimated level is not an observed count, so the projected national rests on it. It is a level only: no story or driver is given for it.\n## Next checks\n- Mid-Atlantic, week of 2026-04-06: re-run when the corrected feed lands, and disclose the restated week. Owner: the data vendor and commercial analytics. Unlocks: whether the restated week changes any figure already reported.\n- Metacora: track the basket shares each week. Owner: marketing and sales. Unlocks: whether to adjust the response to Metacora.\n## Appendix\nMethod: like-for-like figures use only territories whose feed passed the gate in every week compared. The projected national divides each territory's observed TRx by its panel coverage, and estimates a territory that cannot be read from its recent share of national. Changes, stories and drivers use like-for-like cuts only.\nData version 47bcfd650564. Product: BXA (Cardiovela), synthetic data.\nGlossary:\n- Like for like: a comparison that uses only territories whose feed passed its checks in every week compared.\n- Panel coverage: the share of a territory's expected prescription records that arrived in a given week.\n- Projected national: national TRx built territory by territory, each territory's observed TRx divided by its panel coverage, summed.\n- Estimated territory: a territory whose coverage is too low to project, or whose count failed its checks, filled from its own recent share of national and labelled as estimated, an assumption.\n- Withheld cut: a territory or week whose data failed its checks, so no story or driver is given for it.",
+  "answer": "Brief for week of 2026-04-06. Product: BXA.\n## Bottom line\nData warning: Mid-Atlantic's feed for 2026-04-06 failed its checks, so its TRx is estimated from its recent share of national, an assumption. No story is given for it.\nData note: an earlier week was restated. The new value and the reason are in The numbers.\nProjected national BXA TRx is 4,571 for the week of 2026-04-06.\nLike for like on 7 of 8 territories, BXA TRx is down 4.7% against the four weeks before.\nBXA held 33.7% of the four-brand market basket.\nLeast sure: Mid-Atlantic's TRx of 711 is an assumption, estimated from its recent share of national, because its feed failed its checks.\n## The numbers\nProjected national BXA TRx for the week of 2026-04-06: 4,571.\nBy territory, observed unless marked; a projected or estimated level is an assumption, not an observed count:\n- Great Lakes: 503\n- Mid-Atlantic: 711 (estimated, an assumption: its share of national in the four clean weeks before; its feed failed the gate)\n- Mountain: 346\n- New England: 422\n- Northwest: 380\n- Pacific: 728\n- South Central: 752\n- Southeast: 729\nKPIs: BXA TRx averaged 3,860 a week across 7 of 8 territories (like for like), down 4.7% against the weeks before.\nThe headline total of reportable cuts is down 19.5%, but that move comes mostly from withheld cuts, so it is a data artifact, not a business change.\nWeek over week, summed over reportable cuts: BXA TRx is 3,860 against 4,729 the week before (down 18.4%).\nOn the 7 territories that report both weeks, BXA TRx went from 4,005 to 3,860 (down 3.6%).\nRestated: Mid-Atlantic BXA TRx for the week of 2026-04-06 was 692 when first reported and is now 742 (restated 2026-07-13; reason: synthetic late claims adjustment). Quote the new value with this note.\nChart: BXA TRx a week, 2026-01-12 to 2026-04-06: projected national. Hollow points are projected or estimated, an assumption (weeks of 2026-04-06). No forecast is drawn.\nProjected national moved from 5,141 in the week of 2026-01-12 to 4,571 in the week of 2026-04-06.\n## What changed and why\nStory one: competitor Metacora (launched 2026-03-02). This is a continuing story, week 5 since launch, still growing. Metacora held 6.4% of the four-brand basket and BXA held 33.7%, against 35.4% for BXA in the four weeks before launch. Confidence: Medium. The share loss is measured; its effect on volume is not separated from other drivers.\nChart: Shares of the four-brand basket, 2026-01-12 to 2026-04-06, every reportable territory.\nMetacora held 6.4% of the basket in the week of 2026-04-06.\nConsidered and dropped: 7 territories moved within their normal range.\n## What the data can't tell us\nData health: 7 of 8 territories pass the feed gate for 2026-04-06. Withheld cuts are left out of every like-for-like figure and story, and never read as zero demand:\n- Mid-Atlantic, week of 2026-04-06: not reportable (restatement review).\nMid-Atlantic is estimated from its share of national in the four latest weeks in which every territory passed the gate, because the cut failed for reasons that make its own count unusable (restatement review).\nAssumption: a projected or estimated level is not an observed count, so the projected national rests on it. It is a level only: no story or driver is given for it.\nChart: Feed coverage by territory and week, 2026-01-12 to 2026-04-06. Crossed cells are estimated, an assumption.\n1 territory-weeks in this window are not observed counts.\n## Next checks\n- Mid-Atlantic, week of 2026-04-06: re-run when the corrected feed lands, and disclose the restated week. Owner: the data vendor and commercial analytics. Unlocks: whether the restated week changes any figure already reported.\n- Metacora: track the basket shares each week. Owner: marketing and sales. Unlocks: whether to adjust the response to Metacora.\n## Appendix\nMethod: like-for-like figures use only territories whose feed passed the gate in every week compared. The projected national divides each territory's observed TRx by its panel coverage, and estimates a territory that cannot be read from its recent share of national. Changes, stories and drivers use like-for-like cuts only.\nData version 47bcfd650564. Product: BXA (Cardiovela), synthetic data.\nGlossary:\n- Like for like: a comparison that uses only territories whose feed passed its checks in every week compared.\n- Panel coverage: the share of a territory's expected prescription records that arrived in a given week.\n- Projected national: national TRx built territory by territory, each territory's observed TRx divided by its panel coverage, summed.\n- Estimated territory: a territory whose coverage is too low to project, or whose count failed its checks, filled from its own recent share of national and labelled as estimated, an assumption.\n- Withheld cut: a territory or week whose data failed its checks, so no story or driver is given for it.",
   "claims": [
    {
     "value": "7",
@@ -1823,8 +2188,12 @@
     "evidence_id": "e29"
    },
    {
+    "value": "6.4%",
+    "evidence_id": "e27"
+   },
+   {
     "value": "7",
-    "evidence_id": "e30"
+    "evidence_id": "e31"
    },
    {
     "value": "7",
@@ -1841,6 +2210,18 @@
    {
     "value": "33.7%",
     "evidence_id": "e28"
+   },
+   {
+    "value": "5,141",
+    "evidence_id": "e33"
+   },
+   {
+    "value": "4,571",
+    "evidence_id": "e17"
+   },
+   {
+    "value": "1",
+    "evidence_id": "e35"
    }
   ],
   "evidence": [
@@ -2143,6 +2524,14 @@
    },
    {
     "id": "e30",
+    "tool": "chart_competitor",
+    "params": {},
+    "query": "select week_start::varchar, 100.0 * sum(trx) filter (where product_id = 'BXA') / nullif(sum(trx), 0), 100.0 * sum(trx) filter (where product_id = 'BXE') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-01-12',DATE '2026-01-19',DATE '2026-01-26',DATE '2026-02-02',DATE '2026-02-09',DATE '2026-02-16',DATE '2026-02-23',DATE '2026-03-02',DATE '2026-03-09',DATE '2026-03-16',DATE '2026-03-23',DATE '2026-03-30',DATE '2026-04-06') group by 1 order by 1",
+    "result": "13 rows",
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e31",
     "tool": "detect_changes",
     "params": {
      "scope": "territories with no material change"
@@ -2150,12 +2539,51 @@
     "query": "select count(distinct territory_id) from reporting.v_reportable_rx where week_start in (DATE '2026-04-06') and territory_id in ('GREAT_LAKES','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')",
     "result": 7.0,
     "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e32",
+    "tool": "chart_trend",
+    "params": {
+     "territory": "NATIONAL"
+    },
+    "query": "with wk as (select unnest([DATE '2026-01-12', DATE '2026-01-19', DATE '2026-01-26', DATE '2026-02-02', DATE '2026-02-09', DATE '2026-02-16', DATE '2026-02-23', DATE '2026-03-02', DATE '2026-03-09', DATE '2026-03-16', DATE '2026-03-23', DATE '2026-03-30', DATE '2026-04-06']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select n.week_start::varchar, n.national, (select case when bool_or(c.basis = 'estimated') then 'estimated' when bool_or(c.basis = 'projected') then 'projected' else 'observed' end from cut c where c.week_start = n.week_start), exists (select 1 from raw.restatement_log r where r.product_id = 'BXA' and r.week_start = n.week_start and r.revised_at <= DATE '2026-04-13') from nat n order by 1",
+    "result": "13 rows",
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e33",
+    "tool": "project_national",
+    "params": {
+     "week": "2026-01-12",
+     "scope": "projected national"
+    },
+    "query": "with wk as (select unnest([DATE '2026-01-12']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(national) from nat",
+    "result": 5141.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e34",
+    "tool": "chart_coverage",
+    "params": {},
+    "query": "select v.territory_id, v.week_start::varchar, v.basis, exists (select 1 from raw.restatement_log r where r.product_id = 'BXA' and r.week_start = v.week_start and r.territory_id = v.territory_id and r.revised_at <= DATE '2026-04-13') from reporting.v_rx_projection v where v.product_id = 'BXA' and v.week_start in (DATE '2026-01-12',DATE '2026-01-19',DATE '2026-01-26',DATE '2026-02-02',DATE '2026-02-09',DATE '2026-02-16',DATE '2026-02-23',DATE '2026-03-02',DATE '2026-03-09',DATE '2026-03-16',DATE '2026-03-23',DATE '2026-03-30',DATE '2026-04-06') order by 1, 2",
+    "result": "104 rows",
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e35",
+    "tool": "chart_coverage",
+    "params": {
+     "scope": "territory-weeks not observed"
+    },
+    "query": "select count(*) from reporting.v_rx_projection where product_id = 'BXA' and basis <> 'observed' and week_start in (DATE '2026-01-12',DATE '2026-01-19',DATE '2026-01-26',DATE '2026-02-02',DATE '2026-02-09',DATE '2026-02-16',DATE '2026-02-23',DATE '2026-03-02',DATE '2026-03-09',DATE '2026-03-16',DATE '2026-03-23',DATE '2026-03-30',DATE '2026-04-06')",
+    "result": 1.0,
+    "data_version": "47bcfd650564"
    }
   ],
   "abstained": false
  },
  "Week of 2025-04-21: Generate the weekly brand-performance briefing.": {
-  "answer": "Brief for week of 2025-04-21. Product: BXA.\n## Bottom line\nProjected national BXA TRx is 4,822 for the week of 2025-04-21.\nLike for like on 8 of 8 territories, BXA TRx is flat 0.2% against the four weeks before.\nBXA held 35.7% of the four-brand market basket.\nLeast sure: the week-over-week change (up 1.5%), because it compares one week with one week.\n## The numbers\nProjected national BXA TRx for the week of 2025-04-21: 4,822.\nBy territory, all observed:\n- Great Lakes: 697\n- Mid-Atlantic: 732\n- Mountain: 353\n- New England: 464\n- Northwest: 414\n- Pacific: 829\n- South Central: 703\n- Southeast: 630\nKPIs: BXA TRx averaged 4,822 a week across 8 of 8 territories (like for like), flat 0.2% against the weeks before.\nWeek over week, summed over reportable cuts: BXA TRx is 4,822 against 4,749 the week before (up 1.5%).\n## What changed and why\nRoutine week. No material change was found, and territory swings stayed in their normal range.\n## What the data can't tell us\nData health: 8 of 8 territories pass the feed gate for 2025-04-21. No cut is withheld.\n## Next checks\nNo check is open.\n## Appendix\nMethod: like-for-like figures use only territories whose feed passed the gate in every week compared. The projected national divides each territory's observed TRx by its panel coverage, and estimates a territory that cannot be read from its recent share of national. Changes, stories and drivers use like-for-like cuts only.\nData version 47bcfd650564. Product: BXA (Cardiovela), synthetic data.\nGlossary:\n- Like for like: a comparison that uses only territories whose feed passed its checks in every week compared.\n- Panel coverage: the share of a territory's expected prescription records that arrived in a given week.\n- Projected national: national TRx built territory by territory, each territory's observed TRx divided by its panel coverage, summed.",
+  "answer": "Brief for week of 2025-04-21. Product: BXA.\n## Bottom line\nProjected national BXA TRx is 4,822 for the week of 2025-04-21.\nLike for like on 8 of 8 territories, BXA TRx is flat 0.2% against the four weeks before.\nBXA held 35.7% of the four-brand market basket.\nLeast sure: the week-over-week change (up 1.5%), because it compares one week with one week.\n## The numbers\nProjected national BXA TRx for the week of 2025-04-21: 4,822.\nBy territory, all observed:\n- Great Lakes: 697\n- Mid-Atlantic: 732\n- Mountain: 353\n- New England: 464\n- Northwest: 414\n- Pacific: 829\n- South Central: 703\n- Southeast: 630\nKPIs: BXA TRx averaged 4,822 a week across 8 of 8 territories (like for like), flat 0.2% against the weeks before.\nWeek over week, summed over reportable cuts: BXA TRx is 4,822 against 4,749 the week before (up 1.5%).\nChart: BXA TRx a week, 2025-01-27 to 2025-04-21: projected national. No forecast is drawn.\nProjected national moved from 4,930 in the week of 2025-01-27 to 4,822 in the week of 2025-04-21.\n## What changed and why\nRoutine week. No material change was found, and territory swings stayed in their normal range.\n## What the data can't tell us\nData health: 8 of 8 territories pass the feed gate for 2025-04-21. No cut is withheld.\nChart: Feed coverage by territory and week, 2025-01-27 to 2025-04-21. Every cell is an observed count.\nEvery territory-week in this window is an observed count.\n## Next checks\nNo check is open.\n## Appendix\nMethod: like-for-like figures use only territories whose feed passed the gate in every week compared. The projected national divides each territory's observed TRx by its panel coverage, and estimates a territory that cannot be read from its recent share of national. Changes, stories and drivers use like-for-like cuts only.\nData version 47bcfd650564. Product: BXA (Cardiovela), synthetic data.\nGlossary:\n- Like for like: a comparison that uses only territories whose feed passed its checks in every week compared.\n- Panel coverage: the share of a territory's expected prescription records that arrived in a given week.\n- Projected national: national TRx built territory by territory, each territory's observed TRx divided by its panel coverage, summed.",
   "claims": [
    {
     "value": "8",
@@ -2248,6 +2676,14 @@
    {
     "value": "1.5%",
     "evidence_id": "e9"
+   },
+   {
+    "value": "4,930",
+    "evidence_id": "e21"
+   },
+   {
+    "value": "4,822",
+    "evidence_id": "e10"
    }
   ],
   "evidence": [
@@ -2444,12 +2880,41 @@
     "query": "select 100.0 * sum(trx) filter (where product_id = 'BXA') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2025-04-21')",
     "result": 35.68679692125518,
     "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e20",
+    "tool": "chart_trend",
+    "params": {
+     "territory": "NATIONAL"
+    },
+    "query": "with wk as (select unnest([DATE '2025-01-27', DATE '2025-02-03', DATE '2025-02-10', DATE '2025-02-17', DATE '2025-02-24', DATE '2025-03-03', DATE '2025-03-10', DATE '2025-03-17', DATE '2025-03-24', DATE '2025-03-31', DATE '2025-04-07', DATE '2025-04-14', DATE '2025-04-21']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select n.week_start::varchar, n.national, (select case when bool_or(c.basis = 'estimated') then 'estimated' when bool_or(c.basis = 'projected') then 'projected' else 'observed' end from cut c where c.week_start = n.week_start), exists (select 1 from raw.restatement_log r where r.product_id = 'BXA' and r.week_start = n.week_start and r.revised_at <= DATE '2025-04-28') from nat n order by 1",
+    "result": "13 rows",
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e21",
+    "tool": "project_national",
+    "params": {
+     "week": "2025-01-27",
+     "scope": "projected national"
+    },
+    "query": "with wk as (select unnest([DATE '2025-01-27']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(national) from nat",
+    "result": 4930.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e22",
+    "tool": "chart_coverage",
+    "params": {},
+    "query": "select v.territory_id, v.week_start::varchar, v.basis, exists (select 1 from raw.restatement_log r where r.product_id = 'BXA' and r.week_start = v.week_start and r.territory_id = v.territory_id and r.revised_at <= DATE '2025-04-28') from reporting.v_rx_projection v where v.product_id = 'BXA' and v.week_start in (DATE '2025-01-27',DATE '2025-02-03',DATE '2025-02-10',DATE '2025-02-17',DATE '2025-02-24',DATE '2025-03-03',DATE '2025-03-10',DATE '2025-03-17',DATE '2025-03-24',DATE '2025-03-31',DATE '2025-04-07',DATE '2025-04-14',DATE '2025-04-21') order by 1, 2",
+    "result": "104 rows",
+    "data_version": "47bcfd650564"
    }
   ],
   "abstained": false
  },
  "Week of 2025-12-29: Generate the weekly brand-performance briefing.": {
-  "answer": "Brief for week of 2025-12-29. Product: BXA.\n## Bottom line\nProjected national BXA TRx is 4,188 for the week of 2025-12-29.\nLike for like on 8 of 8 territories, BXA TRx is down 19.0% against the four weeks before.\nBXA held 37.0% of the four-brand market basket.\nLeast sure: the week-over-week change (down 2.8%), because it compares one week with one week.\n## The numbers\nProjected national BXA TRx for the week of 2025-12-29: 4,188.\nBy territory, all observed:\n- Great Lakes: 630\n- Mid-Atlantic: 648\n- Mountain: 352\n- New England: 344\n- Northwest: 370\n- Pacific: 627\n- South Central: 580\n- Southeast: 637\nKPIs: BXA TRx averaged 4,188 a week across 8 of 8 territories (like for like), down 19.0% against the weeks before.\nWeek over week, summed over reportable cuts: BXA TRx is 4,188 against 4,309 the week before (down 2.8%).\nCalendar effect: the week of 2025-12-29 is new year week with 4 business days, so a lower volume is expected.\nThe same weeks a year earlier were down 18.2%. This is a calendar effect, not a business event.\n## What changed and why\nNo story is opened for a calendar week. Expect a rebound in the next regular week.\n## What the data can't tell us\nData health: 8 of 8 territories pass the feed gate for 2025-12-29. No cut is withheld.\n## Next checks\nNo check is open.\n## Appendix\nMethod: like-for-like figures use only territories whose feed passed the gate in every week compared. The projected national divides each territory's observed TRx by its panel coverage, and estimates a territory that cannot be read from its recent share of national. Changes, stories and drivers use like-for-like cuts only.\nData version 47bcfd650564. Product: BXA (Cardiovela), synthetic data.\nGlossary:\n- Like for like: a comparison that uses only territories whose feed passed its checks in every week compared.\n- Panel coverage: the share of a territory's expected prescription records that arrived in a given week.\n- Projected national: national TRx built territory by territory, each territory's observed TRx divided by its panel coverage, summed.",
+  "answer": "Brief for week of 2025-12-29. Product: BXA.\n## Bottom line\nProjected national BXA TRx is 4,188 for the week of 2025-12-29.\nLike for like on 8 of 8 territories, BXA TRx is down 19.0% against the four weeks before.\nBXA held 37.0% of the four-brand market basket.\nLeast sure: the week-over-week change (down 2.8%), because it compares one week with one week.\n## The numbers\nProjected national BXA TRx for the week of 2025-12-29: 4,188.\nBy territory, all observed:\n- Great Lakes: 630\n- Mid-Atlantic: 648\n- Mountain: 352\n- New England: 344\n- Northwest: 370\n- Pacific: 627\n- South Central: 580\n- Southeast: 637\nKPIs: BXA TRx averaged 4,188 a week across 8 of 8 territories (like for like), down 19.0% against the weeks before.\nWeek over week, summed over reportable cuts: BXA TRx is 4,188 against 4,309 the week before (down 2.8%).\nCalendar effect: the week of 2025-12-29 is new year week with 4 business days, so a lower volume is expected.\nThe same weeks a year earlier were down 18.2%. This is a calendar effect, not a business event.\nChart: BXA TRx a week, 2025-10-06 to 2025-12-29: projected national. No forecast is drawn.\nProjected national moved from 5,213 in the week of 2025-10-06 to 4,188 in the week of 2025-12-29.\n## What changed and why\nNo story is opened for a calendar week. Expect a rebound in the next regular week.\n## What the data can't tell us\nData health: 8 of 8 territories pass the feed gate for 2025-12-29. No cut is withheld.\nChart: Feed coverage by territory and week, 2025-10-06 to 2025-12-29. Every cell is an observed count.\nEvery territory-week in this window is an observed count.\n## Next checks\nNo check is open.\n## Appendix\nMethod: like-for-like figures use only territories whose feed passed the gate in every week compared. The projected national divides each territory's observed TRx by its panel coverage, and estimates a territory that cannot be read from its recent share of national. Changes, stories and drivers use like-for-like cuts only.\nData version 47bcfd650564. Product: BXA (Cardiovela), synthetic data.\nGlossary:\n- Like for like: a comparison that uses only territories whose feed passed its checks in every week compared.\n- Panel coverage: the share of a territory's expected prescription records that arrived in a given week.\n- Projected national: national TRx built territory by territory, each territory's observed TRx divided by its panel coverage, summed.",
   "claims": [
    {
     "value": "8",
@@ -2550,6 +3015,14 @@
    {
     "value": "2.8%",
     "evidence_id": "e9"
+   },
+   {
+    "value": "5,213",
+    "evidence_id": "e23"
+   },
+   {
+    "value": "4,188",
+    "evidence_id": "e12"
    }
   ],
   "evidence": [
@@ -2765,6 +3238,35 @@
     },
     "query": "select 100.0 * sum(trx) filter (where product_id = 'BXA') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2025-12-29')",
     "result": 36.95402805964881,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e22",
+    "tool": "chart_trend",
+    "params": {
+     "territory": "NATIONAL"
+    },
+    "query": "with wk as (select unnest([DATE '2025-10-06', DATE '2025-10-13', DATE '2025-10-20', DATE '2025-10-27', DATE '2025-11-03', DATE '2025-11-10', DATE '2025-11-17', DATE '2025-11-24', DATE '2025-12-01', DATE '2025-12-08', DATE '2025-12-15', DATE '2025-12-22', DATE '2025-12-29']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select n.week_start::varchar, n.national, (select case when bool_or(c.basis = 'estimated') then 'estimated' when bool_or(c.basis = 'projected') then 'projected' else 'observed' end from cut c where c.week_start = n.week_start), exists (select 1 from raw.restatement_log r where r.product_id = 'BXA' and r.week_start = n.week_start and r.revised_at <= DATE '2026-01-05') from nat n order by 1",
+    "result": "13 rows",
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e23",
+    "tool": "project_national",
+    "params": {
+     "week": "2025-10-06",
+     "scope": "projected national"
+    },
+    "query": "with wk as (select unnest([DATE '2025-10-06']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(national) from nat",
+    "result": 5213.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e24",
+    "tool": "chart_coverage",
+    "params": {},
+    "query": "select v.territory_id, v.week_start::varchar, v.basis, exists (select 1 from raw.restatement_log r where r.product_id = 'BXA' and r.week_start = v.week_start and r.territory_id = v.territory_id and r.revised_at <= DATE '2026-01-05') from reporting.v_rx_projection v where v.product_id = 'BXA' and v.week_start in (DATE '2025-10-06',DATE '2025-10-13',DATE '2025-10-20',DATE '2025-10-27',DATE '2025-11-03',DATE '2025-11-10',DATE '2025-11-17',DATE '2025-11-24',DATE '2025-12-01',DATE '2025-12-08',DATE '2025-12-15',DATE '2025-12-22',DATE '2025-12-29') order by 1, 2",
+    "result": "104 rows",
     "data_version": "47bcfd650564"
    }
   ],

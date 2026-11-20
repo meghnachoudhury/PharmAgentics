@@ -126,3 +126,14 @@ Confirmed by Michael on 2026-11-20, with slice 2's choices (inline SVG charts, b
 ## Post-design Constitution Re-check
 
 Re-checked after data-model and contracts: no new violation. The view is read-only and governed (added to `ALLOWED`); every projection claim is a single re-runnable SELECT; the `sections` field is optional, so older consumers ignore it.
+
+## Slice 2: charts, the data behind each section, sections in the UI (2026-11-20)
+
+Michael's choices: inline SVG, no chart library; baseline band = lowest to highest of the baseline weeks; second panel = the first supported driver's series (none supported: TRx only, and the caption says so); CSV built in the browser from the rows in the response; a real-app check at the end.
+
+- `src/pharmagentics/tools/charts.py`: four builders (§2 trend, §3 story, §3 Metacora shares, §4 coverage). Each reads one governed multi-row SELECT recorded as an evidence item, so every plotted point re-runs (FR-025). Captions are code with claim tokens and name only the marks the chart shows (a smoke run showed the writer reading a generic "dotted points were restated" as a claim). Explanations are code templates; the agent's writer may replace one with its own line, checked like its sentences, and a failing line keeps the template.
+- `tools/memo.py`: sections carry `chart`; the flattened answer carries each caption and explanation, so the gated scorers check their numbers (FR-027); `render_sections` adds per-section citations.
+- MCP `memo_close` returns the charts built by the same code as the scripted brief (FR-020).
+- API: `BriefingResult.sections`; the leadership response carries `views.leadership_sections` (§1, §2, §3 without checks, §5; allow-lists, no claims, citations, tables or queries) (FR-026).
+- UI: `frontend/figma-make/src/Memo.tsx` (numbered sections, inline citations, SVG charts, "Data behind this section" with a query toggle and CSV); `App.tsx` changes three lines.
+- Checks: `tests/test_charts.py` (chart rows re-run to the same rows, kinds, hollow projected weeks, captions in the answer, leadership leaks); the real app driven in headless Chrome over the DevTools protocol for Pacific 2026-06-08 and New England 2026-05-04, analyst and leadership, with screenshots.

@@ -45,6 +45,43 @@ def executive_summary(answer: str) -> str:
 
 LEADERSHIP_FIELDS = ("brief_id", "engine", "system", "brand_id", "territory_id", "week_start",
                      "data_version", "abstained", "review_status", "reviewed_at")
+LEADERSHIP_SECTIONS = ("1", "2", "3", "5")  # brief-003 FR-026; story subsections 3.1, 3.2 … follow §3
+SECTION_FIELDS = ("number", "title", "text", "prose")  # allow-list: no claims, citations or evidence
+CHART_FIELDS = ("kind", "weeks", "caption", "explanation", "series", "band", "rows")  # no table, query or panel table
+
+
+def _leader_text(text: str) -> str:
+    keep, in_checks = [], False
+    for line in text.splitlines():
+        if line.startswith(CHECKS_HEADER):
+            in_checks = True
+            continue
+        if in_checks and line.lstrip().startswith("- "):
+            continue
+        in_checks = False
+        if not line.startswith(DROPPED_PREFIX):
+            keep.append(line)
+    return "\n".join(keep)
+
+
+def leadership_sections(sections: list[dict] | None) -> list[dict] | None:
+    """The memo sections a leader sees, cut by code from the analyst's: §1, §2 with its chart, §3 and its stories
+    without the checks list or the evidence, and §5. Allow-lists, so a new field never reaches a leader."""
+    if not sections:
+        return None
+    out = []
+    for s in sections:
+        if s["number"].split(".")[0] not in LEADERSHIP_SECTIONS:
+            continue
+        cut = {k: s.get(k) for k in SECTION_FIELDS}
+        cut["text"] = _leader_text(cut["text"] or "")
+        chart = s.get("chart")
+        if chart:
+            cut["chart"] = {k: chart.get(k) for k in CHART_FIELDS if k in chart}
+            if chart.get("panel"):
+                cut["chart"]["panel"] = {k: chart["panel"].get(k) for k in ("name", "unit", "driver", "points")}
+        out.append(cut)
+    return out
 
 
 def leadership(record: dict) -> dict:
@@ -54,6 +91,7 @@ def leadership(record: dict) -> dict:
     out = {k: (record.get(k) if k in record else result.get(k)) for k in LEADERSHIP_FIELDS}
     out["view"] = "leadership"
     out["summary"] = executive_summary(result["answer"])
+    out["sections"] = leadership_sections(result.get("sections"))
     return out
 
 

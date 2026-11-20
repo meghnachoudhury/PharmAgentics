@@ -3,7 +3,7 @@
 **Spec ID**: `brief-006-follow-ups` (Briefing lane; owners: Michael, Meghna)
 **Feature Branch**: `feature/brief-memo-follow-ups`
 **Created**: 2026-11-19 | **Updated**: 2026-11-19
-**Status**: Draft v1. Not started.
+**Status**: Draft v1. Slice 3 (threads, message bar, scripted follow-ups) built 2026-11-20; slice 4 (Haiku follow-ups, two-turn cases) next.
 **Input**: Planning session 2026-11-19 (`GLOSSARY.md`; `docs/adr/0002`, `0003`); brief-003 v3 (memo outline and section numbers); core-007 FR-032 (agent on Claude Haiku in the app); core-008 (feedback); Personas P1, P3.
 
 ## Clarifications

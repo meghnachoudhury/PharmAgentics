@@ -151,7 +151,7 @@ class SurveyIn(BaseModel):
     answers: dict[str, Any] = Field(max_length=60)
 
 
-ANSWER_ID = r"^(b|f)-[0-9a-f]{12}$"  # a brief (store.brief_id) or a Forecast run (forecast_store.run_id)
+ANSWER_ID = r"^(b|f)-[0-9a-f]{12}(:t\d{1,2})?$"  # a brief, a Forecast run, or a follow-up turn "b-…:t3" (brief-006)
 
 
 class VoteIn(BaseModel):
@@ -296,6 +296,18 @@ def _answer(p: rbac.Principal, lane: str, ref: str, view: str) -> dict:
     if role is None:
         raise HTTPException(status_code=403, detail="Your account has no access to this workspace.")
     rbac.view_for(role, view)
+    if lane == "briefing" and ":t" in ref:  # a follow-up turn in the voter's own thread (brief-006 FR-012)
+        from . import threads
+
+        bid, n = ref.split(":t")
+        record = store.get_brief(bid)
+        shown = threads.turn_shown(p, bid, int(n)) if record and "review" in role.actions else None
+        if shown is None:
+            raise HTTPException(status_code=404, detail="No such follow-up.")
+        r = record["result"]
+        return {"scope": {k: r.get(k) for k in ("brand_id", "territory_id", "week_start", "question")},
+                "engine": "scripted", "system": r.get("system"), "data_version": r.get("data_version"),
+                "review_status": record["review_status"], "shown": shown}
     if lane == "briefing":
         record = store.get_brief(ref)
         if record is None or ("review" not in role.actions and record["review_status"] != "approved"):
@@ -319,7 +331,7 @@ def _answer(p: rbac.Principal, lane: str, ref: str, view: str) -> dict:
 
 
 def _vote_key(lane: str, ref: str, user: str, view: str) -> str:
-    return f"{RESPONSE_PREFIX}{lane}/{ref}/{user}-{view}.json"
+    return f"{RESPONSE_PREFIX}{lane}/{ref.replace(':', '/')}/{user}-{view}.json"  # a turn "b-…:t3" nests under its brief
 
 
 @router.get("/vote")

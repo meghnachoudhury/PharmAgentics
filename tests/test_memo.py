@@ -114,10 +114,11 @@ def test_every_projected_or_estimated_level_is_flagged_as_an_assumption(week, te
 @needs_db
 def test_least_sure_falls_to_the_lowest_confidence_story_then_the_smallest_change():
     restated = section(brief(RESTATED)["answer"], "Bottom line")
-    assert restated[-1] == "Least sure: the Pacific change (up 45.3%), because its confidence is Low."
+    assert restated[-1] == "Least sure: the Pacific change (up 45.3%); its confidence, Low, is the lowest of this brief's stories."
     routine = section(brief(ROUTINE)["answer"], "Bottom line")
     assert routine[-1].startswith("Least sure: the week-over-week change")
-    assert not any("projected" in x.lower() for x in section(brief(ROUTINE)["answer"], "The numbers")[2:])
+    rows = [x for x in section(brief(ROUTINE)["answer"], "The numbers") if x.startswith("- ")]
+    assert len(rows) == 8 and not any("(projected" in x or "(estimated" in x for x in rows)  # nothing marked
 
 
 @needs_db

@@ -84,6 +84,8 @@ app.include_router(classification.router)  # data classification labels (core-00
 app.include_router(forecast.router)  # Forecast lane scaffold (Alvin and Sienna)
 app.include_router(overview.router)  # the analyst's brand overview (Weekly briefing, Overview tab)
 app.include_router(telemetry.router)  # golden-set scores from the exported MLflow snapshot
+from . import threads  # noqa: E402  (brief-006: follow-up threads; own line to keep merges small)
+app.include_router(threads.router)
 
 Briefing = Depends(rbac.require_briefing)
 
