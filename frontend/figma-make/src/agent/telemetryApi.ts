@@ -15,7 +15,7 @@ export type LaneUsage = {
   engines?: Record<string, number>; scripted_ms?: Spread; agent_jobs?: Record<string, number>; agent_seconds?: Spread
 }
 export type Usage = {
-  since: string | null; participants: number; excluded_test_records: number; computed: string
+  since: string | null; excluded_test_records: number; computed: string
   lanes: Partial<Record<"briefing" | "forecast", LaneUsage>>
   sessions: Record<string, number>
   sus: { n: number; mean: number; median: number; min: number; max: number } | null

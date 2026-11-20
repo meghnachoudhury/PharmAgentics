@@ -69,8 +69,8 @@ def test_usage_leaves_out_the_tester_even_where_an_event_lacks_the_flag():
         event("forecast_run", "2026-11-19T09:00:00+00:00", "u-ca"),
     ]
     job_docs = [
-        {"by": "u-p1", "status": "done", "created_at": "2026-11-18T10:00:00+00:00", "finished_at": "2026-11-18T10:01:00+00:00"},
-        {"by": "u-test", "status": "done", "created_at": "2026-11-18T12:00:00+00:00", "finished_at": "2026-11-18T12:30:00+00:00"},
+        {"by": "u-p1", "kind": "brief", "status": "done", "created_at": "2026-11-18T10:00:00+00:00", "finished_at": "2026-11-18T10:01:00+00:00"},
+        {"by": "u-test", "kind": "brief", "status": "done", "created_at": "2026-11-18T12:00:00+00:00", "finished_at": "2026-11-18T12:30:00+00:00"},
     ]
     pulses = [{"session": "s1", "user": "u-test", "rating": "bad", "ts": "2026-11-18T12:02:00+00:00", "where": "briefing", "test": True}]
     u = telemetry.summarize_usage(events, job_docs, pulses, [], [], feedback.questionnaire())
@@ -78,10 +78,10 @@ def test_usage_leaves_out_the_tester_even_where_an_event_lacks_the_flag():
     assert b["requests"] == 2 and b["engines"] == {"scripted": 2}
     assert b["decisions"] == {"approved": 1}
     assert b["scripted_ms"] == {"n": 2, "p50": 1000, "p95": 3000}
-    assert b["agent_jobs"] == {"done": 1} and b["agent_seconds"]["p50"] == 60
+    assert b["agent_jobs"] == {"brief done": 1} and b["agent_seconds"]["p50"] == 60
     assert b["weekly"] == {"2026-11-16": 2}
     assert u["lanes"]["forecast"]["requests"] == 1
-    assert u["participants"] == 2 and u["excluded_test_records"] == 4 and u["sessions"]["bad"] == 0
+    assert "participants" not in u and u["excluded_test_records"] == 4 and u["sessions"]["bad"] == 0
 
 
 def test_usage_endpoint_shows_only_the_signed_in_lanes_and_no_person():

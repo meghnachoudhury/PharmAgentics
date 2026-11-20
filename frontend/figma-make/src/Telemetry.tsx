@@ -37,7 +37,7 @@ function LaneCard({ lane, u }: { lane: "briefing" | "forecast", u: LaneUsage }) 
     ["Engines", list(u.engines)],
     ["Scripted response time", spread(u.scripted_ms, "s", 1000)],
     ["Agent jobs", list(u.agent_jobs)],
-    ["Agent time to result", spread(u.agent_seconds, "s")],
+    ["Agent brief, queue to result", spread(u.agent_seconds, "s")],
   )
   const weeks = Object.entries(u.weekly)
   return <Card title={lane === "briefing" ? "Weekly briefing" : "Forecast explanation"}>
@@ -50,7 +50,7 @@ function InUse({ u }: { u: Usage }) {
   const lanes = (["briefing", "forecast"] as const).filter(l => u.lanes[l])
   return <>
     <h3 className="pt-2 text-xs uppercase tracking-widest text-muted">In use</h3>
-    <p className="-mt-3 text-sm text-muted">{u.since ? `Since ${when(u.since)}, ${u.participants} participant${u.participants === 1 ? "" : "s"}.` : "No use recorded yet."} Test-login activity is left out ({u.excluded_test_records} record{u.excluded_test_records === 1 ? "" : "s"}). Updated every 5 minutes.</p>
+    <p className="-mt-3 text-sm text-muted">{u.since ? `Since ${when(u.since)}.` : "No use recorded yet."} Test-login activity is left out ({u.excluded_test_records} record{u.excluded_test_records === 1 ? "" : "s"}). Updated every 5 minutes.</p>
     {lanes.map(l => <LaneCard key={l} lane={l} u={u.lanes[l]!}/>)}
     <Card title="Ratings">
       <Rows rows={[

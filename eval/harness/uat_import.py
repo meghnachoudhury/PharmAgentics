@@ -30,7 +30,7 @@ def _flatten(prefix: str, value, out: dict[str, float]) -> None:
 
 def metrics(usage: dict) -> dict[str, float]:
     out: dict[str, float] = {}
-    for key in ("participants", "excluded_test_records", "sessions", "sus", "cloud_seconds"):
+    for key in ("excluded_test_records", "sessions", "sus", "cloud_seconds"):
         _flatten(key, usage.get(key), out)
     for lane, data in usage["lanes"].items():
         _flatten(lane, {k: v for k, v in data.items() if k != "weekly"}, out)

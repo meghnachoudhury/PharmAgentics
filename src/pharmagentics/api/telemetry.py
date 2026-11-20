@@ -122,8 +122,8 @@ def summarize_usage(events: list[dict], job_docs: list[dict], pulses: list[dict]
         if lane == "briefing":
             out["engines"] = dict(Counter(e.get("engine") or "unknown" for e in requests))
             out["scripted_ms"] = _spread([e["latency_ms"] for e in requests if e.get("latency_ms") is not None])
-            out["agent_jobs"] = dict(Counter(j["status"] for j in kept_jobs))
-            out["agent_seconds"] = _spread([s for j in kept_jobs if j["status"] == "done"
+            out["agent_jobs"] = dict(Counter(f"{j.get('kind', 'job')} {j['status']}" for j in kept_jobs))
+            out["agent_seconds"] = _spread([s for j in kept_jobs if j["status"] == "done" and j.get("kind") != "triage"
                                             and (s := _seconds(j.get("created_at"), j.get("finished_at"))) is not None])
         lanes[lane] = out
 
@@ -131,7 +131,6 @@ def summarize_usage(events: list[dict], job_docs: list[dict], pulses: list[dict]
     summary = feedback.summarize(real(pulses), real(surveys), questionnaire, real(votes))
     return {
         "since": min((e["ts"] for e in kept), default=None),
-        "participants": len({e.get("user") for e in kept}),
         "excluded_test_records": (len(events) - len(kept)) + (len(job_docs) - len(kept_jobs))
                                  + (len(feedback_docs) - len(real(feedback_docs))),
         "lanes": lanes,
