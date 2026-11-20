@@ -14,6 +14,8 @@ core-007 (UAT deployment) records what people do: timings, approvals, flagged cl
 
 ### Session 2026-11-19
 
+- Q (planning session, later the same day): How should feedback improve the agents? → A: **A semi-autonomous loop where the system proposes and people promote** (`docs/adr/0003`). `python -m eval improve`, run on demand or nightly, reads new votes, comments and saved threads (brief-006); drafts lessons for the knowledge base and draft golden cases (downvotes and upvotes, follow-up turns included) with Claude Haiku; reruns each flagged question with each draft lesson; and runs `eval gate`. A lesson is confident only when the rerun no longer shows the reported problem, the gate shows no regression, and the lesson holds no numbers or unapproved terms; anything else is flagged to a reviewer with its reason. A person approves every promotion on a "Feedback review" tab of the Evaluation page (tester login and a new reviewer role): approving a lesson opens a pull request adding it to `agents/brand-briefing/knowledge/lessons.yaml`; approving a case adds a draft golden case for labelling. Code and prompt changes are never automatic; they become issues. Postgres testing is a named open item for later.
+
 - Q (later the same day): Which answers ask for the session rating? → A: Only answers from the agent team (Briefing agent engine, Forecast agent mode); the question names the agent team. Scripted answers keep the thumbs and the notice.
 - Q: Can people suggest things for the platform outside the questionnaire? → A: Yes: a "Suggest an improvement" box in the sidebar's feedback menu, free text with a topic, kept like the rest of the feedback (FR-018).
 - Q: Where is the session rating asked? → A: Under each generated brief and Forecast explanation, next to the thumbs, because it is about the agent workflows. It is no longer in the page header, and signing out no longer asks for it. Once given, it shrinks to "This session: Good · change". This replaces the 2026-11-15 answer below.
@@ -162,6 +164,14 @@ An owner downloads the feedback folder and runs `python -m eval candidates`. Eac
 - **FR-016**: `python -m eval candidates --state-dir DIR` MUST write one draft case per voted answer under the git-ignored `eval/candidates/<lane>/`, MUST NOT overwrite an existing draft without `--force`, and MUST NOT write to `eval/golden/`. A draft MUST NOT carry facts or a reference answer: a person writes those.
 - **FR-017**: Every generated brief and Forecast explanation, in both views, MUST show one line saying PharmAgentics can make mistakes and that important figures should be checked (against the evidence for an analyst, with the Commercial Analyst for a leader).
 - **FR-018**: Any participant with a role MUST be able to send a free-text suggestion for the platform (1 to 1000 characters, a topic of briefing, forecast, agent, design or other) from the sidebar; each is stored under `feedback/comment/` with the pseudonymous ID and listed in the report. The session rating (FR-003) appears only under agent-team answers.
+- **FR-019**: `python -m eval improve` MUST read new votes, comments and saved threads, draft lessons and draft golden cases, rerun each flagged question with each draft lesson, run `eval gate`, and write the proposals with their results to a review list. It MUST live in `eval/`; the knowledge base it proposes to MUST live outside `eval/` (`agents/brand-briefing/knowledge/`), so agents keep never reading `eval/`.
+- **FR-020**: A lesson MUST be marked confident only when the rerun no longer shows the reported problem, the gate shows no regression, and it holds no digit and no unapproved term; every other proposal MUST be flagged with its reason.
+- **FR-021**: No lesson or case MUST reach the knowledge base or the golden set without a person's approval on the Feedback review tab; approving a lesson MUST open a pull request, so CI and the eval gate run before it deploys. Code and prompt changes MUST NOT be proposed as changes, only as issues.
+- **FR-022**: The agents MUST read only approved lessons, never raw threads or feedback.
+
+### Open items (2026-11-19)
+
+- Postgres for feedback, threads and state, with its tests: future work, not started.
 
 ### Key Entities
 
