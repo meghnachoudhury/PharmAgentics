@@ -7,7 +7,7 @@ from __future__ import annotations
 import pytest
 from fastapi.testclient import TestClient
 
-from pharmagentics.api import forecast
+from pharmagentics.api import forecast, service
 from pharmagentics.api.app import app
 
 CLIENT = TestClient(app)
@@ -144,6 +144,16 @@ def test_cases_list_the_three_ready_made_requests():
         assert CLIENT.post("/api/forecast/runs", json=case["request"]).status_code == 200
 
 
+def test_the_first_weeks_of_the_release_run_without_a_baseline_week():
+    sign_in("dev-forecast-analyst")
+    for week in ("2024-10-14", "2024-10-21"):  # the comparison week two weeks earlier has no forecast row
+        res = CLIENT.post("/api/forecast/runs", json={"territory_id": "NATIONAL", "week_start": week})
+        assert res.status_code == 200, res.text
+        deltas = next(e for e in res.json()["report"]["evidence"] if e["name"] == "get_region_deltas")["payload"]
+        assert all(r["baseline_actual"] is None and r["delta_vs_baseline"] is None for r in deltas["regions"])
+
+
+@pytest.mark.skipif(not service.DB.is_file(), reason="Build local/pharmagentics.duckdb first")
 def test_context_exposes_the_governed_forecast_scope():
     sign_in("dev-forecast-analyst")
     body = CLIENT.get("/api/forecast/context").json()
