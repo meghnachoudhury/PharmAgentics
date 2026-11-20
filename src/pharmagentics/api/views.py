@@ -1,21 +1,35 @@
 """Views of one briefing (core-007 FR-002 to FR-006).
 
-The leadership view is cut from the full answer by code: it keeps every line except the
-driver-check detail, so each number it shows is already a claim of the same run and every
-caveat (withheld cuts, restatements, abstentions) survives. It carries no claims, evidence,
-query text or trace.
+The leadership view is cut from the full answer by code: it keeps the memo's Bottom line, The
+numbers, What changed and why without the driver-check detail, and Next checks (brief-003 FR-026),
+so each number it shows is already a claim of the same run. Caveats survive: the Bottom line leads
+with any withheld cut and The numbers carries restatements. It carries no claims, evidence, query
+text or trace.
 """
 from __future__ import annotations
 
 CHECKS_HEADER = "Checked, in this order:"
 DROPPED_PREFIX = "Considered and dropped:"
+HEADING = "## "
+# Memo sections leaders do not see (brief-003 FR-026): the data's limits and the appendix.
+LEADERSHIP_DROPS = ("What the data can't tell us", "Appendix")
 
 
 def executive_summary(answer: str) -> str:
+    """Leaders get the title, Bottom line, The numbers, What changed and why without the checks, and Next
+    checks. A brief from before the memo (no headings) keeps every line but the checks."""
     keep: list[str] = []
-    in_checks = False
+    in_checks = dropped_section = False
     for line in answer.splitlines():
         if not line.strip():
+            continue
+        if line.startswith(HEADING):
+            dropped_section = line[len(HEADING):].strip() in LEADERSHIP_DROPS
+            in_checks = False
+            if not dropped_section:
+                keep.append(line)
+            continue
+        if dropped_section:
             continue
         if line.startswith(CHECKS_HEADER):
             in_checks = True

@@ -13,9 +13,8 @@ Called once, right after `open_run`, before the investigation.
 | `limits` | list[str] | §4 lines: data health, withheld focus, projection method, calendar note |
 | `appendix` | list[str] | §6 lines |
 | `calendar` | bool | Calendar mode: §3 opens no story |
-| `withheld_focus` | str \| null | Kept for the writer's view |
 
-The old keys `header`, `data_health` and `kpis` are removed; only `briefing_agent` used them.
+The old keys `header`, `data_health`, `kpis` and `withheld_focus` are removed; only `briefing_agent` used them. The withheld-focus line now sits in `limits` (§4).
 
 ## `story_section(territory, n) -> str`
 

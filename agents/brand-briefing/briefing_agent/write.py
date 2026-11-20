@@ -122,43 +122,60 @@ def clean(reply: dict, story_tokens: dict[str, set[str]], n_claims: int,
     return answer, stories, dropped
 
 
-def sections_text(sections: dict, stories: list[dict]) -> str:
-    """What the writer sees: the code sections, each story labelled with its id."""
-    parts = ["[data and KPIs]", *sections["header"], *sections["data_health"], *sections["kpis"]]
+def sections_text(sections: dict, close: dict, stories: list[dict]) -> str:
+    """What the writer sees: the memo's code sections, each story labelled with its id."""
+    parts = ["[title]", *sections["title"], "[bottom line, by code]", *close["bottom_line"],
+             "[the numbers]", *sections["numbers"], "[what the data can't tell us]", *sections["limits"]]
     for s in stories:
         parts += [f"[story {s['id']}]", s["section"]]
     return "\n".join(parts)
 
 
-def assemble(sections: dict, stories: list[dict], answer: str, sentences: dict[str, str], left_out: list[str],
-             dropped_line: str) -> str:
-    out = ([answer] if answer else []) + sections["header"] + sections["data_health"] + sections["kpis"]
+def section_tokens(sections: dict, close: dict) -> set[str]:
+    """Tokens the answer may use besides the stories': the title, bottom line, numbers and limits."""
+    return tokens("\n".join(sections["title"] + close["bottom_line"] + sections["numbers"] + sections["limits"]))
+
+
+def _story_title(sid: str) -> str:
+    from pharmagentics.tools.queries import name
+
+    kind, _, key = sid.partition(":")
+    return "Competitor Metacora" if kind == "competitor" else name(key)
+
+
+def assemble(sections: dict, close: dict, stories: list[dict], answer: str, sentences: dict[str, str],
+             left_out: list[str], dropped_line: str) -> tuple[str, list[dict]]:
+    """The memo (brief-003): code sections from the MCP session, the writer's answer as §1 prose and its story
+    sentences as §3 prose, composed by the same code as the scripted brief."""
+    from pharmagentics.tools import memo
+
+    blocks = [memo.StoryBlock(s["id"], _story_title(s["id"]), memo.without_next(s["section"]).split("\n"),
+                              sentences.get(s["id"], "")) for s in stories]
+    notes: list[str] = []
     if sections.get("calendar"):
-        out.append("No story is opened for a calendar week. Expect a rebound in the next regular week.")
+        notes.append("No story is opened for a calendar week. Expect a rebound in the next regular week.")
+        blocks = []
     else:
-        if sections.get("withheld_focus"):
-            out.append(sections["withheld_focus"])
-        for s in stories:
-            lines = s["section"].split("\n")
-            if sentences.get(s["id"]):
-                lines.insert(1, sentences[s["id"]])
-            out += lines
-        out += left_out
+        notes += left_out
         if not stories and not left_out:
-            out.append("Routine week. No material change was found, and territory swings stayed in their normal range.")
+            notes.append("Routine week. No material change was found, and territory swings stayed in their normal range.")
         elif dropped_line:
-            out.append(dropped_line)
-    return "\n".join(x for x in out if x)
+            notes.append(dropped_line)
+    parts = memo.MemoParts(title=sections["title"], bottom_line=close["bottom_line"], numbers=sections["numbers"],
+                           limits=sections["limits"], next_checks=close["next_checks"], appendix=sections["appendix"],
+                           stories=blocks, story_notes=notes, answer=answer)
+    return memo.compose(parts)
 
 
-def render(template: str, claims: list[dict]) -> tuple[str, list[dict], list[dict]]:
-    """Fill tokens from the run's claims; return the text, the claims it uses (in order of use) and where
-    each sits in the text (inline citations, indexed into the used claims)."""
+def render(template: str, claims: list[dict]) -> tuple[str, list[dict], list[dict], dict[int, int]]:
+    """Fill tokens from the run's claims; return the text, the claims it uses (in order of use), where each sits
+    in the text (inline citations, indexed into the used claims) and the token-number-to-used-index map."""
     from pharmagentics.tools.registry import cite
 
     used = list(dict.fromkeys(int(m.group(1)) for m in TOKEN.finditer(template) if 0 < int(m.group(1)) <= len(claims)))
-    text, spans = cite(template, claims, index={n: i for i, n in enumerate(used)})
-    return text, [claims[n - 1] for n in used], spans
+    index = {n: i for i, n in enumerate(used)}
+    text, spans = cite(template, claims, index=index)
+    return text, [claims[n - 1] for n in used], spans, index
 
 
 def flow(base: list[dict], plan: dict, record: dict, tools: list[str], revised: bool, model: str) -> list[dict]:

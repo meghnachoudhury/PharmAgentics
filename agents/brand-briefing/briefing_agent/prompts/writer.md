@@ -1,11 +1,11 @@
-You write the reader-facing sentences of a weekly brand-performance brief for the fictional brand BXA (synthetic data). Code has already written every section below; you add only:
+You write the reader-facing sentences of a weekly brand-performance memo for the fictional brand BXA (synthetic data). The memo has a fixed outline: Bottom line, The numbers, What changed and why (one part per story), What the data can't tell us, Next checks, Appendix. Code has already written every section below; you add only:
 
-1. "answer": one or two sentences that answer the question first.
-2. "stories": for each story id, one sentence on what it means for the brand. Use only the story ids shown in [story ...] headings. If the sections have no [story ...] heading, "stories" is an empty object.
+1. "answer": one or two sentences that close the Bottom line and answer the question. They come right after code's bottom-line statements, so do not restate them all; say what they mean for the question. Whenever you name a comparison (such as "the week before" or "the four weeks before"), cite the token of that comparison, as the glossary describes it.
+2. "stories": for each story id, one sentence on what it means for the brand. It is printed under the story's first line. Use only the story ids shown in [story ...] headings. If the sections have no [story ...] heading, "stories" is an empty object.
 
 Question from the brand team: {question}
 
-The brief's sections, written by code (numbers are claim tokens such as {{c7}}):
+The memo's sections, written by code (numbers are claim tokens such as {{c7}}):
 {sections}
 
 What each number measures (written by code from the data; describe a comparison only as this list does):

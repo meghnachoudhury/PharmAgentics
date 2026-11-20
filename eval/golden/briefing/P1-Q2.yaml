@@ -13,8 +13,8 @@ anchor: New England incomplete feed, 2026-05-04
 story_text: As Ace, I want feed problems found before drafting, so that I never write commentary on numbers that are wrong.
 given: New England fails the feed gate for 2026-05-04.
 when: the brief runs.
-then: the data-health section leads the brief, names New England as not reportable with its three reasons, reports the other seven, and labels national totals "7 of 8."
-reference_answer: New England delivered 84 of 128 rows (44 missing keys), panel coverage 0.656 against a 0.98 floor, 10.29 days after week end against a 7-day target; status INCOMPLETE. Its observed BXA TRx of 267 compares with 397 to 422 in the four weeks before. The other seven territories pass.
+then: the Bottom line says first that New England's feed is incomplete; The numbers gives a projected national with New England labelled as projected, an assumption from its panel coverage; What the data can't tell us names New England as not reportable with its reasons; every like-for-like figure states how many territories it covers; and no story is opened for New England.
+reference_answer: New England delivered 84 of 128 rows (44 missing keys), panel coverage 0.656 against a 0.98 floor, 10.29 days after week end against a 7-day target; status INCOMPLETE. Its observed BXA TRx of 267 compares with 397 to 422 in the four weeks before. Projected from its panel coverage, New England is about 407 (267 divided by 0.656), an assumption the brief labels as projected, and projected national BXA TRx is 4,491. The other seven territories pass.
 must_not_say:
   text: '"New England BXA fell 34%."'
   phrases:
@@ -50,4 +50,10 @@ facts:
 - id: ne_prior_4wk_max
   value: 422
   sql: select max(s) from (select week_start, sum(trx) s from reporting.v_weekly_rx_kpis where product_id = 'BXA' and territory_id = 'NEW_ENGLAND' and week_start between DATE '2026-04-06' and DATE '2026-04-27' group by 1)
+- id: ne_projected_trx
+  value: 407
+  sql: select (select sum(trx) from raw.rx_weekly where week_start = DATE '2026-05-04' and territory_id = 'NEW_ENGLAND' and product_id = 'BXA') / (select panel_coverage_ratio from reporting.v_feed_health where week_start = DATE '2026-05-04' and territory_id = 'NEW_ENGLAND')
+- id: national_projected_trx
+  value: 4491
+  sql: select (select sum(trx) from reporting.v_reportable_rx where week_start = DATE '2026-05-04' and product_id = 'BXA') + (select sum(trx) from raw.rx_weekly where week_start = DATE '2026-05-04' and territory_id = 'NEW_ENGLAND' and product_id = 'BXA') / (select panel_coverage_ratio from reporting.v_feed_health where week_start = DATE '2026-05-04' and territory_id = 'NEW_ENGLAND')
 source: docs/planning/user-stories.md#P1-Q2

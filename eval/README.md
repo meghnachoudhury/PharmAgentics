@@ -79,6 +79,8 @@ The baselines also score 1.000 on `claims_reconcile`, `numbers_traced` and `link
 
 The controls behave as they should: the golden answers pass everything, and a model with no data states almost none of the golden numbers and invents others. The judge separates them too: 1.0 on each golden answer, 0.20 to 0.37 on the no-data answers (P1-Q2, P2-Q1, CA-Q1). That is one sign the judge works, not the calibration open item 2 asks for.
 
+**Memo outline and projected national (brief-003 slice 1, 2026-11-20).** Both Briefing engines now write the six-section memo with a projected national (projected and estimated territories labelled as assumptions), and P1-Q2 and P3-Q6 expect it. Baselines at `c15ccde`: scripted `71e565e279a0`, agent on Haiku `be655807ea8a`. Final candidates: scripted `ca90ac39769c` and agent `83e4bb6adb0f`; both gates pass with every gated check at 1.000 and no run errors. Recall rises from 0.388 to 0.397 on both engines. `numbers_match_golden` (report-only) falls from 0.157 to 0.106 (scripted) and from 0.155 to 0.116 (agent): the territory table states numbers the golden answers do not list. The agent needed a revision in 1 of 24 cases (0 at baseline): the writer named "the week before" without its token once. These runs live in the worktree's MLflow store on `feature/brief-memo-follow-ups`; the main tree's database needs `load_duckdb.py` after the merge, for the new view `reporting.v_rx_projection`.
+
 ## Known limits
 
 - `numbers_match_golden` is a proxy for EV-1.1 that only suits systems without evidence. Systems with evidence are scored on `claims_reconcile` instead. An answer with no numbers passes it trivially; `golden_number_recall` catches that.

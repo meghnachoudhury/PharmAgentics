@@ -13,8 +13,8 @@ anchor: Restatement disclosed, 2026-07-13
 story_text: As Diana, I want numbers that will not be corrected later, so that my credibility holds upward.
 given: a restatement of a number already reported.
 when: the next brief runs.
-then: it states the old and new values with the reason, and any national figure built on 7 territories says so.
-reference_answer: The vendor restated Mid-Atlantic BXA TRx for the week of 2026-04-06 from 692 to 742 that day. Separately, three weeks in the release are missing one territory's cut (2026-04-06, 2026-05-04, 2026-07-06), so their national sums cover 7 of 8 territories.
+then: it states the old and new values with the reason where leaders see them, any like-for-like figure built on 7 territories says so, and the projected national labels a projected or estimated territory as an assumption instead of leaving it out.
+reference_answer: The vendor restated Mid-Atlantic BXA TRx for the week of 2026-04-06 from 692 to 742 that day. Projected national BXA TRx for the week of 2026-07-13 is 4,240, with every territory observed. The like-for-like change against the four weeks before covers 7 of 8 territories, because Great Lakes failed its checks for 2026-07-06. Three weeks in the release have one failed territory cut (2026-04-06, 2026-05-04, 2026-07-06); their projected national labels that territory as projected or estimated, an assumption, instead of leaving it out.
 must_not_say:
   text: a corrected number with no note that it changed.
   phrases: []
@@ -23,5 +23,23 @@ action: Diana quotes only from the KPI table and corrects her April deck. The br
 eval_items:
 - EV-1.1
 - EV-1.2
-facts: []
+facts:
+- id: ma_restated_old
+  value: 692
+  sql: select sum(trx_prior) from raw.restatement_log where product_id = 'BXA' and week_start = DATE '2026-04-06' and territory_id = 'MID_ATLANTIC'
+- id: ma_restated_new
+  value: 742
+  sql: select sum(trx_revised) from raw.restatement_log where product_id = 'BXA' and week_start = DATE '2026-04-06' and territory_id = 'MID_ATLANTIC'
+- id: ma_restated_on
+  value: '2026-07-13'
+  sql: select min(revised_at)::varchar from raw.restatement_log where product_id = 'BXA' and week_start = DATE '2026-04-06' and territory_id = 'MID_ATLANTIC'
+- id: territories_passing_0713
+  value: 8
+  sql: select count(*) from reporting.v_feed_health where week_start = DATE '2026-07-13' and health_status = 'PASS'
+- id: national_projected_trx_0713
+  value: 4240
+  sql: select sum(trx) from reporting.v_reportable_rx where week_start = DATE '2026-07-13' and product_id = 'BXA'
+- id: like_for_like_territories
+  value: 7
+  sql: select count(distinct territory_id) from reporting.v_feed_health h where week_start between DATE '2026-06-15' and DATE '2026-07-13' and not exists (select 1 from reporting.v_feed_health f where f.territory_id = h.territory_id and f.week_start between DATE '2026-06-15' and DATE '2026-07-13' and f.health_status <> 'PASS')
 source: docs/planning/user-stories.md#P3-Q6

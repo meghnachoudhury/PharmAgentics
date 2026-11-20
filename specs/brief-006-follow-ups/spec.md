@@ -19,6 +19,17 @@
 - Q: Time limits? → A: 60 seconds per follow-up and 10 minutes per agent brief (down from the CPU host's 90 minutes). A turn over its limit shows "Didn't finish in time; nothing was guessed", is recorded as a run error, and no fallback answer is written. Median and 95th-percentile latency per turn and per brief are logged to MLflow for every run.
 - Q: Feedback in the thread? → A: Each answer gets the thumbs and comment (core-008 User Story 5); the session rating appears once per thread after the third follow-up.
 
+### Session 2026-11-20
+
+Settled with Michael before the overnight build of slices 3 and 4; the rest are the recommended defaults he accepted.
+
+- Q: How does the scripted engine answer a follow-up? → A: By rules, with no model. It reads the section reference (a pinned chip or "§3.1" in the text), restates that section's claims with their evidence, and answers any request for a number the brief does not hold with "That number is not in this brief" and an offer to ask the agent (FR-004).
+- Q: Where are threads kept? → A: In the existing state store, one file per analyst per brief (`threads/<brief_id>/<analyst>.json`). Unsaved threads older than 30 days are purged when threads are listed or opened and when the app starts; there is no scheduler.
+- Q: Where do suggestions come from? → A: Fixed code templates per section kind (bottom line, numbers, story, data limits, next checks); no model writes them.
+- Q: How does the Haiku agent answer a follow-up? → A: One agent with the existing governed MCP tools (both specialist tool sets) and the brief's sections as context. It answers in one turn under a 60-second limit; its prose goes through the same token checks and one revision as the writer's; median and 95th-percentile latency are logged per run.
+- Q: How does the harness score two turns? → A: A case may carry a `follow_up` (question, then, must-not-say). The harness runs the brief, then the follow-up on that brief, and scores the follow-up answer with the existing code checks plus a new gated check, `sections_exist` (every cited § number exists in the brief).
+- Q: Who writes the six two-turn cases (FR-013)? → A: Claude drafts them from real weeks with SQL facts, `status: draft`, source `brief-006 FR-013`. Michael labels them. Until then they count toward the gated code checks only (rules, not answers).
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Ask about a section (Priority: P1)

@@ -20,11 +20,12 @@ from mcp.server.mcpserver.exceptions import ToolError
 
 from pharmagentics.tools import DEFAULT_DB, Registry
 from pharmagentics.tools import queries as q
-from pharmagentics.tools import stages
+from pharmagentics.tools import memo, projection, stages
 from pharmagentics.tools.checks import (DRIVERS, OWNER, Check, check_access, check_competitor, check_data,
                                         check_promotion, check_supply, confidence, context_baseline)
 
-ADMIN_TOOLS = ("open_run", "export_run", "brief_sections", "story_section", "competitor_section", "dropped_line")
+ADMIN_TOOLS = ("open_run", "export_run", "brief_sections", "story_section", "competitor_section", "dropped_line",
+               "memo_close")
 _ORD = {1: "one", 2: "two", 3: "three", 4: "four", 5: "five", 6: "six"}
 AGENT_TOOLS = {
     # Briefing Data Forensics: is the data wrong, and what is the like-for-like change?
@@ -51,6 +52,8 @@ class RunSession:
         self.checks: dict[str, dict[str, Check]] = {}
         self.stories: dict[str, dict] = {}
         self.calls: list[dict] = []
+        self.proj: projection.Projection | None = None  # set by brief_sections, read by memo_close
+        self.restated = False
 
     # admin -------------------------------------------------------------------------------------
     def open_run(self, question: str) -> str:
@@ -198,15 +201,28 @@ class RunSession:
 
     # Admin: the brief's code-built sections (build 3, brief-002 FR-026) --------------------------
     def brief_sections(self) -> dict:
-        """Stages 1 to 3 as the scripted brief states them, in token templates, from this run's Registry."""
+        """The memo's code sections that stages 1 to 3 settle (brief-003): §2, §4 and §6, plus the title. Claims
+        come from this run's Registry, through the same builders as the scripted brief (tools/memo.py)."""
         reg, p = self._reg(), self.p
-        withheld_focus = (f"{q.name(p.focus)} has withheld cuts in these weeks, so no like-for-like story is given for it."
-                          if p.focus in p.terrs and p.focus not in p.ok else None)
-        return {"header": [f"Brief for {stages.describe(p)}. Data version {reg.data_version}. Product: BXA. "
-                           "Territory questions use only cuts that pass the feed gate."] + ([p.note] if p.note else []),
-                "data_health": [stages.data_health(reg, p)] + stages.restatements(reg, p),
-                "kpis": ([p.calendar_note] if p.calendar_note else []) + stages.kpis(reg, p),
-                "calendar": bool(p.calendar), "withheld_focus": withheld_focus}
+        health = stages.data_health(reg, p)
+        restated = stages.restatements(reg, p)
+        kpis = stages.kpis(reg, p)
+        self.proj, self.restated = projection.build(reg, p), bool(restated)
+        return {"title": memo.title_lines(p), "numbers": memo.numbers(self.proj, kpis, restated),
+                "limits": memo.limits(p, self.proj, health), "appendix": memo.appendix(reg),
+                "calendar": bool(p.calendar)}
+
+    def memo_close(self, competitor: bool) -> dict:
+        """§1 and §5 once the stories are closed (contracts/mcp-admin-tools.md): the bottom line in FR-021 order
+        with the number least sure of, and the next checks."""
+        reg, p = self._reg(), self.p
+        if self.proj is None:
+            raise ToolError("brief_sections must run before memo_close")
+        told = [{"territory": t, "confidence": st["confidence"],
+                 "drivers": [d for d, v in st["verdicts"].items() if v == "supported"]}
+                for t, st in self.stories.items() if st["closed"]]
+        return {"bottom_line": memo.bottom_line(reg, p, self.proj, told, self.restated),
+                "next_checks": memo.next_checks(p, told, competitor)}
 
     def story_section(self, territory: str, n: int) -> str:
         """One story as the agents left it: head, the checks they ran in the order run, the closing confidence."""
@@ -216,7 +232,7 @@ class RunSession:
         head = f"Story {_ORD.get(n, str(n))}: {stages.territory_change(self._reg(), self.p, t)}"
         done = list(self.checks.get(t, {}).values())
         lines = [head] + (["Checked, in this order:"] + [f"- {c.text}" for c in done] if done else ["No driver was tested before the cap."])
-        lines.append(self._status(t, closing=True))
+        lines.append(memo.without_next(self._status(t, closing=True)))  # its next check goes to §5
         return "\n".join(lines)
 
     def competitor_section(self, lead: str) -> str:
@@ -306,8 +322,13 @@ def build_server(db=DEFAULT_DB, legend: bool = False) -> MCPServer:
 
     @server.tool(**text)
     async def brief_sections() -> str:
-        """Admin: the brief's code-built sections (header, data health, restatements, KPIs) as JSON. Callers only."""
+        """Admin: the memo's code-built title, numbers, limits and appendix as JSON. Callers only."""
         return json.dumps(s.brief_sections())
+
+    @server.tool(**text)
+    async def memo_close(competitor: bool) -> str:
+        """Admin: the memo's bottom line and next checks as JSON, after the stories close. Callers only."""
+        return json.dumps(s.memo_close(competitor))
 
     @server.tool(**text)
     async def story_section(territory: str, n: int) -> str:

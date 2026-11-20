@@ -27,6 +27,7 @@ Every passing cut has coverage 1.0. `reporting.v_reportable_rx` keeps only passi
 - **Consequence**: Mid-Atlantic 2026-04-06 is estimated at 711 and Great Lakes 2026-07-06 at 620. The 742 restated value still appears in the restatement disclosure.
 - **Alternatives**: coverage bands only (publishes duplicate-inflated and under-review levels); leave such cuts out of national (no national level, which the spec rejects).
 - **Spec gap**: the Clarifications define bands by coverage only. This rule adds the fault type; it is recorded in the spec's FR-022 note.
+- **Approved 2026-11-20** (Michael), on condition that the brief flags every projected or estimated level as an assumption. The §1 data warning, the §1 least-sure line, the §2 territory rows and the §4 method line all say so.
 
 ## R3. Which weeks give an estimated territory its share
 
@@ -58,6 +59,7 @@ Every passing cut has coverage 1.0. `reporting.v_reportable_rx` keeps only passi
 
 - **Decision**, in order: an estimated territory in the period; else a projected territory; else the lead number (the change) of the lowest-confidence story (Low before Medium before High; ties go to the first story); else the change built on the fewest prescriptions, which is the week-over-week change when the brief states one and the like-for-like change otherwise.
 - **Rationale**: the Clarification lists estimated → lowest-confidence story → fewest TRx; User Story 7 scenario 2 adds that a projected territory comes first when nothing is estimated.
+- **Competitor story left out**: the continuing Metacora story is always Medium and its lead number is a measured basket share; its Medium refers to the volume effect, not the share. Counting it would make the share the least-sure number in almost every week since March 2026.
 
 ## R9. One composer for both engines
 

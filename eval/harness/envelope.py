@@ -24,6 +24,9 @@ class AnswerEnvelope(BaseModel):
     claims: list[Claim] = []
     evidence: list[Evidence] = []
     abstained: bool = False
+    # The memo's sections (brief-003 FR-027): number, title, rendered text and prose, claim indexes. Scorers
+    # read `answer`; this is for the app and for later item-level checks.
+    sections: list[dict] | None = None
     # How an agent got there (tools called, LLM calls, tokens, cap hit). White-box and report-only:
     # no eval item scores it (black-box rule); it feeds the autonomy ledger's trajectory evidence.
     trajectory: dict | None = None

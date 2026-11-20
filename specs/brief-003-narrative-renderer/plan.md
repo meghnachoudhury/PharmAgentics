@@ -114,7 +114,7 @@ tests/*, eval/tests/*                          # updated string expectations
 | 4 | brief-006 follow-ups on Haiku; the six two-turn golden cases | eval gate |
 | 5 | core-008 FR-019 to FR-022 feedback loop (lessons proposed, people promote) | eval gate |
 
-The 2026-11-19 session agreed "five slices, each gated by eval" but not their boundaries. This split is a proposal; Michael confirms it before slice 2 starts. It does not affect slice 1.
+Confirmed by Michael on 2026-11-20, with slice 2's choices (inline SVG charts, baseline band = min to max of the baseline weeks, first supported driver's panel, CSV built in the browser, a real-app check) and the slice 3 to 5 decisions in brief-006 and core-008 (Session 2026-11-20). The build order and stop rules for an unattended session are in `specs/HANDOFF-memo-slices.md`.
 
 ## Complexity Tracking
 

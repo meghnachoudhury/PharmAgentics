@@ -14,11 +14,11 @@ on the stories P1 approved, in P1's order.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from pharmagentics.tools import DEFAULT_DB, Registry
-from pharmagentics.tools import stages
-from pharmagentics.tools.checks import OWNER, confidence, run_checks
+from pharmagentics.tools import memo, projection, stages
+from pharmagentics.tools.checks import confidence, run_checks
 from pharmagentics.tools.queries import name
 from pharmagentics.tools.registry import digits_outside_tokens
 from pharmagentics.tracing import finish, span
@@ -33,11 +33,15 @@ class StalePlan(ValueError):
 
 @dataclass
 class Front:
-    """What stages 1 to 3 produced: the period, the brief's lines so far and the screen."""
+    """What stages 1 to 3 produced: the period, their lines (the triage context), the memo pieces and the screen."""
     p: stages.Period
     out: list[str]
     found: list[dict]
     quiet: list[str]
+    health: str = ""
+    restated: list[str] = field(default_factory=list)
+    kpis: list[str] = field(default_factory=list)
+    proj: projection.Projection | None = None
 
 
 def answer(question: str, db=DEFAULT_DB) -> dict:
@@ -108,59 +112,71 @@ def _front(reg: Registry, question: str) -> Front | None:
         finish(sp, {"weeks": p.requested, "baseline_weeks": p.baseline, "territory": p.focus, "data_version": reg.data_version})
 
     with span("2_validation_gate") as sp:
-        out.append(stages.data_health(reg, p))
-        out += stages.restatements(reg, p)  # EV-1.2
+        health = stages.data_health(reg, p)
+        restated = stages.restatements(reg, p)  # EV-1.2
+        out += [health] + restated
         finish(sp, {"like_for_like_territories": p.ok})
 
     with span("3a_competitive_intelligence") as sp:
         if p.calendar_note:
             out.append(p.calendar_note)
-        out += stages.kpis(reg, p)
+        kpis = stages.kpis(reg, p)
+        out += kpis
+        proj = projection.build(reg, p)  # a level for the memo; never a story (ADR 0001)
         found, quiet = ([], []) if p.calendar else stages.screen(reg, p)
-        finish(sp, {"calendar_mode": bool(p.calendar), "candidates": [f["territory"] for f in found]})
-    return Front(p, out, found, quiet)
+        finish(sp, {"calendar_mode": bool(p.calendar), "candidates": [f["territory"] for f in found],
+                    "projected": proj.territories("projected"), "estimated": proj.territories("estimated")})
+    return Front(p, out, found, quiet, health, restated, kpis, proj)
 
 
 def _brief(reg: Registry, question: str, order: list[str] | None = None, left_out: list[str] = ()) -> dict:
     f = _front(reg, question)
     if f is None:
         return _envelope(reg, stages.outside_release(stages.resolve(reg, question)), False)
-    p, out = f.p, f.out
-    abstained = False
+    p = f.p
+    abstained, competitor = False, False
+    blocks: list[memo.StoryBlock] = []
+    told: list[dict] = []  # territory stories for §1 and §5: {territory, confidence, drivers}
+    notes: list[str] = []
 
     with span("4a_investigation") as sp:
         if p.calendar:
-            out.append("No story is opened for a calendar week. Expect a rebound in the next regular week.")
+            notes.append("No story is opened for a calendar week. Expect a rebound in the next regular week.")
         else:
-            if p.focus in p.terrs and p.focus not in p.ok:
-                out.append(f"{name(p.focus)} has withheld cuts in these weeks, so no like-for-like story is given for it.")
             by_id = {story_id(s): s for s in f.found}
-            shown = 0
             for sid in (default_order(f.found) if order is None else order):
                 if sid == COMPETITOR:
-                    comp = stages.competitor_status(reg, p, lead=f"Story {_ord(shown + 1)}: competitor Metacora")
+                    comp = stages.competitor_status(reg, p, lead=f"Story {_ord(len(blocks) + 1)}: competitor Metacora")
                     if comp:
-                        out.append(comp)
-                        shown += 1
+                        blocks.append(memo.StoryBlock(COMPETITOR, "Competitor Metacora", [memo.without_next(comp)]))
+                        competitor = True
                     continue
                 s = by_id[sid]
-                shown += 1
-                with span(f"story_{shown}_{s['territory']}", inputs={"territory": s["territory"], "kind": s["kind"]}) as story_sp:
-                    text, abst = _story(reg, shown, s, p)
-                    finish(story_sp, {"abstained": abst})
-                out.append(text)
-                abstained |= abst
+                with span(f"story_{len(blocks) + 1}_{s['territory']}", inputs={"territory": s["territory"], "kind": s["kind"]}) as story_sp:
+                    block, info = _story(reg, len(blocks) + 1, s, p)
+                    finish(story_sp, {"abstained": info["confidence"] == "Low"})
+                blocks.append(block)
+                told.append(info)
+                abstained |= info["confidence"] == "Low"
             if left_out:
-                out.append(f"Left out of this brief by the analyst: {', '.join(left_out)}.")
-            if shown == 0 and not left_out:
-                out.append("Routine week. No material change was found, and territory swings stayed in their normal range.")
+                notes.append(f"Left out of this brief by the analyst: {', '.join(left_out)}.")
+            if not blocks and not left_out:
+                notes.append("Routine week. No material change was found, and territory swings stayed in their normal range.")
             elif f.quiet:
-                out.append(f"Considered and dropped: {stages.dropped_count(reg, p, f.quiet)} territories moved within their normal range.")
+                notes.append(f"Considered and dropped: {stages.dropped_count(reg, p, f.quiet)} territories moved within their normal range.")
         finish(sp, {"abstained": abstained})
 
     with span("5_narrative") as sp:
-        template = "\n".join(x for x in out if x)
-        finish(sp, {"template_chars": len(template), "claims": len(reg.claims)})
+        parts = memo.MemoParts(
+            title=memo.title_lines(p),
+            bottom_line=memo.bottom_line(reg, p, f.proj, told, restated=bool(f.restated)),
+            numbers=memo.numbers(f.proj, f.kpis, f.restated),
+            limits=memo.limits(p, f.proj, f.health),
+            next_checks=memo.next_checks(p, told, competitor),
+            appendix=memo.appendix(reg),
+            stories=blocks, story_notes=notes)
+        template, sections = memo.compose(parts)
+        finish(sp, {"template_chars": len(template), "claims": len(reg.claims), "sections": [s["number"] for s in sections]})
 
     with span("6_verification") as sp:
         bad = digits_outside_tokens(template)
@@ -168,24 +184,24 @@ def _brief(reg: Registry, question: str, order: list[str] | None = None, left_ou
         if bad:
             raise AssertionError(f"digit outside a claim token: {bad[:3]}")
     text, spans = reg.render_cited(template)
-    return dict(_envelope(reg, text, abstained), citations=spans)  # citations: where each claim sits (UI only)
+    return dict(_envelope(reg, text, abstained), citations=spans,  # citations: where each claim sits (UI only)
+                sections=memo.render_sections(sections, reg.claims))
 
 
-def _story(reg, n, s, p):
+def _story(reg, n, s, p) -> tuple[memo.StoryBlock, dict]:
+    """One story: head, the checks in order, the closing confidence. Its next check goes to §5."""
     t = s["territory"]
     checks = run_checks(reg, t, p.weeks, p.baseline)
     level, lead = confidence(checks)
     head = f"Story {_ord(n)}: {stages.territory_change(reg, p, t)}"
     lines = [head, "Checked, in this order:"] + [f"- {c.text}" for c in checks]
-    supported = [c for c in checks if c.verdict == "supported"]
-    abstain = level == "Low"
-    if abstain:
-        lines.append(f"Confidence: {level}. Unresolved, investigate next. No driver is named. Next: split {name(t)} by plan and specialty, and ask sales leadership for local context.")
+    supported = [c.driver for c in checks if c.verdict == "supported"]
+    if level == "Low":
+        lines.append(f"Confidence: {level}. Unresolved, investigate next. No driver is named.")
     else:
         verb = "Leading driver" if level == "High" else "Candidate drivers"
-        owner = ", ".join(OWNER[c.driver] for c in supported)
-        lines.append(f"Confidence: {level}. {verb}: {lead}. Next: involve {owner}.")
-    return "\n".join(lines), abstain
+        lines.append(f"Confidence: {level}. {verb}: {lead}.")
+    return memo.StoryBlock(story_id(s), name(t), lines), {"territory": t, "confidence": level, "drivers": supported}
 
 
 def _ord(n: int) -> str:

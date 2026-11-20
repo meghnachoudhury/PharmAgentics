@@ -1,6 +1,6 @@
 {
  "Week of 2026-06-08 in Pacific: Generate the weekly brand-performance briefing.": {
-  "answer": "Brief for week of 2026-06-08. Data version 06bcba77fbe1. Product: BXA. Territory questions use only cuts that pass the feed gate.\nData health: 8 of 8 territories pass the feed gate for 2026-06-08. No cut is withheld.\nKPIs: BXA TRx averaged 3,860 a week across 8 of 8 territories (like for like), down 11.7% against the weeks before.\nWeek over week, summed over reportable cuts: BXA TRx is 3,860 against 4,269 the week before (down 9.6%).\nStory one: Pacific. BXA TRx averaged 464 a week against 674 before (down 31.2%), while the other territories were down 8.2%.\nChecked, in this order:\n- Data artifact: ruled out. Every Pacific cut in these weeks passes the feed gate.\n- Access: ruled out. No BXA access change in the Pacific plans in these months.\n- Promotion: ruled out. Aggregated rep calls held at 64 a week against 52 before.\n- Supply: supported. BXA inventory fill averaged 0.69 (close to full supply is normal), with 22.5% of orders backordered.\n- Competitor launch: ruled out as a local cause. Before the change Metacora held 7.3% of the basket here against 7.5% elsewhere.\nConfidence: High. Leading driver: supply. Next: involve supply chain and trade.\nStory two: competitor Metacora (launched 2026-03-02). This is a continuing story, week 14 since launch, still growing. Metacora held 12.5% of the four-brand basket and BXA held 31.1%, against 35.4% for BXA in the four weeks before launch. Confidence: Medium. The share loss is measured; its effect on volume is not separated from other drivers. Next: involve marketing and sales.\nConsidered and dropped: 7 territories moved within their normal range.",
+  "answer": "Brief for week of 2026-06-08. Product: BXA.\n## Bottom line\nProjected national BXA TRx is 3,860 for the week of 2026-06-08.\nLike for like on 8 of 8 territories, BXA TRx is down 11.7% against the four weeks before.\nBXA held 31.1% of the four-brand market basket.\nLeast sure: the Pacific change (down 31.2%), because its confidence is High.\n## The numbers\nProjected national BXA TRx for the week of 2026-06-08: 3,860.\nBy territory, all observed:\n- Great Lakes: 576\n- Mid-Atlantic: 603\n- Mountain: 316\n- New England: 376\n- Northwest: 339\n- Pacific: 464\n- South Central: 569\n- Southeast: 617\nKPIs: BXA TRx averaged 3,860 a week across 8 of 8 territories (like for like), down 11.7% against the weeks before.\nWeek over week, summed over reportable cuts: BXA TRx is 3,860 against 4,269 the week before (down 9.6%).\n## What changed and why\nStory one: Pacific. BXA TRx averaged 464 a week against 674 before (down 31.2%), while the other territories were down 8.2%.\nChecked, in this order:\n- Data artifact: ruled out. Every Pacific cut in these weeks passes the feed gate.\n- Access: ruled out. No BXA access change in the Pacific plans in these months.\n- Promotion: ruled out. Aggregated rep calls held at 64 a week against 52 before.\n- Supply: supported. BXA inventory fill averaged 0.69 (close to full supply is normal), with 22.5% of orders backordered.\n- Competitor launch: ruled out as a local cause. Before the change Metacora held 7.3% of the basket here against 7.5% elsewhere.\nConfidence: High. Leading driver: supply.\nStory two: competitor Metacora (launched 2026-03-02). This is a continuing story, week 14 since launch, still growing. Metacora held 12.5% of the four-brand basket and BXA held 31.1%, against 35.4% for BXA in the four weeks before launch. Confidence: Medium. The share loss is measured; its effect on volume is not separated from other drivers.\nConsidered and dropped: 7 territories moved within their normal range.\n## What the data can't tell us\nData health: 8 of 8 territories pass the feed gate for 2026-06-08. No cut is withheld.\n## Next checks\n- Pacific: confirm the supply finding. Owner: supply chain and trade. Unlocks: whether to escalate supply with trade partners.\n- Metacora: track the basket shares each week. Owner: marketing and sales. Unlocks: whether to adjust the response to Metacora.\n## Appendix\nMethod: like-for-like figures use only territories whose feed passed the gate in every week compared. The projected national divides each territory's observed TRx by its panel coverage, and estimates a territory that cannot be read from its recent share of national. Changes, stories and drivers use like-for-like cuts only.\nData version 47bcfd650564. Product: BXA (Cardiovela), synthetic data.\nGlossary:\n- Like for like: a comparison that uses only territories whose feed passed its checks in every week compared.\n- Panel coverage: the share of a territory's expected prescription records that arrived in a given week.\n- Projected national: national TRx built territory by territory, each territory's observed TRx divided by its panel coverage, summed.",
   "claims": [
    {
     "value": "8",
@@ -39,27 +39,27 @@
     "evidence_id": "e9"
    },
    {
-    "value": "64",
+    "value": "3,860",
     "evidence_id": "e10"
    },
    {
-    "value": "52",
+    "value": "576",
     "evidence_id": "e11"
    },
    {
-    "value": "0.69",
+    "value": "603",
     "evidence_id": "e12"
    },
    {
-    "value": "22.5%",
+    "value": "316",
     "evidence_id": "e13"
    },
    {
-    "value": "7.3%",
+    "value": "376",
     "evidence_id": "e14"
    },
    {
-    "value": "7.5%",
+    "value": "339",
     "evidence_id": "e15"
    },
    {
@@ -67,36 +67,92 @@
     "evidence_id": "e16"
    },
    {
-    "value": "674",
+    "value": "569",
     "evidence_id": "e17"
    },
    {
-    "value": "31.2%",
+    "value": "617",
     "evidence_id": "e18"
    },
    {
-    "value": "8.2%",
+    "value": "64",
     "evidence_id": "e19"
    },
    {
-    "value": "14",
+    "value": "52",
     "evidence_id": "e20"
    },
    {
-    "value": "12.5%",
+    "value": "0.69",
     "evidence_id": "e21"
    },
    {
-    "value": "31.1%",
+    "value": "22.5%",
     "evidence_id": "e22"
    },
    {
-    "value": "35.4%",
+    "value": "7.3%",
     "evidence_id": "e23"
    },
    {
-    "value": "7",
+    "value": "7.5%",
     "evidence_id": "e24"
+   },
+   {
+    "value": "464",
+    "evidence_id": "e25"
+   },
+   {
+    "value": "674",
+    "evidence_id": "e26"
+   },
+   {
+    "value": "31.2%",
+    "evidence_id": "e27"
+   },
+   {
+    "value": "8.2%",
+    "evidence_id": "e28"
+   },
+   {
+    "value": "14",
+    "evidence_id": "e29"
+   },
+   {
+    "value": "12.5%",
+    "evidence_id": "e30"
+   },
+   {
+    "value": "31.1%",
+    "evidence_id": "e31"
+   },
+   {
+    "value": "35.4%",
+    "evidence_id": "e32"
+   },
+   {
+    "value": "7",
+    "evidence_id": "e33"
+   },
+   {
+    "value": "8",
+    "evidence_id": "e3"
+   },
+   {
+    "value": "8",
+    "evidence_id": "e5"
+   },
+   {
+    "value": "11.7%",
+    "evidence_id": "e6"
+   },
+   {
+    "value": "31.1%",
+    "evidence_id": "e31"
+   },
+   {
+    "value": "31.2%",
+    "evidence_id": "e27"
    }
   ],
   "evidence": [
@@ -108,7 +164,7 @@
     },
     "query": "select count(*) from reporting.v_feed_health where week_start = DATE '2026-06-08' and health_status = 'PASS'",
     "result": 8.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e2",
@@ -118,7 +174,7 @@
     },
     "query": "select count(*) from reporting.v_feed_health where week_start = DATE '2026-06-08'",
     "result": 8.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e3",
@@ -126,7 +182,7 @@
     "params": {},
     "query": "select count(distinct territory_id) from reporting.v_reportable_rx where week_start in (DATE '2026-06-08') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')",
     "result": 8.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e4",
@@ -136,7 +192,7 @@
     },
     "query": "select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-06-08') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 1.0",
     "result": 3860.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e5",
@@ -144,7 +200,7 @@
     "params": {},
     "query": "select count(*) from raw.dim_territory",
     "result": 8.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e6",
@@ -154,7 +210,7 @@
     },
     "query": "select 100.0 * ((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-06-08') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 1.0) / nullif((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-05-11',DATE '2026-05-18',DATE '2026-05-25',DATE '2026-06-01') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 4.0), 0) - 1)",
     "result": -11.736123020636825,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e7",
@@ -164,7 +220,7 @@
     },
     "query": "select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-06-08')",
     "result": 3860.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e8",
@@ -174,7 +230,7 @@
     },
     "query": "select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-06-01')",
     "result": 4269.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e9",
@@ -184,50 +240,148 @@
     },
     "query": "select 100.0 * ((select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-06-08')) / nullif((select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-06-01')), 0) - 1)",
     "result": -9.580698055750759,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e10",
+    "tool": "project_national",
+    "params": {
+     "scope": "projected national"
+    },
+    "query": "with wk as (select unnest([DATE '2026-06-08']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(national) from nat",
+    "result": 3860.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e11",
+    "tool": "project_national",
+    "params": {
+     "territory": "GREAT_LAKES",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2026-06-08']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'GREAT_LAKES'",
+    "result": 576.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e12",
+    "tool": "project_national",
+    "params": {
+     "territory": "MID_ATLANTIC",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2026-06-08']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'MID_ATLANTIC'",
+    "result": 603.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e13",
+    "tool": "project_national",
+    "params": {
+     "territory": "MOUNTAIN",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2026-06-08']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'MOUNTAIN'",
+    "result": 316.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e14",
+    "tool": "project_national",
+    "params": {
+     "territory": "NEW_ENGLAND",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2026-06-08']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'NEW_ENGLAND'",
+    "result": 376.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e15",
+    "tool": "project_national",
+    "params": {
+     "territory": "NORTHWEST",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2026-06-08']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'NORTHWEST'",
+    "result": 339.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e16",
+    "tool": "project_national",
+    "params": {
+     "territory": "PACIFIC",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2026-06-08']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'PACIFIC'",
+    "result": 464.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e17",
+    "tool": "project_national",
+    "params": {
+     "territory": "SOUTH_CENTRAL",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2026-06-08']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'SOUTH_CENTRAL'",
+    "result": 569.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e18",
+    "tool": "project_national",
+    "params": {
+     "territory": "SOUTHEAST",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2026-06-08']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'SOUTHEAST'",
+    "result": 617.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e19",
     "tool": "lookup_promo",
     "params": {
      "territory": "PACIFIC"
     },
     "query": "select 1.0 * avg(rep_calls_aggregated) from raw.promo_activity where product_id = 'BXA' and territory_id = 'PACIFIC' and week_start in (DATE '2026-06-08')",
     "result": 64.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
-    "id": "e11",
+    "id": "e20",
     "tool": "lookup_promo",
     "params": {
      "territory": "PACIFIC"
     },
     "query": "select 1.0 * avg(rep_calls_aggregated) from raw.promo_activity where product_id = 'BXA' and territory_id = 'PACIFIC' and week_start in (DATE '2026-03-09',DATE '2026-03-16',DATE '2026-03-23',DATE '2026-03-30',DATE '2026-04-06',DATE '2026-04-13',DATE '2026-04-20',DATE '2026-04-27',DATE '2026-05-04',DATE '2026-05-11',DATE '2026-05-18',DATE '2026-05-25',DATE '2026-06-01')",
     "result": 51.76923076923077,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
-    "id": "e12",
+    "id": "e21",
     "tool": "lookup_inventory",
     "params": {
      "territory": "PACIFIC"
     },
     "query": "select 1.0 * avg(inventory_fill_rate) from raw.inventory_weekly where product_id = 'BXA' and territory_id = 'PACIFIC' and week_start in (DATE '2026-06-08')",
     "result": 0.6868,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
-    "id": "e13",
+    "id": "e22",
     "tool": "lookup_inventory",
     "params": {
      "territory": "PACIFIC"
     },
     "query": "select 100 * avg(distribution_backorder_rate) from raw.inventory_weekly where product_id = 'BXA' and territory_id = 'PACIFIC' and week_start in (DATE '2026-06-08')",
     "result": 22.45,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
-    "id": "e14",
+    "id": "e23",
     "tool": "compare_competitors",
     "params": {
      "territory": "PACIFIC",
@@ -235,10 +389,10 @@
     },
     "query": "select 100.0 * sum(trx) filter (where product_id = 'BXE') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-03-09',DATE '2026-03-16',DATE '2026-03-23',DATE '2026-03-30',DATE '2026-04-06',DATE '2026-04-13',DATE '2026-04-20',DATE '2026-04-27',DATE '2026-05-04',DATE '2026-05-11',DATE '2026-05-18',DATE '2026-05-25',DATE '2026-06-01') and territory_id in ('PACIFIC')",
     "result": 7.333797424295162,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
-    "id": "e15",
+    "id": "e24",
     "tool": "compare_competitors",
     "params": {
      "scope": "other territories",
@@ -246,78 +400,78 @@
     },
     "query": "select 100.0 * sum(trx) filter (where product_id = 'BXE') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-03-09',DATE '2026-03-16',DATE '2026-03-23',DATE '2026-03-30',DATE '2026-04-06',DATE '2026-04-13',DATE '2026-04-20',DATE '2026-04-27',DATE '2026-05-04',DATE '2026-05-11',DATE '2026-05-18',DATE '2026-05-25',DATE '2026-06-01') and territory_id <> 'PACIFIC'",
     "result": 7.477908512837361,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
-    "id": "e16",
+    "id": "e25",
     "tool": "get_metric",
     "params": {
      "territory": "PACIFIC"
     },
     "query": "select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-06-08') and territory_id in ('PACIFIC')) / 1.0",
     "result": 464.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
-    "id": "e17",
+    "id": "e26",
     "tool": "get_metric",
     "params": {
      "territory": "PACIFIC"
     },
     "query": "select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-05-11',DATE '2026-05-18',DATE '2026-05-25',DATE '2026-06-01') and territory_id in ('PACIFIC')) / 4.0",
     "result": 674.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
-    "id": "e18",
+    "id": "e27",
     "tool": "get_metric",
     "params": {
      "territory": "PACIFIC"
     },
     "query": "select 100.0 * ((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-06-08') and territory_id in ('PACIFIC')) / 1.0) / nullif((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-05-11',DATE '2026-05-18',DATE '2026-05-25',DATE '2026-06-01') and territory_id in ('PACIFIC')) / 4.0), 0) - 1)",
     "result": -31.15727002967359,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
-    "id": "e19",
+    "id": "e28",
     "tool": "get_metric",
     "params": {
      "scope": "other territories"
     },
     "query": "select 100.0 * ((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-06-08') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','SOUTHEAST','SOUTH_CENTRAL')) / 1.0) / nullif((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-05-11',DATE '2026-05-18',DATE '2026-05-25',DATE '2026-06-01') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','SOUTHEAST','SOUTH_CENTRAL')) / 4.0), 0) - 1)",
     "result": -8.197607623166858,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
-    "id": "e20",
+    "id": "e29",
     "tool": "compare_competitors",
     "params": {},
     "query": "select datediff('week', DATE '2026-03-02', week_start) from raw.calendar where week_start = DATE '2026-06-08'",
     "result": 14.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
-    "id": "e21",
+    "id": "e30",
     "tool": "compare_competitors",
     "params": {
      "product": "BXE"
     },
     "query": "select 100.0 * sum(trx) filter (where product_id = 'BXE') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-06-08')",
     "result": 12.531267651093358,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
-    "id": "e22",
+    "id": "e31",
     "tool": "compare_competitors",
     "params": {
      "product": "BXA"
     },
     "query": "select 100.0 * sum(trx) filter (where product_id = 'BXA') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-06-08')",
     "result": 31.146615024610668,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
-    "id": "e23",
+    "id": "e32",
     "tool": "compare_competitors",
     "params": {
      "product": "BXA",
@@ -325,23 +479,23 @@
     },
     "query": "select 100.0 * sum(trx) filter (where product_id = 'BXA') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-02-02',DATE '2026-02-09',DATE '2026-02-16',DATE '2026-02-23')",
     "result": 35.40138186480519,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
-    "id": "e24",
+    "id": "e33",
     "tool": "detect_changes",
     "params": {
      "scope": "territories with no material change"
     },
     "query": "select count(distinct territory_id) from reporting.v_reportable_rx where week_start in (DATE '2026-06-08') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','SOUTHEAST','SOUTH_CENTRAL')",
     "result": 7.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    }
   ],
   "abstained": false
  },
  "Week of 2026-07-13 in Mid-Atlantic: Generate the weekly brand-performance briefing.": {
-  "answer": "Brief for week of 2026-07-13. Data version 06bcba77fbe1. Product: BXA. Territory questions use only cuts that pass the feed gate.\nData health: 8 of 8 territories pass the feed gate for 2026-07-13. No cut is withheld.\nRestated: Mid-Atlantic BXA TRx for the week of 2026-04-06 was 692 when first reported and is now 742 (restated 2026-07-13; reason: synthetic late claims adjustment). Quote the new value with this note.\nKPIs: BXA TRx averaged 3,618 a week across 7 of 8 territories (like for like), up 3.3% against the weeks before.\nWeek over week, summed over reportable cuts: BXA TRx is 4,240 against 3,665 the week before (up 15.7%).\nOn the 7 territories that report both weeks, BXA TRx went from 3,665 to 3,618 (down 1.3%).\nStory one: Pacific. BXA TRx averaged 737 a week against 507 before (up 45.3%), while the other territories were down 3.8%.\nChecked, in this order:\n- Data artifact: ruled out. Every Pacific cut in these weeks passes the feed gate.\n- Access: ruled out. No BXA access change in the Pacific plans in these months.\n- Promotion: ruled out. Aggregated rep calls held at 50 a week against 52 before.\n- Supply: ruled out. BXA inventory fill averaged 1.00.\n- Competitor launch: ruled out as a local cause. Before the change Metacora held 11.2% of the basket here against 10.8% elsewhere.\nConfidence: Low. Unresolved, investigate next. No driver is named. Next: split Pacific by plan and specialty, and ask sales leadership for local context.\nStory two: Mid-Atlantic. BXA TRx averaged 636 a week against 680 before (down 6.5%), while the other territories were up 5.7%.\nChecked, in this order:\n- Data artifact: ruled out. Every Mid-Atlantic cut in these weeks passes the feed gate.\n- Access: ruled out. No BXA access change in the Mid-Atlantic plans in these months.\n- Promotion: ruled out. Aggregated rep calls held at 54 a week against 52 before.\n- Supply: ruled out. BXA inventory fill averaged 0.97.\n- Competitor launch: ruled out as a local cause. Before the change Metacora held 11.2% of the basket here against 10.8% elsewhere.\nConfidence: Low. Unresolved, investigate next. No driver is named. Next: split Mid-Atlantic by plan and specialty, and ask sales leadership for local context.\nStory three: competitor Metacora (launched 2026-03-02). This is a continuing story, week 19 since launch, still growing. Metacora held 13.2% of the four-brand basket and BXA held 32.6%, against 35.4% for BXA in the four weeks before launch. Confidence: Medium. The share loss is measured; its effect on volume is not separated from other drivers. Next: involve marketing and sales.\nConsidered and dropped: 5 territories moved within their normal range.",
+  "answer": "Brief for week of 2026-07-13. Product: BXA.\n## Bottom line\nData note: an earlier week was restated. The new value and the reason are in The numbers.\nProjected national BXA TRx is 4,240 for the week of 2026-07-13.\nLike for like on 7 of 8 territories, BXA TRx is up 3.3% against the four weeks before.\nBXA held 32.6% of the four-brand market basket.\nLeast sure: the Pacific change (up 45.3%), because its confidence is Low.\n## The numbers\nProjected national BXA TRx for the week of 2026-07-13: 4,240.\nBy territory, all observed:\n- Great Lakes: 622\n- Mid-Atlantic: 636\n- Mountain: 383\n- New England: 336\n- Northwest: 384\n- Pacific: 737\n- South Central: 533\n- Southeast: 609\nKPIs: BXA TRx averaged 3,618 a week across 7 of 8 territories (like for like), up 3.3% against the weeks before.\nWeek over week, summed over reportable cuts: BXA TRx is 4,240 against 3,665 the week before (up 15.7%).\nOn the 7 territories that report both weeks, BXA TRx went from 3,665 to 3,618 (down 1.3%).\nRestated: Mid-Atlantic BXA TRx for the week of 2026-04-06 was 692 when first reported and is now 742 (restated 2026-07-13; reason: synthetic late claims adjustment). Quote the new value with this note.\n## What changed and why\nStory one: Pacific. BXA TRx averaged 737 a week against 507 before (up 45.3%), while the other territories were down 3.8%.\nChecked, in this order:\n- Data artifact: ruled out. Every Pacific cut in these weeks passes the feed gate.\n- Access: ruled out. No BXA access change in the Pacific plans in these months.\n- Promotion: ruled out. Aggregated rep calls held at 50 a week against 52 before.\n- Supply: ruled out. BXA inventory fill averaged 1.00.\n- Competitor launch: ruled out as a local cause. Before the change Metacora held 11.2% of the basket here against 10.8% elsewhere.\nConfidence: Low. Unresolved, investigate next. No driver is named.\nStory two: Mid-Atlantic. BXA TRx averaged 636 a week against 680 before (down 6.5%), while the other territories were up 5.7%.\nChecked, in this order:\n- Data artifact: ruled out. Every Mid-Atlantic cut in these weeks passes the feed gate.\n- Access: ruled out. No BXA access change in the Mid-Atlantic plans in these months.\n- Promotion: ruled out. Aggregated rep calls held at 54 a week against 52 before.\n- Supply: ruled out. BXA inventory fill averaged 0.97.\n- Competitor launch: ruled out as a local cause. Before the change Metacora held 11.2% of the basket here against 10.8% elsewhere.\nConfidence: Low. Unresolved, investigate next. No driver is named.\nStory three: competitor Metacora (launched 2026-03-02). This is a continuing story, week 19 since launch, still growing. Metacora held 13.2% of the four-brand basket and BXA held 32.6%, against 35.4% for BXA in the four weeks before launch. Confidence: Medium. The share loss is measured; its effect on volume is not separated from other drivers.\nConsidered and dropped: 5 territories moved within their normal range.\n## What the data can't tell us\nData health: 8 of 8 territories pass the feed gate for 2026-07-13. No cut is withheld.\n## Next checks\n- Pacific: split by plan and specialty, and ask for local context. Owner: sales leadership. Unlocks: whether to open a deeper review of the territory.\n- Mid-Atlantic: split by plan and specialty, and ask for local context. Owner: sales leadership. Unlocks: whether to open a deeper review of the territory.\n- Metacora: track the basket shares each week. Owner: marketing and sales. Unlocks: whether to adjust the response to Metacora.\n## Appendix\nMethod: like-for-like figures use only territories whose feed passed the gate in every week compared. The projected national divides each territory's observed TRx by its panel coverage, and estimates a territory that cannot be read from its recent share of national. Changes, stories and drivers use like-for-like cuts only.\nData version 47bcfd650564. Product: BXA (Cardiovela), synthetic data.\nGlossary:\n- Like for like: a comparison that uses only territories whose feed passed its checks in every week compared.\n- Panel coverage: the share of a territory's expected prescription records that arrived in a given week.\n- Projected national: national TRx built territory by territory, each territory's observed TRx divided by its panel coverage, summed.",
   "claims": [
    {
     "value": "8",
@@ -404,43 +558,43 @@
     "evidence_id": "e15"
    },
    {
-    "value": "50",
+    "value": "4,240",
     "evidence_id": "e16"
    },
    {
-    "value": "52",
+    "value": "622",
     "evidence_id": "e17"
    },
    {
-    "value": "1.00",
+    "value": "636",
     "evidence_id": "e18"
    },
    {
-    "value": "11.2%",
+    "value": "383",
     "evidence_id": "e19"
    },
    {
-    "value": "10.8%",
+    "value": "336",
     "evidence_id": "e20"
    },
    {
-    "value": "737",
+    "value": "384",
     "evidence_id": "e21"
    },
    {
-    "value": "507",
+    "value": "737",
     "evidence_id": "e22"
    },
    {
-    "value": "45.3%",
+    "value": "533",
     "evidence_id": "e23"
    },
    {
-    "value": "3.8%",
+    "value": "609",
     "evidence_id": "e24"
    },
    {
-    "value": "54",
+    "value": "50",
     "evidence_id": "e25"
    },
    {
@@ -448,7 +602,7 @@
     "evidence_id": "e26"
    },
    {
-    "value": "0.97",
+    "value": "1.00",
     "evidence_id": "e27"
    },
    {
@@ -460,40 +614,96 @@
     "evidence_id": "e29"
    },
    {
-    "value": "636",
+    "value": "737",
     "evidence_id": "e30"
    },
    {
-    "value": "680",
+    "value": "507",
     "evidence_id": "e31"
    },
    {
-    "value": "6.5%",
+    "value": "45.3%",
     "evidence_id": "e32"
    },
    {
-    "value": "5.7%",
+    "value": "3.8%",
     "evidence_id": "e33"
    },
    {
-    "value": "19",
+    "value": "54",
     "evidence_id": "e34"
    },
    {
-    "value": "13.2%",
+    "value": "52",
     "evidence_id": "e35"
    },
    {
-    "value": "32.6%",
+    "value": "0.97",
     "evidence_id": "e36"
    },
    {
-    "value": "35.4%",
+    "value": "11.2%",
     "evidence_id": "e37"
    },
    {
-    "value": "5",
+    "value": "10.8%",
     "evidence_id": "e38"
+   },
+   {
+    "value": "636",
+    "evidence_id": "e39"
+   },
+   {
+    "value": "680",
+    "evidence_id": "e40"
+   },
+   {
+    "value": "6.5%",
+    "evidence_id": "e41"
+   },
+   {
+    "value": "5.7%",
+    "evidence_id": "e42"
+   },
+   {
+    "value": "19",
+    "evidence_id": "e43"
+   },
+   {
+    "value": "13.2%",
+    "evidence_id": "e44"
+   },
+   {
+    "value": "32.6%",
+    "evidence_id": "e45"
+   },
+   {
+    "value": "35.4%",
+    "evidence_id": "e46"
+   },
+   {
+    "value": "5",
+    "evidence_id": "e47"
+   },
+   {
+    "value": "7",
+    "evidence_id": "e5"
+   },
+   {
+    "value": "8",
+    "evidence_id": "e7"
+   },
+   {
+    "value": "3.3%",
+    "evidence_id": "e8"
+   },
+   {
+    "value": "32.6%",
+    "evidence_id": "e45"
+   },
+   {
+    "value": "45.3%",
+    "evidence_id": "e32"
    }
   ],
   "evidence": [
@@ -505,7 +715,7 @@
     },
     "query": "select count(*) from reporting.v_feed_health where week_start = DATE '2026-07-13' and health_status = 'PASS'",
     "result": 8.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e2",
@@ -515,7 +725,7 @@
     },
     "query": "select count(*) from reporting.v_feed_health where week_start = DATE '2026-07-13'",
     "result": 8.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e3",
@@ -526,7 +736,7 @@
     },
     "query": "select sum(trx_prior) from raw.restatement_log where product_id = 'BXA' and week_start = DATE '2026-04-06' and territory_id = 'MID_ATLANTIC'",
     "result": 692.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e4",
@@ -537,7 +747,7 @@
     },
     "query": "select sum(trx_revised) from raw.restatement_log where product_id = 'BXA' and week_start = DATE '2026-04-06' and territory_id = 'MID_ATLANTIC'",
     "result": 742.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e5",
@@ -545,7 +755,7 @@
     "params": {},
     "query": "select count(distinct territory_id) from reporting.v_reportable_rx where week_start in (DATE '2026-07-13') and territory_id in ('MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')",
     "result": 7.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e6",
@@ -555,7 +765,7 @@
     },
     "query": "select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-07-13') and territory_id in ('MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 1.0",
     "result": 3618.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e7",
@@ -563,7 +773,7 @@
     "params": {},
     "query": "select count(*) from raw.dim_territory",
     "result": 8.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e8",
@@ -573,7 +783,7 @@
     },
     "query": "select 100.0 * ((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-07-13') and territory_id in ('MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 1.0) / nullif((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06') and territory_id in ('MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 4.0), 0) - 1)",
     "result": 3.3123929183323852,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e9",
@@ -583,7 +793,7 @@
     },
     "query": "select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-07-13')",
     "result": 4240.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e10",
@@ -593,7 +803,7 @@
     },
     "query": "select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-07-06')",
     "result": 3665.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e11",
@@ -603,7 +813,7 @@
     },
     "query": "select 100.0 * ((select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-07-13')) / nullif((select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-07-06')), 0) - 1)",
     "result": 15.688949522510232,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e12",
@@ -613,7 +823,7 @@
     },
     "query": "select count(distinct territory_id) from reporting.v_reportable_rx where week_start = DATE '2026-07-13' and territory_id in ('MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')",
     "result": 7.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e13",
@@ -624,7 +834,7 @@
     },
     "query": "select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-07-06') and territory_id in ('MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')",
     "result": 3665.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e14",
@@ -635,7 +845,7 @@
     },
     "query": "select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-07-13') and territory_id in ('MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')",
     "result": 3618.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e15",
@@ -645,40 +855,138 @@
     },
     "query": "select 100.0 * ((select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-07-13') and territory_id in ('MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / nullif((select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-07-06') and territory_id in ('MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')), 0) - 1)",
     "result": -1.282401091405183,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e16",
+    "tool": "project_national",
+    "params": {
+     "scope": "projected national"
+    },
+    "query": "with wk as (select unnest([DATE '2026-07-13']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(national) from nat",
+    "result": 4240.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e17",
+    "tool": "project_national",
+    "params": {
+     "territory": "GREAT_LAKES",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2026-07-13']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'GREAT_LAKES'",
+    "result": 622.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e18",
+    "tool": "project_national",
+    "params": {
+     "territory": "MID_ATLANTIC",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2026-07-13']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'MID_ATLANTIC'",
+    "result": 636.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e19",
+    "tool": "project_national",
+    "params": {
+     "territory": "MOUNTAIN",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2026-07-13']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'MOUNTAIN'",
+    "result": 383.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e20",
+    "tool": "project_national",
+    "params": {
+     "territory": "NEW_ENGLAND",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2026-07-13']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'NEW_ENGLAND'",
+    "result": 336.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e21",
+    "tool": "project_national",
+    "params": {
+     "territory": "NORTHWEST",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2026-07-13']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'NORTHWEST'",
+    "result": 384.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e22",
+    "tool": "project_national",
+    "params": {
+     "territory": "PACIFIC",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2026-07-13']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'PACIFIC'",
+    "result": 737.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e23",
+    "tool": "project_national",
+    "params": {
+     "territory": "SOUTH_CENTRAL",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2026-07-13']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'SOUTH_CENTRAL'",
+    "result": 533.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e24",
+    "tool": "project_national",
+    "params": {
+     "territory": "SOUTHEAST",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2026-07-13']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'SOUTHEAST'",
+    "result": 609.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e25",
     "tool": "lookup_promo",
     "params": {
      "territory": "PACIFIC"
     },
     "query": "select 1.0 * avg(rep_calls_aggregated) from raw.promo_activity where product_id = 'BXA' and territory_id = 'PACIFIC' and week_start in (DATE '2026-07-13')",
     "result": 50.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
-    "id": "e17",
+    "id": "e26",
     "tool": "lookup_promo",
     "params": {
      "territory": "PACIFIC"
     },
     "query": "select 1.0 * avg(rep_calls_aggregated) from raw.promo_activity where product_id = 'BXA' and territory_id = 'PACIFIC' and week_start in (DATE '2026-04-13',DATE '2026-04-20',DATE '2026-04-27',DATE '2026-05-04',DATE '2026-05-11',DATE '2026-05-18',DATE '2026-05-25',DATE '2026-06-01',DATE '2026-06-08',DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06')",
     "result": 52.23076923076923,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
-    "id": "e18",
+    "id": "e27",
     "tool": "lookup_inventory",
     "params": {
      "territory": "PACIFIC"
     },
     "query": "select 1.0 * avg(inventory_fill_rate) from raw.inventory_weekly where product_id = 'BXA' and territory_id = 'PACIFIC' and week_start in (DATE '2026-07-13')",
     "result": 1.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
-    "id": "e19",
+    "id": "e28",
     "tool": "compare_competitors",
     "params": {
      "territory": "PACIFIC",
@@ -686,99 +994,7 @@
     },
     "query": "select 100.0 * sum(trx) filter (where product_id = 'BXE') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-04-13',DATE '2026-04-20',DATE '2026-04-27',DATE '2026-05-04',DATE '2026-05-11',DATE '2026-05-18',DATE '2026-05-25',DATE '2026-06-01',DATE '2026-06-08',DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06') and territory_id in ('PACIFIC')",
     "result": 11.237079026342114,
-    "data_version": "06bcba77fbe1"
-   },
-   {
-    "id": "e20",
-    "tool": "compare_competitors",
-    "params": {
-     "scope": "other territories",
-     "weeks": "before the change"
-    },
-    "query": "select 100.0 * sum(trx) filter (where product_id = 'BXE') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-04-13',DATE '2026-04-20',DATE '2026-04-27',DATE '2026-05-04',DATE '2026-05-11',DATE '2026-05-18',DATE '2026-05-25',DATE '2026-06-01',DATE '2026-06-08',DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06') and territory_id <> 'PACIFIC'",
-    "result": 10.751600708636154,
-    "data_version": "06bcba77fbe1"
-   },
-   {
-    "id": "e21",
-    "tool": "get_metric",
-    "params": {
-     "territory": "PACIFIC"
-    },
-    "query": "select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-07-13') and territory_id in ('PACIFIC')) / 1.0",
-    "result": 737.0,
-    "data_version": "06bcba77fbe1"
-   },
-   {
-    "id": "e22",
-    "tool": "get_metric",
-    "params": {
-     "territory": "PACIFIC"
-    },
-    "query": "select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06') and territory_id in ('PACIFIC')) / 4.0",
-    "result": 507.25,
-    "data_version": "06bcba77fbe1"
-   },
-   {
-    "id": "e23",
-    "tool": "get_metric",
-    "params": {
-     "territory": "PACIFIC"
-    },
-    "query": "select 100.0 * ((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-07-13') and territory_id in ('PACIFIC')) / 1.0) / nullif((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06') and territory_id in ('PACIFIC')) / 4.0), 0) - 1)",
-    "result": 45.293247905372105,
-    "data_version": "06bcba77fbe1"
-   },
-   {
-    "id": "e24",
-    "tool": "get_metric",
-    "params": {
-     "scope": "other territories"
-    },
-    "query": "select 100.0 * ((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-07-13') and territory_id in ('MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','SOUTHEAST','SOUTH_CENTRAL')) / 1.0) / nullif((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06') and territory_id in ('MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','SOUTHEAST','SOUTH_CENTRAL')) / 4.0), 0) - 1)",
-    "result": -3.7983137156690883,
-    "data_version": "06bcba77fbe1"
-   },
-   {
-    "id": "e25",
-    "tool": "lookup_promo",
-    "params": {
-     "territory": "MID_ATLANTIC"
-    },
-    "query": "select 1.0 * avg(rep_calls_aggregated) from raw.promo_activity where product_id = 'BXA' and territory_id = 'MID_ATLANTIC' and week_start in (DATE '2026-07-13')",
-    "result": 54.0,
-    "data_version": "06bcba77fbe1"
-   },
-   {
-    "id": "e26",
-    "tool": "lookup_promo",
-    "params": {
-     "territory": "MID_ATLANTIC"
-    },
-    "query": "select 1.0 * avg(rep_calls_aggregated) from raw.promo_activity where product_id = 'BXA' and territory_id = 'MID_ATLANTIC' and week_start in (DATE '2026-04-13',DATE '2026-04-20',DATE '2026-04-27',DATE '2026-05-04',DATE '2026-05-11',DATE '2026-05-18',DATE '2026-05-25',DATE '2026-06-01',DATE '2026-06-08',DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06')",
-    "result": 51.53846153846154,
-    "data_version": "06bcba77fbe1"
-   },
-   {
-    "id": "e27",
-    "tool": "lookup_inventory",
-    "params": {
-     "territory": "MID_ATLANTIC"
-    },
-    "query": "select 1.0 * avg(inventory_fill_rate) from raw.inventory_weekly where product_id = 'BXA' and territory_id = 'MID_ATLANTIC' and week_start in (DATE '2026-07-13')",
-    "result": 0.9688,
-    "data_version": "06bcba77fbe1"
-   },
-   {
-    "id": "e28",
-    "tool": "compare_competitors",
-    "params": {
-     "territory": "MID_ATLANTIC",
-     "weeks": "before the change"
-    },
-    "query": "select 100.0 * sum(trx) filter (where product_id = 'BXE') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-04-13',DATE '2026-04-20',DATE '2026-04-27',DATE '2026-05-04',DATE '2026-05-11',DATE '2026-05-18',DATE '2026-05-25',DATE '2026-06-01',DATE '2026-06-08',DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06') and territory_id in ('MID_ATLANTIC')",
-    "result": 11.155511155511155,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e29",
@@ -787,39 +1003,39 @@
      "scope": "other territories",
      "weeks": "before the change"
     },
-    "query": "select 100.0 * sum(trx) filter (where product_id = 'BXE') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-04-13',DATE '2026-04-20',DATE '2026-04-27',DATE '2026-05-04',DATE '2026-05-11',DATE '2026-05-18',DATE '2026-05-25',DATE '2026-06-01',DATE '2026-06-08',DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06') and territory_id <> 'MID_ATLANTIC'",
-    "result": 10.766858753435935,
-    "data_version": "06bcba77fbe1"
+    "query": "select 100.0 * sum(trx) filter (where product_id = 'BXE') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-04-13',DATE '2026-04-20',DATE '2026-04-27',DATE '2026-05-04',DATE '2026-05-11',DATE '2026-05-18',DATE '2026-05-25',DATE '2026-06-01',DATE '2026-06-08',DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06') and territory_id <> 'PACIFIC'",
+    "result": 10.751600708636154,
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e30",
     "tool": "get_metric",
     "params": {
-     "territory": "MID_ATLANTIC"
+     "territory": "PACIFIC"
     },
-    "query": "select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-07-13') and territory_id in ('MID_ATLANTIC')) / 1.0",
-    "result": 636.0,
-    "data_version": "06bcba77fbe1"
+    "query": "select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-07-13') and territory_id in ('PACIFIC')) / 1.0",
+    "result": 737.0,
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e31",
     "tool": "get_metric",
     "params": {
-     "territory": "MID_ATLANTIC"
+     "territory": "PACIFIC"
     },
-    "query": "select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06') and territory_id in ('MID_ATLANTIC')) / 4.0",
-    "result": 680.25,
-    "data_version": "06bcba77fbe1"
+    "query": "select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06') and territory_id in ('PACIFIC')) / 4.0",
+    "result": 507.25,
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e32",
     "tool": "get_metric",
     "params": {
-     "territory": "MID_ATLANTIC"
+     "territory": "PACIFIC"
     },
-    "query": "select 100.0 * ((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-07-13') and territory_id in ('MID_ATLANTIC')) / 1.0) / nullif((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06') and territory_id in ('MID_ATLANTIC')) / 4.0), 0) - 1)",
-    "result": -6.504961411245869,
-    "data_version": "06bcba77fbe1"
+    "query": "select 100.0 * ((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-07-13') and territory_id in ('PACIFIC')) / 1.0) / nullif((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06') and territory_id in ('PACIFIC')) / 4.0), 0) - 1)",
+    "result": 45.293247905372105,
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e33",
@@ -827,40 +1043,132 @@
     "params": {
      "scope": "other territories"
     },
-    "query": "select 100.0 * ((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-07-13') and territory_id in ('MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 1.0) / nullif((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06') and territory_id in ('MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 4.0), 0) - 1)",
-    "result": 5.679099849384239,
-    "data_version": "06bcba77fbe1"
+    "query": "select 100.0 * ((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-07-13') and territory_id in ('MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','SOUTHEAST','SOUTH_CENTRAL')) / 1.0) / nullif((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06') and territory_id in ('MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','SOUTHEAST','SOUTH_CENTRAL')) / 4.0), 0) - 1)",
+    "result": -3.7983137156690883,
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e34",
+    "tool": "lookup_promo",
+    "params": {
+     "territory": "MID_ATLANTIC"
+    },
+    "query": "select 1.0 * avg(rep_calls_aggregated) from raw.promo_activity where product_id = 'BXA' and territory_id = 'MID_ATLANTIC' and week_start in (DATE '2026-07-13')",
+    "result": 54.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e35",
+    "tool": "lookup_promo",
+    "params": {
+     "territory": "MID_ATLANTIC"
+    },
+    "query": "select 1.0 * avg(rep_calls_aggregated) from raw.promo_activity where product_id = 'BXA' and territory_id = 'MID_ATLANTIC' and week_start in (DATE '2026-04-13',DATE '2026-04-20',DATE '2026-04-27',DATE '2026-05-04',DATE '2026-05-11',DATE '2026-05-18',DATE '2026-05-25',DATE '2026-06-01',DATE '2026-06-08',DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06')",
+    "result": 51.53846153846154,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e36",
+    "tool": "lookup_inventory",
+    "params": {
+     "territory": "MID_ATLANTIC"
+    },
+    "query": "select 1.0 * avg(inventory_fill_rate) from raw.inventory_weekly where product_id = 'BXA' and territory_id = 'MID_ATLANTIC' and week_start in (DATE '2026-07-13')",
+    "result": 0.9688,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e37",
+    "tool": "compare_competitors",
+    "params": {
+     "territory": "MID_ATLANTIC",
+     "weeks": "before the change"
+    },
+    "query": "select 100.0 * sum(trx) filter (where product_id = 'BXE') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-04-13',DATE '2026-04-20',DATE '2026-04-27',DATE '2026-05-04',DATE '2026-05-11',DATE '2026-05-18',DATE '2026-05-25',DATE '2026-06-01',DATE '2026-06-08',DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06') and territory_id in ('MID_ATLANTIC')",
+    "result": 11.155511155511155,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e38",
+    "tool": "compare_competitors",
+    "params": {
+     "scope": "other territories",
+     "weeks": "before the change"
+    },
+    "query": "select 100.0 * sum(trx) filter (where product_id = 'BXE') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-04-13',DATE '2026-04-20',DATE '2026-04-27',DATE '2026-05-04',DATE '2026-05-11',DATE '2026-05-18',DATE '2026-05-25',DATE '2026-06-01',DATE '2026-06-08',DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06') and territory_id <> 'MID_ATLANTIC'",
+    "result": 10.766858753435935,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e39",
+    "tool": "get_metric",
+    "params": {
+     "territory": "MID_ATLANTIC"
+    },
+    "query": "select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-07-13') and territory_id in ('MID_ATLANTIC')) / 1.0",
+    "result": 636.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e40",
+    "tool": "get_metric",
+    "params": {
+     "territory": "MID_ATLANTIC"
+    },
+    "query": "select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06') and territory_id in ('MID_ATLANTIC')) / 4.0",
+    "result": 680.25,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e41",
+    "tool": "get_metric",
+    "params": {
+     "territory": "MID_ATLANTIC"
+    },
+    "query": "select 100.0 * ((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-07-13') and territory_id in ('MID_ATLANTIC')) / 1.0) / nullif((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06') and territory_id in ('MID_ATLANTIC')) / 4.0), 0) - 1)",
+    "result": -6.504961411245869,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e42",
+    "tool": "get_metric",
+    "params": {
+     "scope": "other territories"
+    },
+    "query": "select 100.0 * ((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-07-13') and territory_id in ('MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 1.0) / nullif((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-06-15',DATE '2026-06-22',DATE '2026-06-29',DATE '2026-07-06') and territory_id in ('MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 4.0), 0) - 1)",
+    "result": 5.679099849384239,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e43",
     "tool": "compare_competitors",
     "params": {},
     "query": "select datediff('week', DATE '2026-03-02', week_start) from raw.calendar where week_start = DATE '2026-07-13'",
     "result": 19.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
-    "id": "e35",
+    "id": "e44",
     "tool": "compare_competitors",
     "params": {
      "product": "BXE"
     },
     "query": "select 100.0 * sum(trx) filter (where product_id = 'BXE') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-07-13')",
     "result": 13.214368125528805,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
-    "id": "e36",
+    "id": "e45",
     "tool": "compare_competitors",
     "params": {
      "product": "BXA"
     },
     "query": "select 100.0 * sum(trx) filter (where product_id = 'BXA') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-07-13')",
     "result": 32.61287593262057,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
-    "id": "e37",
+    "id": "e46",
     "tool": "compare_competitors",
     "params": {
      "product": "BXA",
@@ -868,23 +1176,23 @@
     },
     "query": "select 100.0 * sum(trx) filter (where product_id = 'BXA') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-02-02',DATE '2026-02-09',DATE '2026-02-16',DATE '2026-02-23')",
     "result": 35.40138186480519,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
-    "id": "e38",
+    "id": "e47",
     "tool": "detect_changes",
     "params": {
      "scope": "territories with no material change"
     },
     "query": "select count(distinct territory_id) from reporting.v_reportable_rx where week_start in (DATE '2026-07-13') and territory_id in ('MOUNTAIN','NEW_ENGLAND','NORTHWEST','SOUTHEAST','SOUTH_CENTRAL')",
     "result": 5.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    }
   ],
   "abstained": true
  },
  "Week of 2026-05-04 in New England: Generate the weekly brand-performance briefing.": {
-  "answer": "Brief for week of 2026-05-04. Data version 06bcba77fbe1. Product: BXA. Territory questions use only cuts that pass the feed gate.\nData health: 7 of 8 territories pass the feed gate for 2026-05-04. Withheld cuts are left out of every figure below and never read as zero demand:\n- New England, week of 2026-05-04: not reportable (missing keys, row counts that do not reconcile, low panel coverage, late delivery, incomplete source); 84 rows against 128 expected, 44 missing keys, panel coverage 0.656, 10.29 days after week end.\nKPIs: BXA TRx averaged 3,362 a week across 6 of 8 territories (like for like), down 5.2% against the weeks before.\nWeek over week, summed over reportable cuts: BXA TRx is 4,084 against 4,590 the week before (down 11.0%).\nOn the 7 territories that report both weeks, BXA TRx went from 4,193 to 4,084 (down 2.6%).\nNew England has withheld cuts in these weeks, so no like-for-like story is given for it.\nStory one: competitor Metacora (launched 2026-03-02). This is a continuing story, week 9 since launch, still growing. Metacora held 9.5% of the four-brand basket and BXA held 33.0%, against 35.4% for BXA in the four weeks before launch. Confidence: Medium. The share loss is measured; its effect on volume is not separated from other drivers. Next: involve marketing and sales.\nConsidered and dropped: 6 territories moved within their normal range.",
+  "answer": "Brief for week of 2026-05-04. Product: BXA.\n## Bottom line\nData warning: New England's feed for 2026-05-04 is incomplete, so its TRx is projected from panel coverage, an assumption. No story is given for it.\nProjected national BXA TRx is 4,491 for the week of 2026-05-04.\nLike for like on 6 of 8 territories, BXA TRx is down 5.2% against the four weeks before.\nBXA held 33.0% of the four-brand market basket.\nLeast sure: New England's TRx of 407 is an assumption, projected from panel coverage of 0.656.\n## The numbers\nProjected national BXA TRx for the week of 2026-05-04: 4,491.\nBy territory, observed unless marked; a projected or estimated level is an assumption, not an observed count:\n- Great Lakes: 550\n- Mid-Atlantic: 722\n- Mountain: 307\n- New England: 407 (projected, an assumption: 267 observed at panel coverage 0.656)\n- Northwest: 486\n- Pacific: 683\n- South Central: 711\n- Southeast: 625\nKPIs: BXA TRx averaged 3,362 a week across 6 of 8 territories (like for like), down 5.2% against the weeks before.\nWeek over week, summed over reportable cuts: BXA TRx is 4,084 against 4,590 the week before (down 11.0%).\nOn the 7 territories that report both weeks, BXA TRx went from 4,193 to 4,084 (down 2.6%).\n## What changed and why\nStory one: competitor Metacora (launched 2026-03-02). This is a continuing story, week 9 since launch, still growing. Metacora held 9.5% of the four-brand basket and BXA held 33.0%, against 35.4% for BXA in the four weeks before launch. Confidence: Medium. The share loss is measured; its effect on volume is not separated from other drivers.\nConsidered and dropped: 6 territories moved within their normal range.\n## What the data can't tell us\nData health: 7 of 8 territories pass the feed gate for 2026-05-04. Withheld cuts are left out of every like-for-like figure and story, and never read as zero demand:\n- New England, week of 2026-05-04: not reportable (missing keys, row counts that do not reconcile, low panel coverage, late delivery, incomplete source); 84 rows against 128 expected, 44 missing keys, panel coverage 0.656, 10.29 days after week end.\nNew England has withheld cuts in these weeks, so no like-for-like story is given for it.\nNew England is projected: observed TRx divided by panel coverage, because part of the feed is missing.\nAssumption: a projected or estimated level is not an observed count, so the projected national rests on it. It is a level only: no story or driver is given for it.\n## Next checks\n- New England, week of 2026-05-04: re-run when the corrected feed lands, and disclose the restated week. Owner: the data vendor and commercial analytics. Unlocks: whether the restated week changes any figure already reported.\n- Metacora: track the basket shares each week. Owner: marketing and sales. Unlocks: whether to adjust the response to Metacora.\n## Appendix\nMethod: like-for-like figures use only territories whose feed passed the gate in every week compared. The projected national divides each territory's observed TRx by its panel coverage, and estimates a territory that cannot be read from its recent share of national. Changes, stories and drivers use like-for-like cuts only.\nData version 47bcfd650564. Product: BXA (Cardiovela), synthetic data.\nGlossary:\n- Like for like: a comparison that uses only territories whose feed passed its checks in every week compared.\n- Panel coverage: the share of a territory's expected prescription records that arrived in a given week.\n- Projected national: national TRx built territory by territory, each territory's observed TRx divided by its panel coverage, summed.\n- Estimated territory: a territory whose coverage is too low to project, or whose count failed its checks, filled from its own recent share of national and labelled as estimated, an assumption.\n- Withheld cut: a territory or week whose data failed its checks, so no story or driver is given for it.",
   "claims": [
    {
     "value": "7",
@@ -959,24 +1267,84 @@
     "evidence_id": "e18"
    },
    {
-    "value": "9",
+    "value": "4,491",
     "evidence_id": "e19"
    },
    {
-    "value": "9.5%",
+    "value": "550",
     "evidence_id": "e20"
    },
    {
-    "value": "33.0%",
+    "value": "722",
     "evidence_id": "e21"
    },
    {
-    "value": "35.4%",
+    "value": "307",
     "evidence_id": "e22"
    },
    {
-    "value": "6",
+    "value": "407",
     "evidence_id": "e23"
+   },
+   {
+    "value": "267",
+    "evidence_id": "e24"
+   },
+   {
+    "value": "0.656",
+    "evidence_id": "e25"
+   },
+   {
+    "value": "486",
+    "evidence_id": "e26"
+   },
+   {
+    "value": "683",
+    "evidence_id": "e27"
+   },
+   {
+    "value": "711",
+    "evidence_id": "e28"
+   },
+   {
+    "value": "625",
+    "evidence_id": "e29"
+   },
+   {
+    "value": "9",
+    "evidence_id": "e30"
+   },
+   {
+    "value": "9.5%",
+    "evidence_id": "e31"
+   },
+   {
+    "value": "33.0%",
+    "evidence_id": "e32"
+   },
+   {
+    "value": "35.4%",
+    "evidence_id": "e33"
+   },
+   {
+    "value": "6",
+    "evidence_id": "e34"
+   },
+   {
+    "value": "6",
+    "evidence_id": "e8"
+   },
+   {
+    "value": "8",
+    "evidence_id": "e10"
+   },
+   {
+    "value": "5.2%",
+    "evidence_id": "e11"
+   },
+   {
+    "value": "33.0%",
+    "evidence_id": "e32"
    }
   ],
   "evidence": [
@@ -988,7 +1356,7 @@
     },
     "query": "select count(*) from reporting.v_feed_health where week_start = DATE '2026-05-04' and health_status = 'PASS'",
     "result": 7.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e2",
@@ -998,7 +1366,7 @@
     },
     "query": "select count(*) from reporting.v_feed_health where week_start = DATE '2026-05-04'",
     "result": 8.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e3",
@@ -1009,7 +1377,7 @@
     },
     "query": "select observed_rows from reporting.v_feed_health where week_start = DATE '2026-05-04' and territory_id = 'NEW_ENGLAND'",
     "result": 84.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e4",
@@ -1020,7 +1388,7 @@
     },
     "query": "select expected_key_count from reporting.v_feed_health where week_start = DATE '2026-05-04' and territory_id = 'NEW_ENGLAND'",
     "result": 128.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e5",
@@ -1031,7 +1399,7 @@
     },
     "query": "select missing_key_count from reporting.v_feed_health where week_start = DATE '2026-05-04' and territory_id = 'NEW_ENGLAND'",
     "result": 44.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e6",
@@ -1042,7 +1410,7 @@
     },
     "query": "select panel_coverage_ratio from reporting.v_feed_health where week_start = DATE '2026-05-04' and territory_id = 'NEW_ENGLAND'",
     "result": 0.6562,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e7",
@@ -1053,7 +1421,7 @@
     },
     "query": "select actual_lag_days from reporting.v_feed_health where week_start = DATE '2026-05-04' and territory_id = 'NEW_ENGLAND'",
     "result": 10.29,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e8",
@@ -1061,7 +1429,7 @@
     "params": {},
     "query": "select count(distinct territory_id) from reporting.v_reportable_rx where week_start in (DATE '2026-05-04') and territory_id in ('GREAT_LAKES','MOUNTAIN','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')",
     "result": 6.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e9",
@@ -1071,7 +1439,7 @@
     },
     "query": "select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-05-04') and territory_id in ('GREAT_LAKES','MOUNTAIN','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 1.0",
     "result": 3362.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e10",
@@ -1079,7 +1447,7 @@
     "params": {},
     "query": "select count(*) from raw.dim_territory",
     "result": 8.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e11",
@@ -1089,7 +1457,7 @@
     },
     "query": "select 100.0 * ((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-05-04') and territory_id in ('GREAT_LAKES','MOUNTAIN','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 1.0) / nullif((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-04-06',DATE '2026-04-13',DATE '2026-04-20',DATE '2026-04-27') and territory_id in ('GREAT_LAKES','MOUNTAIN','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 4.0), 0) - 1)",
     "result": -5.162200282087448,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e12",
@@ -1099,7 +1467,7 @@
     },
     "query": "select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-05-04')",
     "result": 4084.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e13",
@@ -1109,7 +1477,7 @@
     },
     "query": "select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-04-27')",
     "result": 4590.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e14",
@@ -1119,7 +1487,7 @@
     },
     "query": "select 100.0 * ((select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-05-04')) / nullif((select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-04-27')), 0) - 1)",
     "result": -11.023965141612202,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e15",
@@ -1129,7 +1497,7 @@
     },
     "query": "select count(distinct territory_id) from reporting.v_reportable_rx where week_start = DATE '2026-05-04' and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')",
     "result": 7.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e16",
@@ -1140,7 +1508,7 @@
     },
     "query": "select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-04-27') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')",
     "result": 4193.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e17",
@@ -1151,7 +1519,7 @@
     },
     "query": "select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-05-04') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')",
     "result": 4084.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e18",
@@ -1161,38 +1529,158 @@
     },
     "query": "select 100.0 * ((select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-05-04') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / nullif((select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-04-27') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')), 0) - 1)",
     "result": -2.5995707130932466,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e19",
+    "tool": "project_national",
+    "params": {
+     "scope": "projected national"
+    },
+    "query": "with wk as (select unnest([DATE '2026-05-04']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(national) from nat",
+    "result": 4490.8881438585795,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e20",
+    "tool": "project_national",
+    "params": {
+     "territory": "GREAT_LAKES",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2026-05-04']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'GREAT_LAKES'",
+    "result": 550.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e21",
+    "tool": "project_national",
+    "params": {
+     "territory": "MID_ATLANTIC",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2026-05-04']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'MID_ATLANTIC'",
+    "result": 722.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e22",
+    "tool": "project_national",
+    "params": {
+     "territory": "MOUNTAIN",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2026-05-04']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'MOUNTAIN'",
+    "result": 307.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e23",
+    "tool": "project_national",
+    "params": {
+     "territory": "NEW_ENGLAND",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2026-05-04']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'NEW_ENGLAND'",
+    "result": 406.8881438585797,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e24",
+    "tool": "project_national",
+    "params": {
+     "territory": "NEW_ENGLAND",
+     "week": "2026-05-04"
+    },
+    "query": "select observed_trx from reporting.v_rx_projection where week_start = DATE '2026-05-04' and territory_id = 'NEW_ENGLAND' and product_id = 'BXA'",
+    "result": 267.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e25",
+    "tool": "project_national",
+    "params": {
+     "territory": "NEW_ENGLAND",
+     "week": "2026-05-04"
+    },
+    "query": "select panel_coverage_ratio from reporting.v_rx_projection where week_start = DATE '2026-05-04' and territory_id = 'NEW_ENGLAND' and product_id = 'BXA'",
+    "result": 0.6562,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e26",
+    "tool": "project_national",
+    "params": {
+     "territory": "NORTHWEST",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2026-05-04']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'NORTHWEST'",
+    "result": 486.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e27",
+    "tool": "project_national",
+    "params": {
+     "territory": "PACIFIC",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2026-05-04']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'PACIFIC'",
+    "result": 683.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e28",
+    "tool": "project_national",
+    "params": {
+     "territory": "SOUTH_CENTRAL",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2026-05-04']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'SOUTH_CENTRAL'",
+    "result": 711.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e29",
+    "tool": "project_national",
+    "params": {
+     "territory": "SOUTHEAST",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2026-05-04']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'SOUTHEAST'",
+    "result": 625.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e30",
     "tool": "compare_competitors",
     "params": {},
     "query": "select datediff('week', DATE '2026-03-02', week_start) from raw.calendar where week_start = DATE '2026-05-04'",
     "result": 9.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
-    "id": "e20",
+    "id": "e31",
     "tool": "compare_competitors",
     "params": {
      "product": "BXE"
     },
     "query": "select 100.0 * sum(trx) filter (where product_id = 'BXE') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-05-04')",
     "result": 9.459131700218288,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
-    "id": "e21",
+    "id": "e32",
     "tool": "compare_competitors",
     "params": {
      "product": "BXA"
     },
     "query": "select 100.0 * sum(trx) filter (where product_id = 'BXA') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-05-04')",
     "result": 33.01802894332606,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
-    "id": "e22",
+    "id": "e33",
     "tool": "compare_competitors",
     "params": {
      "product": "BXA",
@@ -1200,23 +1688,23 @@
     },
     "query": "select 100.0 * sum(trx) filter (where product_id = 'BXA') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-02-02',DATE '2026-02-09',DATE '2026-02-16',DATE '2026-02-23')",
     "result": 35.40138186480519,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
-    "id": "e23",
+    "id": "e34",
     "tool": "detect_changes",
     "params": {
      "scope": "territories with no material change"
     },
     "query": "select count(distinct territory_id) from reporting.v_reportable_rx where week_start in (DATE '2026-05-04') and territory_id in ('GREAT_LAKES','MOUNTAIN','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')",
     "result": 6.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    }
   ],
   "abstained": false
  },
  "Week of 2026-04-06: Generate the weekly brand-performance briefing.": {
-  "answer": "Brief for week of 2026-04-06. Data version 06bcba77fbe1. Product: BXA. Territory questions use only cuts that pass the feed gate.\nData health: 7 of 8 territories pass the feed gate for 2026-04-06. Withheld cuts are left out of every figure below and never read as zero demand:\n- Mid-Atlantic, week of 2026-04-06: not reportable (restatement review).\nRestated: Mid-Atlantic BXA TRx for the week of 2026-04-06 was 692 when first reported and is now 742 (restated 2026-07-13; reason: synthetic late claims adjustment). Quote the new value with this note.\nKPIs: BXA TRx averaged 3,860 a week across 7 of 8 territories (like for like), down 4.7% against the weeks before.\nThe headline total of reportable cuts is down 19.5%, but that move comes mostly from withheld cuts, so it is a data artifact, not a business change.\nWeek over week, summed over reportable cuts: BXA TRx is 3,860 against 4,729 the week before (down 18.4%).\nOn the 7 territories that report both weeks, BXA TRx went from 4,005 to 3,860 (down 3.6%).\nStory one: competitor Metacora (launched 2026-03-02). This is a continuing story, week 5 since launch, still growing. Metacora held 6.4% of the four-brand basket and BXA held 33.7%, against 35.4% for BXA in the four weeks before launch. Confidence: Medium. The share loss is measured; its effect on volume is not separated from other drivers. Next: involve marketing and sales.\nConsidered and dropped: 7 territories moved within their normal range.",
+  "answer": "Brief for week of 2026-04-06. Product: BXA.\n## Bottom line\nData warning: Mid-Atlantic's feed for 2026-04-06 failed its checks, so its TRx is estimated from its recent share of national, an assumption. No story is given for it.\nData note: an earlier week was restated. The new value and the reason are in The numbers.\nProjected national BXA TRx is 4,571 for the week of 2026-04-06.\nLike for like on 7 of 8 territories, BXA TRx is down 4.7% against the four weeks before.\nBXA held 33.7% of the four-brand market basket.\nLeast sure: Mid-Atlantic's TRx of 711 is an assumption, estimated from its recent share of national, because its feed failed its checks.\n## The numbers\nProjected national BXA TRx for the week of 2026-04-06: 4,571.\nBy territory, observed unless marked; a projected or estimated level is an assumption, not an observed count:\n- Great Lakes: 503\n- Mid-Atlantic: 711 (estimated, an assumption: its share of national in the four clean weeks before; its feed failed the gate)\n- Mountain: 346\n- New England: 422\n- Northwest: 380\n- Pacific: 728\n- South Central: 752\n- Southeast: 729\nKPIs: BXA TRx averaged 3,860 a week across 7 of 8 territories (like for like), down 4.7% against the weeks before.\nThe headline total of reportable cuts is down 19.5%, but that move comes mostly from withheld cuts, so it is a data artifact, not a business change.\nWeek over week, summed over reportable cuts: BXA TRx is 3,860 against 4,729 the week before (down 18.4%).\nOn the 7 territories that report both weeks, BXA TRx went from 4,005 to 3,860 (down 3.6%).\nRestated: Mid-Atlantic BXA TRx for the week of 2026-04-06 was 692 when first reported and is now 742 (restated 2026-07-13; reason: synthetic late claims adjustment). Quote the new value with this note.\n## What changed and why\nStory one: competitor Metacora (launched 2026-03-02). This is a continuing story, week 5 since launch, still growing. Metacora held 6.4% of the four-brand basket and BXA held 33.7%, against 35.4% for BXA in the four weeks before launch. Confidence: Medium. The share loss is measured; its effect on volume is not separated from other drivers.\nConsidered and dropped: 7 territories moved within their normal range.\n## What the data can't tell us\nData health: 7 of 8 territories pass the feed gate for 2026-04-06. Withheld cuts are left out of every like-for-like figure and story, and never read as zero demand:\n- Mid-Atlantic, week of 2026-04-06: not reportable (restatement review).\nMid-Atlantic is estimated from its share of national in the four latest weeks in which every territory passed the gate, because the cut failed for reasons that make its own count unusable (restatement review).\nAssumption: a projected or estimated level is not an observed count, so the projected national rests on it. It is a level only: no story or driver is given for it.\n## Next checks\n- Mid-Atlantic, week of 2026-04-06: re-run when the corrected feed lands, and disclose the restated week. Owner: the data vendor and commercial analytics. Unlocks: whether the restated week changes any figure already reported.\n- Metacora: track the basket shares each week. Owner: marketing and sales. Unlocks: whether to adjust the response to Metacora.\n## Appendix\nMethod: like-for-like figures use only territories whose feed passed the gate in every week compared. The projected national divides each territory's observed TRx by its panel coverage, and estimates a territory that cannot be read from its recent share of national. Changes, stories and drivers use like-for-like cuts only.\nData version 47bcfd650564. Product: BXA (Cardiovela), synthetic data.\nGlossary:\n- Like for like: a comparison that uses only territories whose feed passed its checks in every week compared.\n- Panel coverage: the share of a territory's expected prescription records that arrived in a given week.\n- Projected national: national TRx built territory by territory, each territory's observed TRx divided by its panel coverage, summed.\n- Estimated territory: a territory whose coverage is too low to project, or whose count failed its checks, filled from its own recent share of national and labelled as estimated, an assumption.\n- Withheld cut: a territory or week whose data failed its checks, so no story or driver is given for it.",
   "claims": [
    {
     "value": "7",
@@ -1283,24 +1771,76 @@
     "evidence_id": "e16"
    },
    {
-    "value": "5",
+    "value": "4,571",
     "evidence_id": "e17"
    },
    {
-    "value": "6.4%",
+    "value": "503",
     "evidence_id": "e18"
    },
    {
-    "value": "33.7%",
+    "value": "711",
     "evidence_id": "e19"
    },
    {
-    "value": "35.4%",
+    "value": "346",
     "evidence_id": "e20"
    },
    {
-    "value": "7",
+    "value": "422",
     "evidence_id": "e21"
+   },
+   {
+    "value": "380",
+    "evidence_id": "e22"
+   },
+   {
+    "value": "728",
+    "evidence_id": "e23"
+   },
+   {
+    "value": "752",
+    "evidence_id": "e24"
+   },
+   {
+    "value": "729",
+    "evidence_id": "e25"
+   },
+   {
+    "value": "5",
+    "evidence_id": "e26"
+   },
+   {
+    "value": "6.4%",
+    "evidence_id": "e27"
+   },
+   {
+    "value": "33.7%",
+    "evidence_id": "e28"
+   },
+   {
+    "value": "35.4%",
+    "evidence_id": "e29"
+   },
+   {
+    "value": "7",
+    "evidence_id": "e30"
+   },
+   {
+    "value": "7",
+    "evidence_id": "e5"
+   },
+   {
+    "value": "8",
+    "evidence_id": "e7"
+   },
+   {
+    "value": "4.7%",
+    "evidence_id": "e8"
+   },
+   {
+    "value": "33.7%",
+    "evidence_id": "e28"
    }
   ],
   "evidence": [
@@ -1312,7 +1852,7 @@
     },
     "query": "select count(*) from reporting.v_feed_health where week_start = DATE '2026-04-06' and health_status = 'PASS'",
     "result": 7.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e2",
@@ -1322,7 +1862,7 @@
     },
     "query": "select count(*) from reporting.v_feed_health where week_start = DATE '2026-04-06'",
     "result": 8.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e3",
@@ -1333,7 +1873,7 @@
     },
     "query": "select sum(trx_prior) from raw.restatement_log where product_id = 'BXA' and week_start = DATE '2026-04-06' and territory_id = 'MID_ATLANTIC'",
     "result": 692.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e4",
@@ -1344,7 +1884,7 @@
     },
     "query": "select sum(trx_revised) from raw.restatement_log where product_id = 'BXA' and week_start = DATE '2026-04-06' and territory_id = 'MID_ATLANTIC'",
     "result": 742.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e5",
@@ -1352,7 +1892,7 @@
     "params": {},
     "query": "select count(distinct territory_id) from reporting.v_reportable_rx where week_start in (DATE '2026-04-06') and territory_id in ('GREAT_LAKES','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')",
     "result": 7.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e6",
@@ -1362,7 +1902,7 @@
     },
     "query": "select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-04-06') and territory_id in ('GREAT_LAKES','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 1.0",
     "result": 3860.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e7",
@@ -1370,7 +1910,7 @@
     "params": {},
     "query": "select count(*) from raw.dim_territory",
     "result": 8.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e8",
@@ -1380,7 +1920,7 @@
     },
     "query": "select 100.0 * ((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-04-06') and territory_id in ('GREAT_LAKES','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 1.0) / nullif((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-03-09',DATE '2026-03-16',DATE '2026-03-23',DATE '2026-03-30') and territory_id in ('GREAT_LAKES','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 4.0), 0) - 1)",
     "result": -4.685474412000746,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e9",
@@ -1390,7 +1930,7 @@
     },
     "query": "select 100.0 * ((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-04-06')) / 1.0) / nullif((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-03-09',DATE '2026-03-16',DATE '2026-03-23',DATE '2026-03-30')) / 4.0), 0) - 1)",
     "result": -19.503675512225637,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e10",
@@ -1400,7 +1940,7 @@
     },
     "query": "select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-04-06')",
     "result": 3860.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e11",
@@ -1410,7 +1950,7 @@
     },
     "query": "select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-03-30')",
     "result": 4729.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e12",
@@ -1420,7 +1960,7 @@
     },
     "query": "select 100.0 * ((select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-04-06')) / nullif((select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-03-30')), 0) - 1)",
     "result": -18.37597800803552,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e13",
@@ -1430,7 +1970,7 @@
     },
     "query": "select count(distinct territory_id) from reporting.v_reportable_rx where week_start = DATE '2026-04-06' and territory_id in ('GREAT_LAKES','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')",
     "result": 7.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e14",
@@ -1441,7 +1981,7 @@
     },
     "query": "select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-03-30') and territory_id in ('GREAT_LAKES','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')",
     "result": 4005.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e15",
@@ -1452,7 +1992,7 @@
     },
     "query": "select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-04-06') and territory_id in ('GREAT_LAKES','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')",
     "result": 3860.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e16",
@@ -1462,38 +2002,136 @@
     },
     "query": "select 100.0 * ((select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-04-06') and territory_id in ('GREAT_LAKES','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / nullif((select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2026-03-30') and territory_id in ('GREAT_LAKES','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')), 0) - 1)",
     "result": -3.6204744069912587,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e17",
+    "tool": "project_national",
+    "params": {
+     "scope": "projected national"
+    },
+    "query": "with wk as (select unnest([DATE '2026-04-06']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(national) from nat",
+    "result": 4570.569788258535,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e18",
+    "tool": "project_national",
+    "params": {
+     "territory": "GREAT_LAKES",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2026-04-06']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'GREAT_LAKES'",
+    "result": 503.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e19",
+    "tool": "project_national",
+    "params": {
+     "territory": "MID_ATLANTIC",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2026-04-06']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'MID_ATLANTIC'",
+    "result": 710.5697882585346,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e20",
+    "tool": "project_national",
+    "params": {
+     "territory": "MOUNTAIN",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2026-04-06']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'MOUNTAIN'",
+    "result": 346.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e21",
+    "tool": "project_national",
+    "params": {
+     "territory": "NEW_ENGLAND",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2026-04-06']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'NEW_ENGLAND'",
+    "result": 422.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e22",
+    "tool": "project_national",
+    "params": {
+     "territory": "NORTHWEST",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2026-04-06']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'NORTHWEST'",
+    "result": 380.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e23",
+    "tool": "project_national",
+    "params": {
+     "territory": "PACIFIC",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2026-04-06']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'PACIFIC'",
+    "result": 728.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e24",
+    "tool": "project_national",
+    "params": {
+     "territory": "SOUTH_CENTRAL",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2026-04-06']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'SOUTH_CENTRAL'",
+    "result": 752.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e25",
+    "tool": "project_national",
+    "params": {
+     "territory": "SOUTHEAST",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2026-04-06']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'SOUTHEAST'",
+    "result": 729.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e26",
     "tool": "compare_competitors",
     "params": {},
     "query": "select datediff('week', DATE '2026-03-02', week_start) from raw.calendar where week_start = DATE '2026-04-06'",
     "result": 5.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
-    "id": "e18",
+    "id": "e27",
     "tool": "compare_competitors",
     "params": {
      "product": "BXE"
     },
     "query": "select 100.0 * sum(trx) filter (where product_id = 'BXE') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-04-06')",
     "result": 6.41249345663933,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
-    "id": "e19",
+    "id": "e28",
     "tool": "compare_competitors",
     "params": {
      "product": "BXA"
     },
     "query": "select 100.0 * sum(trx) filter (where product_id = 'BXA') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-04-06')",
     "result": 33.676496248473214,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
-    "id": "e20",
+    "id": "e29",
     "tool": "compare_competitors",
     "params": {
      "product": "BXA",
@@ -1501,23 +2139,23 @@
     },
     "query": "select 100.0 * sum(trx) filter (where product_id = 'BXA') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2026-02-02',DATE '2026-02-09',DATE '2026-02-16',DATE '2026-02-23')",
     "result": 35.40138186480519,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
-    "id": "e21",
+    "id": "e30",
     "tool": "detect_changes",
     "params": {
      "scope": "territories with no material change"
     },
     "query": "select count(distinct territory_id) from reporting.v_reportable_rx where week_start in (DATE '2026-04-06') and territory_id in ('GREAT_LAKES','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')",
     "result": 7.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    }
   ],
   "abstained": false
  },
  "Week of 2025-04-21: Generate the weekly brand-performance briefing.": {
-  "answer": "Brief for week of 2025-04-21. Data version 06bcba77fbe1. Product: BXA. Territory questions use only cuts that pass the feed gate.\nData health: 8 of 8 territories pass the feed gate for 2025-04-21. No cut is withheld.\nKPIs: BXA TRx averaged 4,822 a week across 8 of 8 territories (like for like), flat 0.2% against the weeks before.\nWeek over week, summed over reportable cuts: BXA TRx is 4,822 against 4,749 the week before (up 1.5%).\nRoutine week. No material change was found, and territory swings stayed in their normal range.",
+  "answer": "Brief for week of 2025-04-21. Product: BXA.\n## Bottom line\nProjected national BXA TRx is 4,822 for the week of 2025-04-21.\nLike for like on 8 of 8 territories, BXA TRx is flat 0.2% against the four weeks before.\nBXA held 35.7% of the four-brand market basket.\nLeast sure: the week-over-week change (up 1.5%), because it compares one week with one week.\n## The numbers\nProjected national BXA TRx for the week of 2025-04-21: 4,822.\nBy territory, all observed:\n- Great Lakes: 697\n- Mid-Atlantic: 732\n- Mountain: 353\n- New England: 464\n- Northwest: 414\n- Pacific: 829\n- South Central: 703\n- Southeast: 630\nKPIs: BXA TRx averaged 4,822 a week across 8 of 8 territories (like for like), flat 0.2% against the weeks before.\nWeek over week, summed over reportable cuts: BXA TRx is 4,822 against 4,749 the week before (up 1.5%).\n## What changed and why\nRoutine week. No material change was found, and territory swings stayed in their normal range.\n## What the data can't tell us\nData health: 8 of 8 territories pass the feed gate for 2025-04-21. No cut is withheld.\n## Next checks\nNo check is open.\n## Appendix\nMethod: like-for-like figures use only territories whose feed passed the gate in every week compared. The projected national divides each territory's observed TRx by its panel coverage, and estimates a territory that cannot be read from its recent share of national. Changes, stories and drivers use like-for-like cuts only.\nData version 47bcfd650564. Product: BXA (Cardiovela), synthetic data.\nGlossary:\n- Like for like: a comparison that uses only territories whose feed passed its checks in every week compared.\n- Panel coverage: the share of a territory's expected prescription records that arrived in a given week.\n- Projected national: national TRx built territory by territory, each territory's observed TRx divided by its panel coverage, summed.",
   "claims": [
    {
     "value": "8",
@@ -1554,6 +2192,62 @@
    {
     "value": "1.5%",
     "evidence_id": "e9"
+   },
+   {
+    "value": "4,822",
+    "evidence_id": "e10"
+   },
+   {
+    "value": "697",
+    "evidence_id": "e11"
+   },
+   {
+    "value": "732",
+    "evidence_id": "e12"
+   },
+   {
+    "value": "353",
+    "evidence_id": "e13"
+   },
+   {
+    "value": "464",
+    "evidence_id": "e14"
+   },
+   {
+    "value": "414",
+    "evidence_id": "e15"
+   },
+   {
+    "value": "829",
+    "evidence_id": "e16"
+   },
+   {
+    "value": "703",
+    "evidence_id": "e17"
+   },
+   {
+    "value": "630",
+    "evidence_id": "e18"
+   },
+   {
+    "value": "8",
+    "evidence_id": "e3"
+   },
+   {
+    "value": "8",
+    "evidence_id": "e5"
+   },
+   {
+    "value": "0.2%",
+    "evidence_id": "e6"
+   },
+   {
+    "value": "35.7%",
+    "evidence_id": "e19"
+   },
+   {
+    "value": "1.5%",
+    "evidence_id": "e9"
    }
   ],
   "evidence": [
@@ -1565,7 +2259,7 @@
     },
     "query": "select count(*) from reporting.v_feed_health where week_start = DATE '2025-04-21' and health_status = 'PASS'",
     "result": 8.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e2",
@@ -1575,7 +2269,7 @@
     },
     "query": "select count(*) from reporting.v_feed_health where week_start = DATE '2025-04-21'",
     "result": 8.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e3",
@@ -1583,7 +2277,7 @@
     "params": {},
     "query": "select count(distinct territory_id) from reporting.v_reportable_rx where week_start in (DATE '2025-04-21') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')",
     "result": 8.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e4",
@@ -1593,7 +2287,7 @@
     },
     "query": "select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2025-04-21') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 1.0",
     "result": 4822.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e5",
@@ -1601,7 +2295,7 @@
     "params": {},
     "query": "select count(*) from raw.dim_territory",
     "result": 8.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e6",
@@ -1611,7 +2305,7 @@
     },
     "query": "select 100.0 * ((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2025-04-21') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 1.0) / nullif((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2025-03-24',DATE '2025-03-31',DATE '2025-04-07',DATE '2025-04-14') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 4.0), 0) - 1)",
     "result": -0.16563146997929934,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e7",
@@ -1621,7 +2315,7 @@
     },
     "query": "select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2025-04-21')",
     "result": 4822.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e8",
@@ -1631,7 +2325,7 @@
     },
     "query": "select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2025-04-14')",
     "result": 4749.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e9",
@@ -1641,13 +2335,121 @@
     },
     "query": "select 100.0 * ((select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2025-04-21')) / nullif((select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2025-04-14')), 0) - 1)",
     "result": 1.5371657190987653,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e10",
+    "tool": "project_national",
+    "params": {
+     "scope": "projected national"
+    },
+    "query": "with wk as (select unnest([DATE '2025-04-21']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(national) from nat",
+    "result": 4822.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e11",
+    "tool": "project_national",
+    "params": {
+     "territory": "GREAT_LAKES",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2025-04-21']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'GREAT_LAKES'",
+    "result": 697.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e12",
+    "tool": "project_national",
+    "params": {
+     "territory": "MID_ATLANTIC",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2025-04-21']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'MID_ATLANTIC'",
+    "result": 732.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e13",
+    "tool": "project_national",
+    "params": {
+     "territory": "MOUNTAIN",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2025-04-21']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'MOUNTAIN'",
+    "result": 353.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e14",
+    "tool": "project_national",
+    "params": {
+     "territory": "NEW_ENGLAND",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2025-04-21']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'NEW_ENGLAND'",
+    "result": 464.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e15",
+    "tool": "project_national",
+    "params": {
+     "territory": "NORTHWEST",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2025-04-21']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'NORTHWEST'",
+    "result": 414.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e16",
+    "tool": "project_national",
+    "params": {
+     "territory": "PACIFIC",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2025-04-21']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'PACIFIC'",
+    "result": 829.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e17",
+    "tool": "project_national",
+    "params": {
+     "territory": "SOUTH_CENTRAL",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2025-04-21']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'SOUTH_CENTRAL'",
+    "result": 703.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e18",
+    "tool": "project_national",
+    "params": {
+     "territory": "SOUTHEAST",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2025-04-21']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'SOUTHEAST'",
+    "result": 630.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e19",
+    "tool": "compare_competitors",
+    "params": {
+     "product": "BXA"
+    },
+    "query": "select 100.0 * sum(trx) filter (where product_id = 'BXA') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2025-04-21')",
+    "result": 35.68679692125518,
+    "data_version": "47bcfd650564"
    }
   ],
   "abstained": false
  },
  "Week of 2025-12-29: Generate the weekly brand-performance briefing.": {
-  "answer": "Brief for week of 2025-12-29. Data version 06bcba77fbe1. Product: BXA. Territory questions use only cuts that pass the feed gate.\nData health: 8 of 8 territories pass the feed gate for 2025-12-29. No cut is withheld.\nKPIs: BXA TRx averaged 4,188 a week across 8 of 8 territories (like for like), down 19.0% against the weeks before.\nWeek over week, summed over reportable cuts: BXA TRx is 4,188 against 4,309 the week before (down 2.8%).\nCalendar effect: the week of 2025-12-29 is new year week with 4 business days, so a lower volume is expected.\nThe same weeks a year earlier were down 18.2%. This is a calendar effect, not a business event.\nNo story is opened for a calendar week. Expect a rebound in the next regular week.",
+  "answer": "Brief for week of 2025-12-29. Product: BXA.\n## Bottom line\nProjected national BXA TRx is 4,188 for the week of 2025-12-29.\nLike for like on 8 of 8 territories, BXA TRx is down 19.0% against the four weeks before.\nBXA held 37.0% of the four-brand market basket.\nLeast sure: the week-over-week change (down 2.8%), because it compares one week with one week.\n## The numbers\nProjected national BXA TRx for the week of 2025-12-29: 4,188.\nBy territory, all observed:\n- Great Lakes: 630\n- Mid-Atlantic: 648\n- Mountain: 352\n- New England: 344\n- Northwest: 370\n- Pacific: 627\n- South Central: 580\n- Southeast: 637\nKPIs: BXA TRx averaged 4,188 a week across 8 of 8 territories (like for like), down 19.0% against the weeks before.\nWeek over week, summed over reportable cuts: BXA TRx is 4,188 against 4,309 the week before (down 2.8%).\nCalendar effect: the week of 2025-12-29 is new year week with 4 business days, so a lower volume is expected.\nThe same weeks a year earlier were down 18.2%. This is a calendar effect, not a business event.\n## What changed and why\nNo story is opened for a calendar week. Expect a rebound in the next regular week.\n## What the data can't tell us\nData health: 8 of 8 territories pass the feed gate for 2025-12-29. No cut is withheld.\n## Next checks\nNo check is open.\n## Appendix\nMethod: like-for-like figures use only territories whose feed passed the gate in every week compared. The projected national divides each territory's observed TRx by its panel coverage, and estimates a territory that cannot be read from its recent share of national. Changes, stories and drivers use like-for-like cuts only.\nData version 47bcfd650564. Product: BXA (Cardiovela), synthetic data.\nGlossary:\n- Like for like: a comparison that uses only territories whose feed passed its checks in every week compared.\n- Panel coverage: the share of a territory's expected prescription records that arrived in a given week.\n- Projected national: national TRx built territory by territory, each territory's observed TRx divided by its panel coverage, summed.",
   "claims": [
    {
     "value": "8",
@@ -1692,6 +2494,62 @@
    {
     "value": "18.2%",
     "evidence_id": "e11"
+   },
+   {
+    "value": "4,188",
+    "evidence_id": "e12"
+   },
+   {
+    "value": "630",
+    "evidence_id": "e13"
+   },
+   {
+    "value": "648",
+    "evidence_id": "e14"
+   },
+   {
+    "value": "352",
+    "evidence_id": "e15"
+   },
+   {
+    "value": "344",
+    "evidence_id": "e16"
+   },
+   {
+    "value": "370",
+    "evidence_id": "e17"
+   },
+   {
+    "value": "627",
+    "evidence_id": "e18"
+   },
+   {
+    "value": "580",
+    "evidence_id": "e19"
+   },
+   {
+    "value": "637",
+    "evidence_id": "e20"
+   },
+   {
+    "value": "8",
+    "evidence_id": "e3"
+   },
+   {
+    "value": "8",
+    "evidence_id": "e5"
+   },
+   {
+    "value": "19.0%",
+    "evidence_id": "e6"
+   },
+   {
+    "value": "37.0%",
+    "evidence_id": "e21"
+   },
+   {
+    "value": "2.8%",
+    "evidence_id": "e9"
    }
   ],
   "evidence": [
@@ -1703,7 +2561,7 @@
     },
     "query": "select count(*) from reporting.v_feed_health where week_start = DATE '2025-12-29' and health_status = 'PASS'",
     "result": 8.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e2",
@@ -1713,7 +2571,7 @@
     },
     "query": "select count(*) from reporting.v_feed_health where week_start = DATE '2025-12-29'",
     "result": 8.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e3",
@@ -1721,7 +2579,7 @@
     "params": {},
     "query": "select count(distinct territory_id) from reporting.v_reportable_rx where week_start in (DATE '2025-12-29') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')",
     "result": 8.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e4",
@@ -1731,7 +2589,7 @@
     },
     "query": "select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2025-12-29') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 1.0",
     "result": 4188.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e5",
@@ -1739,7 +2597,7 @@
     "params": {},
     "query": "select count(*) from raw.dim_territory",
     "result": 8.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e6",
@@ -1749,7 +2607,7 @@
     },
     "query": "select 100.0 * ((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2025-12-29') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 1.0) / nullif((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2025-12-01',DATE '2025-12-08',DATE '2025-12-15',DATE '2025-12-22') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 4.0), 0) - 1)",
     "result": -19.01377810007252,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e7",
@@ -1759,7 +2617,7 @@
     },
     "query": "select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2025-12-29')",
     "result": 4188.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e8",
@@ -1769,7 +2627,7 @@
     },
     "query": "select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2025-12-22')",
     "result": 4309.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e9",
@@ -1779,7 +2637,7 @@
     },
     "query": "select 100.0 * ((select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2025-12-29')) / nullif((select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2025-12-22')), 0) - 1)",
     "result": -2.8080761197493587,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e10",
@@ -1789,7 +2647,7 @@
     },
     "query": "select business_days from raw.calendar where week_start = DATE '2025-12-29'",
     "result": 4.0,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
    },
    {
     "id": "e11",
@@ -1799,7 +2657,115 @@
     },
     "query": "select 100.0 * ((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2024-12-30') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 1.0) / nullif((select (select coalesce(sum(trx),0) from reporting.v_reportable_rx where product_id = 'BXA' and week_start in (DATE '2024-12-02',DATE '2024-12-09',DATE '2024-12-16',DATE '2024-12-23') and territory_id in ('GREAT_LAKES','MID_ATLANTIC','MOUNTAIN','NEW_ENGLAND','NORTHWEST','PACIFIC','SOUTHEAST','SOUTH_CENTRAL')) / 4.0), 0) - 1)",
     "result": -18.168842839773745,
-    "data_version": "06bcba77fbe1"
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e12",
+    "tool": "project_national",
+    "params": {
+     "scope": "projected national"
+    },
+    "query": "with wk as (select unnest([DATE '2025-12-29']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(national) from nat",
+    "result": 4188.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e13",
+    "tool": "project_national",
+    "params": {
+     "territory": "GREAT_LAKES",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2025-12-29']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'GREAT_LAKES'",
+    "result": 630.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e14",
+    "tool": "project_national",
+    "params": {
+     "territory": "MID_ATLANTIC",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2025-12-29']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'MID_ATLANTIC'",
+    "result": 648.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e15",
+    "tool": "project_national",
+    "params": {
+     "territory": "MOUNTAIN",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2025-12-29']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'MOUNTAIN'",
+    "result": 352.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e16",
+    "tool": "project_national",
+    "params": {
+     "territory": "NEW_ENGLAND",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2025-12-29']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'NEW_ENGLAND'",
+    "result": 344.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e17",
+    "tool": "project_national",
+    "params": {
+     "territory": "NORTHWEST",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2025-12-29']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'NORTHWEST'",
+    "result": 370.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e18",
+    "tool": "project_national",
+    "params": {
+     "territory": "PACIFIC",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2025-12-29']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'PACIFIC'",
+    "result": 627.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e19",
+    "tool": "project_national",
+    "params": {
+     "territory": "SOUTH_CENTRAL",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2025-12-29']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'SOUTH_CENTRAL'",
+    "result": 580.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e20",
+    "tool": "project_national",
+    "params": {
+     "territory": "SOUTHEAST",
+     "scope": "projected"
+    },
+    "query": "with wk as (select unnest([DATE '2025-12-29']) as week_start), cut as (select p.week_start, p.territory_id, p.basis, p.projected_trx from reporting.v_rx_projection p join wk using (week_start) where p.product_id = 'BXA'), clean as (select wk.week_start as target, c.week_start from wk join raw.calendar c on c.week_start < wk.week_start where c.holiday_flag = 0 and c.plan_year_reset = 0 and not exists (select 1 from reporting.v_feed_health h where h.week_start = c.week_start and h.health_status <> 'PASS') qualify row_number() over (partition by wk.week_start order by c.week_start desc) <= 4), share as (select cl.target, r.territory_id, sum(r.trx) / sum(sum(r.trx)) over (partition by cl.target) as s from clean cl join reporting.v_reportable_rx r on r.week_start = cl.week_start and r.product_id = 'BXA' group by 1, 2), nat as (select c.week_start, sum(c.projected_trx) filter (where c.basis <> 'estimated') / (1 - coalesce(sum(s.s) filter (where c.basis = 'estimated'), 0)) as national from cut c left join share s on s.target = c.week_start and s.territory_id = c.territory_id group by 1 having count(*) filter (where c.basis <> 'estimated') > 0) select avg(case when c.basis = 'estimated' then s.s * n.national else c.projected_trx end) from cut c join nat n using (week_start) left join share s on s.target = c.week_start and s.territory_id = c.territory_id where c.territory_id = 'SOUTHEAST'",
+    "result": 637.0,
+    "data_version": "47bcfd650564"
+   },
+   {
+    "id": "e21",
+    "tool": "compare_competitors",
+    "params": {
+     "product": "BXA"
+    },
+    "query": "select 100.0 * sum(trx) filter (where product_id = 'BXA') / nullif(sum(trx), 0) from reporting.v_reportable_rx where week_start in (DATE '2025-12-29')",
+    "result": 36.95402805964881,
+    "data_version": "47bcfd650564"
    }
   ],
   "abstained": false
