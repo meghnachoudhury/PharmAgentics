@@ -147,7 +147,8 @@ def get_region_deltas(week: int, case_id: str = "week18", window_weeks: int = 1)
     }
     deltas = []
     for region, row in current.items():
-        base = baseline[region]
+        # Early in the release the baseline week has no row: say there is no baseline instead of failing the run.
+        base_actual = (baseline.get(region) or {}).get("actual")
         deltas.append(
             {
                 "region": region,
@@ -155,8 +156,8 @@ def get_region_deltas(week: int, case_id: str = "week18", window_weeks: int = 1)
                 "actual": row["actual"],
                 "variance_trx": row["actual"] - row["forecast"],
                 "baseline_week": baseline_week,
-                "baseline_actual": base["actual"],
-                "delta_vs_baseline": row["actual"] - base["actual"] * window_weeks,
+                "baseline_actual": base_actual,
+                "delta_vs_baseline": None if base_actual is None else row["actual"] - base_actual * window_weeks,
             }
         )
     payload = {
