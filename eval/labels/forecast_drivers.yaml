@@ -1,0 +1,83 @@
+# Driver-recovery probes for the Forecast lane (fcst-001). DRAFT until Alvin and Sienna confirm them.
+# Source: docs/planning/user-stories.md ("What the data shows": five business events with a visible driver,
+# one gap with none; the rest of the release is quiet). Not the private answer key: no magnitudes, only which
+# driver acts on which territory and weeks. Each probe asks the system to explain the miss in that window;
+# `expect` is the set of drivers a good answer accepts there (competitor = the Metacora launch, broad).
+status: draft
+probes:
+  - id: ma-access-2025
+    territory: MID_ATLANTIC
+    weeks: [2025-08-04, 2025-10-27]
+    expect: [access]
+    source: user-stories CA-Q5
+  - id: gl-promotion-2026
+    territory: GREAT_LAKES
+    weeks: [2026-02-02, 2026-04-06]
+    expect: [promotion, competitor]
+    source: user-stories P4-Q1, FM-Q4 (overlaps the launch from 2026-03-02)
+  - id: pacific-supply-2026
+    territory: PACIFIC
+    weeks: [2026-06-01, 2026-06-29]
+    expect: [supply, competitor]
+    source: user-stories CA-Q4
+  - id: se-promotion-2026
+    territory: SOUTHEAST
+    weeks: [2026-08-03, 2026-08-31]
+    expect: [promotion, competitor]
+    source: user-stories BM-Q2, BM-Q3
+  - id: national-launch-2026
+    territory: NATIONAL
+    weeks: [2026-04-06, 2026-05-25]
+    expect: [competitor]
+    source: user-stories FM-Q2, FM-Q5 (no local episode in these weeks)
+  - id: sc-gap-2026
+    territory: SOUTH_CENTRAL
+    weeks: [2026-08-31, 2026-09-28]
+    expect: [competitor]
+    source: user-stories FM-Q3 (a gap with no visible driver; only the broad launch applies)
+  - id: quiet-mountain-2025
+    territory: MOUNTAIN
+    weeks: [2025-01-06, 2025-03-31]
+    expect: []
+    source: no event in the user stories
+  - id: quiet-northwest-2025
+    territory: NORTHWEST
+    weeks: [2025-04-07, 2025-06-30]
+    expect: []
+    source: no event in the user stories
+  - id: quiet-national-2024
+    territory: NATIONAL
+    weeks: [2024-11-04, 2025-01-27]
+    expect: []
+    source: no event in the user stories (holiday weeks only, which the forecast models)
+  - id: quiet-southeast-2025
+    territory: SOUTHEAST
+    weeks: [2025-09-01, 2025-11-24]
+    expect: []
+    source: no event in the user stories
+  # Harder probes: windows that straddle an episode, provisional weeks, a contaminated control, a reversal.
+  - id: se-straddle-2026
+    territory: SOUTHEAST
+    weeks: [2026-07-06, 2026-09-28]
+    expect: [promotion, competitor]
+    source: user-stories BM-Q1 (the lapse is five of these thirteen weeks; one week is provisional)
+  - id: pacific-straddle-2026
+    territory: PACIFIC
+    weeks: [2026-05-04, 2026-07-27]
+    expect: [supply, competitor]
+    source: user-stories CA-Q4 (the shortfall is five of these thirteen weeks; two weeks are provisional)
+  - id: ne-contaminated-2026
+    territory: NEW_ENGLAND
+    weeks: [2026-06-01, 2026-06-29]
+    expect: [competitor]
+    source: user-stories FM-Q4 (Pacific's shortfall makes New England look better than its peers; no local driver)
+  - id: national-summer-2026
+    territory: NATIONAL
+    weeks: [2026-06-01, 2026-08-31]
+    expect: [competitor]
+    source: user-stories FM-Q2 (local episodes sit inside; the broad driver is the launch)
+  - id: ma-after-easing-2025
+    territory: MID_ATLANTIC
+    weeks: [2025-11-03, 2026-01-26]
+    expect: []
+    source: user-stories CA-Q5 (the plan restriction was eased in November; access back to normal is not a driver)

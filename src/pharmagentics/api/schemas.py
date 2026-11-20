@@ -148,6 +148,33 @@ class ForecastRunRequest(BaseModel):
     view: Literal["analyst", "leadership"] | None = None
 
 
+class ForecastAsk(BaseModel):
+    """A question for the Forecast agent (fcst-001). The scope card's edits may override the parsed territory and
+    weeks. The engine and model are fixed by the server, never by the caller."""
+    model_config = ConfigDict(extra="forbid")
+
+    question: str = Field(min_length=3, max_length=400)
+    territory_id: Territory | None = None
+    week_from: date | None = None
+    week_to: date | None = None
+    view: Literal["analyst", "leadership"] | None = None
+
+    @field_validator("question")
+    @classmethod
+    def tidy(cls, value: str) -> str:
+        value = " ".join(value.split())
+        if len(value) < 3:
+            raise ValueError("Ask a question of at least three characters.")
+        return value
+
+
+class ForecastFollowup(BaseModel):
+    """A follow-up question on one finished Forecast question run."""
+    model_config = ConfigDict(extra="forbid")
+
+    question: str = Field(min_length=3, max_length=300)
+
+
 class ForecastReview(BaseModel):
     """The Brand Manager's decision on a submitted Forecast run. Rejecting or returning needs a note."""
     model_config = ConfigDict(extra="forbid")

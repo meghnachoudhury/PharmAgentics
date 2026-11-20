@@ -59,7 +59,10 @@ def analyst(record: dict) -> dict:
 
 # Forecast leadership view: an executive summary. No stage trace, evidence, tool calls or check detail.
 FORECAST_LEADERSHIP_REPORT = ("headline", "brand", "territory_id", "week", "week_ending", "window_weeks", "forecast_trx",
-                              "actual_trx", "variance_trx", "variance_pct", "residual_trx", "caveats", "abstained")
+                              "actual_trx", "variance_trx", "variance_pct", "residual_trx", "caveats", "abstained",
+                              "question", "intent", "summary", "week_start", "bias_trx", "out_of_scope")
+# Sections of a question run a leader may read: no data forensics, decision log, comparisons or audit trail.
+FORECAST_LEADERSHIP_SECTIONS = {"summary", "miss", "where", "screen", "attribution", "unknowns", "checks", "assumptions"}
 
 
 def forecast_leadership(run: dict) -> dict:
@@ -67,7 +70,10 @@ def forecast_leadership(run: dict) -> dict:
     report = run["report"]
     out = {k: run.get(k) for k in ("run_id", "lane", "workflow_status", "dataset_release")}
     out["report"] = {k: report.get(k) for k in FORECAST_LEADERSHIP_REPORT}
-    out["report"]["drivers"] = [{k: d.get(k) for k in ("driver", "impact_trx", "confidence")} for d in report["drivers"]]
+    out["report"]["drivers"] = [{k: d[k] for k in ("driver", "label", "impact_trx", "confidence") if k in d} for d in report["drivers"]]
+    if "sections" in report:
+        out["report"]["sections"] = [{k: x[k] for k in ("id", "title", "text")} for x in report["sections"]
+                                     if x["id"] in FORECAST_LEADERSHIP_SECTIONS]
     out["report"]["what_to_check"] = [{k: c.get(k) for k in ("question", "why", "owner")} for c in report["what_to_check"]]
     out["report"]["verification"] = {"verdict": (report.get("verification") or {}).get("verdict")}
     return out
@@ -77,19 +83,24 @@ def forecast_record(record: dict, view: str) -> dict:
     """A stored Forecast run for one view, with its review state. The analyst also sees who did what (pseudonyms)."""
     narrative = record.get("narrative")
     out = {"view": view, "forecast_run_id": record["run_id"], "review_status": record["review_status"],
+           "kind": record.get("kind", "form"), "job_status": record.get("job_status", "done"),
            "reviewed_at": record["reviewed_at"], "review_note": record["review_note"],
            "report_model": record.get("report_model", "none"), "writer_status": record.get("writer_status", "skipped")}
     if view == "leadership":  # the writer's notes for the analyst never reach a leader
         leadership_narrative = {k: v for k, v in narrative.items() if k != "analyst_notes"} if narrative else None
         return {**out, "narrative": leadership_narrative, **forecast_leadership(record["result"])}
     return {**out, "narrative": narrative, "writer_attempts": record.get("writer_attempts", []),
+            "progress": record.get("progress", []), "job_error": record.get("job_error"),
+            "followups": record.get("followups", []), "parent_run_id": (record.get("request") or {}).get("parent"),
             "submitted_at": record["submitted_at"], "history": record["history"], **record["result"]}
 
 
 def forecast_summary(record: dict) -> dict:
     """One row of a list: enough to pick a run, no evidence."""
     report, request = record["result"]["report"], record["request"]
-    return {"forecast_run_id": record["run_id"], "territory_id": request["territory_id"], "week_start": request["week_start"],
-            "window_weeks": request["window_weeks"], "variance_trx": report["variance_trx"], "abstained": report["abstained"],
+    return {"forecast_run_id": record["run_id"], "territory_id": report.get("territory_id") or request.get("territory_id"),
+            "week_start": report.get("week_start") or request.get("week_start"),
+            "window_weeks": report.get("window_weeks") or request.get("window_weeks"), "question": request.get("question"),
+            "job_status": record.get("job_status", "done"), "variance_trx": report["variance_trx"], "abstained": report["abstained"],
             "headline": report["headline"], "review_status": record["review_status"], "created_at": record["created_at"],
             "reviewed_at": record["reviewed_at"]}

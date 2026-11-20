@@ -1,0 +1,389 @@
+{
+ "labels": "draft",
+ "systems": {
+  "forecast_rules": {
+   "run_id": "33a71505",
+   "model": null,
+   "exported": "2026-11-20T07:41+00:00",
+   "metrics": {
+    "driver_recall": 1.0,
+    "false_drivers": 0,
+    "exact_set_share": 1.0,
+    "probes": 15
+   },
+   "confusion": {
+    "access": {
+     "access": 1
+    },
+    "promotion": {
+     "promotion": 3
+    },
+    "supply": {
+     "supply": 2
+    },
+    "competitor": {
+     "competitor": 9
+    },
+    "none": {
+     "none": 5
+    }
+   },
+   "drivers": [
+    "access",
+    "promotion",
+    "supply",
+    "competitor",
+    "none"
+   ],
+   "probes": [
+    {
+     "id": "ma-access-2025",
+     "question": "Weeks of 2025-08-04 to 2025-10-27, Mid-Atlantic: What explains the miss?",
+     "expect": [
+      "access"
+     ],
+     "got": [
+      "access"
+     ],
+     "seconds": 0.6
+    },
+    {
+     "id": "gl-promotion-2026",
+     "question": "Weeks of 2026-02-02 to 2026-04-06, Great Lakes: What explains the miss?",
+     "expect": [
+      "promotion",
+      "competitor"
+     ],
+     "got": [
+      "competitor",
+      "promotion"
+     ],
+     "seconds": 1.4
+    },
+    {
+     "id": "pacific-supply-2026",
+     "question": "Weeks of 2026-06-01 to 2026-06-29, Pacific: What explains the miss?",
+     "expect": [
+      "supply",
+      "competitor"
+     ],
+     "got": [
+      "competitor",
+      "supply"
+     ],
+     "seconds": 0.5
+    },
+    {
+     "id": "se-promotion-2026",
+     "question": "Weeks of 2026-08-03 to 2026-08-31, Southeast: What explains the miss?",
+     "expect": [
+      "promotion",
+      "competitor"
+     ],
+     "got": [
+      "competitor",
+      "promotion"
+     ],
+     "seconds": 0.5
+    },
+    {
+     "id": "national-launch-2026",
+     "question": "Weeks of 2026-04-06 to 2026-05-25: What explains the miss?",
+     "expect": [
+      "competitor"
+     ],
+     "got": [
+      "competitor"
+     ],
+     "seconds": 0.9
+    },
+    {
+     "id": "sc-gap-2026",
+     "question": "Weeks of 2026-08-31 to 2026-09-28, South Central: What explains the miss?",
+     "expect": [
+      "competitor"
+     ],
+     "got": [
+      "competitor"
+     ],
+     "seconds": 0.8
+    },
+    {
+     "id": "quiet-mountain-2025",
+     "question": "Weeks of 2025-01-06 to 2025-03-31, Mountain: What explains the miss?",
+     "expect": [],
+     "got": [],
+     "seconds": 0.2
+    },
+    {
+     "id": "quiet-northwest-2025",
+     "question": "Weeks of 2025-04-07 to 2025-06-30, Northwest: What explains the miss?",
+     "expect": [],
+     "got": [],
+     "seconds": 0.1
+    },
+    {
+     "id": "quiet-national-2024",
+     "question": "Weeks of 2024-11-04 to 2025-01-27: What explains the miss?",
+     "expect": [],
+     "got": [],
+     "seconds": 0.1
+    },
+    {
+     "id": "quiet-southeast-2025",
+     "question": "Weeks of 2025-09-01 to 2025-11-24, Southeast: What explains the miss?",
+     "expect": [],
+     "got": [],
+     "seconds": 0.2
+    },
+    {
+     "id": "se-straddle-2026",
+     "question": "Weeks of 2026-07-06 to 2026-09-28, Southeast: What explains the miss?",
+     "expect": [
+      "promotion",
+      "competitor"
+     ],
+     "got": [
+      "competitor",
+      "promotion"
+     ],
+     "seconds": 0.7
+    },
+    {
+     "id": "pacific-straddle-2026",
+     "question": "Weeks of 2026-05-04 to 2026-07-27, Pacific: What explains the miss?",
+     "expect": [
+      "supply",
+      "competitor"
+     ],
+     "got": [
+      "competitor",
+      "supply"
+     ],
+     "seconds": 0.9
+    },
+    {
+     "id": "ne-contaminated-2026",
+     "question": "Weeks of 2026-06-01 to 2026-06-29, New England: What explains the miss?",
+     "expect": [
+      "competitor"
+     ],
+     "got": [
+      "competitor"
+     ],
+     "seconds": 1.0
+    },
+    {
+     "id": "national-summer-2026",
+     "question": "Weeks of 2026-06-01 to 2026-08-31: What explains the miss?",
+     "expect": [
+      "competitor"
+     ],
+     "got": [
+      "competitor"
+     ],
+     "seconds": 0.9
+    },
+    {
+     "id": "ma-after-easing-2025",
+     "question": "Weeks of 2025-11-03 to 2026-01-26, Mid-Atlantic: What explains the miss?",
+     "expect": [],
+     "got": [],
+     "seconds": 0.2
+    }
+   ]
+  },
+  "forecast_agent": {
+   "run_id": "5130d403",
+   "model": "ollama:qwen3:4b-instruct-2507-q4_K_M",
+   "exported": "2026-11-20T08:06+00:00",
+   "metrics": {
+    "driver_recall": 1.0,
+    "false_drivers": 0,
+    "exact_set_share": 1.0,
+    "probes": 15
+   },
+   "confusion": {
+    "access": {
+     "access": 1
+    },
+    "promotion": {
+     "promotion": 3
+    },
+    "supply": {
+     "supply": 2
+    },
+    "competitor": {
+     "competitor": 9
+    },
+    "none": {
+     "none": 5
+    }
+   },
+   "drivers": [
+    "access",
+    "promotion",
+    "supply",
+    "competitor",
+    "none"
+   ],
+   "probes": [
+    {
+     "id": "ma-access-2025",
+     "question": "Weeks of 2025-08-04 to 2025-10-27, Mid-Atlantic: What explains the miss?",
+     "expect": [
+      "access"
+     ],
+     "got": [
+      "access"
+     ],
+     "seconds": 60.5
+    },
+    {
+     "id": "gl-promotion-2026",
+     "question": "Weeks of 2026-02-02 to 2026-04-06, Great Lakes: What explains the miss?",
+     "expect": [
+      "promotion",
+      "competitor"
+     ],
+     "got": [
+      "competitor",
+      "promotion"
+     ],
+     "seconds": 40.2
+    },
+    {
+     "id": "pacific-supply-2026",
+     "question": "Weeks of 2026-06-01 to 2026-06-29, Pacific: What explains the miss?",
+     "expect": [
+      "supply",
+      "competitor"
+     ],
+     "got": [
+      "competitor",
+      "supply"
+     ],
+     "seconds": 50.8
+    },
+    {
+     "id": "se-promotion-2026",
+     "question": "Weeks of 2026-08-03 to 2026-08-31, Southeast: What explains the miss?",
+     "expect": [
+      "promotion",
+      "competitor"
+     ],
+     "got": [
+      "competitor",
+      "promotion"
+     ],
+     "seconds": 47.8
+    },
+    {
+     "id": "national-launch-2026",
+     "question": "Weeks of 2026-04-06 to 2026-05-25: What explains the miss?",
+     "expect": [
+      "competitor"
+     ],
+     "got": [
+      "competitor"
+     ],
+     "seconds": 61.1
+    },
+    {
+     "id": "sc-gap-2026",
+     "question": "Weeks of 2026-08-31 to 2026-09-28, South Central: What explains the miss?",
+     "expect": [
+      "competitor"
+     ],
+     "got": [
+      "competitor"
+     ],
+     "seconds": 40.1
+    },
+    {
+     "id": "quiet-mountain-2025",
+     "question": "Weeks of 2025-01-06 to 2025-03-31, Mountain: What explains the miss?",
+     "expect": [],
+     "got": [],
+     "seconds": 55.0
+    },
+    {
+     "id": "quiet-northwest-2025",
+     "question": "Weeks of 2025-04-07 to 2025-06-30, Northwest: What explains the miss?",
+     "expect": [],
+     "got": [],
+     "seconds": 53.7
+    },
+    {
+     "id": "quiet-national-2024",
+     "question": "Weeks of 2024-11-04 to 2025-01-27: What explains the miss?",
+     "expect": [],
+     "got": [],
+     "seconds": 29.7
+    },
+    {
+     "id": "quiet-southeast-2025",
+     "question": "Weeks of 2025-09-01 to 2025-11-24, Southeast: What explains the miss?",
+     "expect": [],
+     "got": [],
+     "seconds": 35.8
+    },
+    {
+     "id": "se-straddle-2026",
+     "question": "Weeks of 2026-07-06 to 2026-09-28, Southeast: What explains the miss?",
+     "expect": [
+      "promotion",
+      "competitor"
+     ],
+     "got": [
+      "competitor",
+      "promotion"
+     ],
+     "seconds": 62.2
+    },
+    {
+     "id": "pacific-straddle-2026",
+     "question": "Weeks of 2026-05-04 to 2026-07-27, Pacific: What explains the miss?",
+     "expect": [
+      "supply",
+      "competitor"
+     ],
+     "got": [
+      "competitor",
+      "supply"
+     ],
+     "seconds": 42.6
+    },
+    {
+     "id": "ne-contaminated-2026",
+     "question": "Weeks of 2026-06-01 to 2026-06-29, New England: What explains the miss?",
+     "expect": [
+      "competitor"
+     ],
+     "got": [
+      "competitor"
+     ],
+     "seconds": 33.4
+    },
+    {
+     "id": "national-summer-2026",
+     "question": "Weeks of 2026-06-01 to 2026-08-31: What explains the miss?",
+     "expect": [
+      "competitor"
+     ],
+     "got": [
+      "competitor"
+     ],
+     "seconds": 75.1
+    },
+    {
+     "id": "ma-after-easing-2025",
+     "question": "Weeks of 2025-11-03 to 2026-01-26, Mid-Atlantic: What explains the miss?",
+     "expect": [],
+     "got": [],
+     "seconds": 48.2
+    }
+   ]
+  }
+ }
+}

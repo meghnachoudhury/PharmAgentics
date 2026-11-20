@@ -14,7 +14,7 @@ One Spec Kit feature per component. Specs say WHAT and WHY. Each `plan.md` says 
 | :- | :- | :- |
 | `core-###` | Shared platform both lanes stand on: data world, semantic layer, load-pin-gate, tool and handoff contracts, run orchestrator, eval harness and tracing | Both teams |
 | `brief-###` | Briefing lane: stages 3a to 7 | Michael, Meghna |
-| `fcst-###` | Forecast lane: stages 3b to 7. `fcst-001` is reserved for Alvin's `001-forecast-explanation-v1` when the `alvin-forecast-explanation` branch merges | Alvin, Sienna |
+| `fcst-###` | Forecast lane: stages 3b to 7. `fcst-001` is reserved for Alvin's `001-forecast-explanation-v1` when the `alvin-forecast-explanation` branch merges. `fcst-002-question-driven-agent` (draft, 2026-11-20) specifies the question-driven agent in `agents/forecast-explanation/forecast_agent/` | Alvin, Sienna |
 
 A `core` spec records what each lane needs from the shared part. It does not specify a lane's internals. Forecast requirements in `core` specs restate the Forecast team's own documents and are marked **(Forecast lane; Alvin and Sienna confirm)**.
 

@@ -111,10 +111,43 @@ def _log(record: dict, action: str, by: str, role: str, note: str | None) -> Non
     record["history"].append({"at": now(), "by": by, "role": role, "action": action, "note": note})
 
 
+def question_id(question: str, territory: str | None, weeks: list[str] | None, engine: str, data_version: str) -> str:
+    """The same question and scope on the same data release and engine gives the same run, so a rerun keeps its review."""
+    key = "|".join(str(x) for x in (" ".join(question.lower().split()), territory, weeks and (weeks[0], weeks[-1]), engine, data_version))
+    return "f-" + hashlib.sha256(key.encode()).hexdigest()[:12]
+
+
+PLACEHOLDER = {"headline": "Investigating…", "drivers": [], "caveats": [], "what_to_check": [], "variance_trx": None,
+               "abstained": False, "residual_trx": None, "forecast_trx": None, "actual_trx": None, "variance_pct": None}
+
+
+def start_question(rid: str, request: dict, by: str, engine: str) -> dict:
+    """A question run starts as `running`; the engine fills `result` in the background."""
+    record = {"run_id": rid, "kind": "question", "created_at": now(), "created_by": by, "request": request,
+              "result": {"run_id": rid, "lane": "forecast", "engine": engine, "workflow_status": "Investigating",
+                         "report": {**PLACEHOLDER, "question": request["question"], "investigator_mode": engine}},
+              "job_status": "running", "job_error": None, "progress": [],
+              "review_status": NOT_SUBMITTED, "submitted_by": None, "submitted_at": None, "reviewed_by": None,
+              "reviewed_at": None, "review_decision": None, "review_note": None, "history": [],
+              "narrative": None, "report_model": "none", "writer_status": "skipped", "writer_attempts": []}
+    return _put(record)
+
+
+def update(rid: str, **fields) -> dict | None:
+    """Change a run's fields. Re-reads the run first, so a review made meanwhile is kept."""
+    record = get(rid)
+    if record is None:
+        return None
+    record.update(fields)
+    return _put(record)
+
+
 def submit(rid: str, by: str, role: str) -> dict:
     record = get(rid)
     if record is None:
         raise KeyError(rid)
+    if record.get("job_status") in ("running", "failed"):
+        raise ValueError("Only a finished investigation can be submitted.")
     if record["review_status"] not in (NOT_SUBMITTED, RETURNED):
         raise ValueError(f"A run that is {record['review_status']} cannot be submitted.")
     record.update(review_status=PENDING, submitted_by=by, submitted_at=now(), reviewed_by=None, reviewed_at=None,

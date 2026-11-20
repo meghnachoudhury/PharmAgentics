@@ -15,8 +15,8 @@ import {
   type Stage, type TriageDecision, type TriagePlan, type TriageRecord,
 } from "./agent/briefingApi"
 import {
-  createForecast, forecastCases, forecastContext, listForecasts, openForecast, reviewForecast, submitForecast,
-  type ForecastCase, type ForecastContext, type ForecastRun, type ForecastSummary,
+  askFollowup, askForecast, forecastContext, forecastDrivers, type DriverBoard, forecastScope, listForecasts, openForecast, reviewForecast, submitForecast,
+  type ForecastContext, type ForecastRun, type ForecastScope, type ForecastSummary,
 } from "./agent/forecastApi"
 
 // The backend implements a scripted WEEKLY BRIEF with role-based views (core-007). The server
@@ -194,6 +194,75 @@ function ForecastReport({run}: {run: ForecastRun}) {
   </div>
 }
 
+
+// A question run (fcst-001): the answer is code-written sections; the analyst also sees how the agent decided.
+function SectionText({text}: {text: string}) {
+  const blocks: ReactNode[] = []
+  let items: string[] = []
+  const flush = () => { if (items.length) { blocks.push(<ul key={`u${blocks.length}`} className="list-disc space-y-1 pl-5">{items.map((t,i)=><li key={i}>{t}</li>)}</ul>); items = [] } }
+  text.split("\n").forEach((line, i) => { if (line.startsWith("- ")) items.push(line.slice(2)); else { flush(); if (line.trim()) blocks.push(<p key={`p${i}`}>{line}</p>) } })
+  flush()
+  return <div className="mt-2 space-y-2 text-sm leading-relaxed">{blocks}</div>
+}
+
+const ENGINE_LABEL = (mode?: string) => !mode ? "" : mode === "rules" ? "Rules (no model)" : mode === "code" ? "Code only" : mode.startsWith("agent") ? `Agent · ${mode.replace(/^agent \(|\)$/g, "").replace(/\) with rules fallback$/, " · rules fallback")}` : mode
+const CONF_TONE: Record<string, string> = { high: "text-ink", medium: "text-ink", low: "text-amber", inconclusive: "text-amber" }
+
+const FOLLOWUP_EXAMPLES = ["Why was this driver accepted?", "Show it week by week", "Drop South Central from the controls and rerun", "Same question for Pacific"]
+
+function ForecastFollowups({run, onAsk, onOpen}: {run: ForecastRun, onAsk: (q: string) => Promise<void>, onOpen: (id: string) => void}) {
+  const [text,setText] = useState("")
+  const [sending,setSending] = useState(false)
+  const send = async (q: string) => { if (q.trim().length < 3) return; setSending(true); try { await onAsk(q.trim()); setText("") } finally { setSending(false) } }
+  const items = run.followups ?? []
+  return <section className="rounded-xl border border-rule bg-sheet p-6">
+    <h3 className="text-sm font-semibold">Follow-up questions</h3>
+    <p className="mt-1 text-xs text-muted">Ask about this report. A follow-up reruns it for another territory or period, drops control territories, explains a decision, or breaks the miss down by week. Code computes every number.</p>
+    {!!items.length && <ol className="mt-4 space-y-4">{items.map(f=><li key={f.id} className="text-sm">
+      <p className="font-medium">{f.question}</p>
+      {f.status === "running" ? <p className="mt-1 text-muted">Working…</p> : <div className="mt-1 rounded-lg bg-paper px-3 py-2"><SectionText text={f.answer ?? ""}/>{f.child_run_id && <button type="button" onClick={()=>onOpen(f.child_run_id!)} className="mt-2 text-xs text-agentdeep hover:underline">Open the full rerun</button>}</div>}
+    </li>)}</ol>}
+    <form onSubmit={e=>{ e.preventDefault(); void send(text) }} className="mt-4 flex flex-col gap-2 sm:flex-row">
+      <input value={text} onChange={e=>setText(e.target.value)} maxLength={300} disabled={sending} placeholder="e.g. Drop South Central from the controls and rerun" className={`${FIELD} flex-1`}/>
+      <button type="submit" disabled={sending || text.trim().length < 3} className={BTN}>{sending ? "Asking…" : "Ask"}</button>
+    </form>
+    <div className="mt-2 flex flex-wrap gap-2">{FOLLOWUP_EXAMPLES.map(q=><button key={q} type="button" disabled={sending} onClick={()=>void send(q)} className="rounded-full border border-rule px-3 py-1 text-xs text-muted transition-colors hover:border-agent hover:text-ink disabled:opacity-60">{q}</button>)}</div>
+  </section>
+}
+
+function ForecastQuestionReport({run, onFollowup, onOpen}: {run: ForecastRun, onFollowup?: (q: string) => Promise<void>, onOpen?: (id: string) => void}) {
+  const report = run.report
+  const running = run.job_status === "running"
+  const analystView = run.view === "analyst"
+  if (run.job_status === "failed") return <div role="alert" className="rounded-xl bg-amberbg px-5 py-4 text-sm text-amber">The investigation failed: {run.job_error ?? "unknown error"}. Ask again, or rephrase the question.</div>
+  return <div className="space-y-4">
+    <article className="rounded-xl border border-rule bg-sheet p-6">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1 text-xs text-muted">
+        <span>{forecastReviewLabel(run.review_status)}{report.investigator_mode ? ` · ${ENGINE_LABEL(report.investigator_mode)}` : ""}</span>
+        <ClassLabel tab={`forecast.view.${run.view}`}/>
+      </div>
+      {report.question && <p className="mt-3 text-sm text-muted">“{report.question}”</p>}
+      {report.abstained && !running && <p className={`${chip} mt-3 inline-block bg-amberbg text-amber`}>{report.out_of_scope ? "Out of scope" : "Attribution paused"}</p>}
+      <h2 className="mt-2 text-2xl">{running ? "Investigating…" : report.headline}</h2>
+      {!running && report.week_start && <p className="mt-1.5 text-sm text-muted">{labelTerritory(report.territory_id)} · {report.window_weeks === 1 ? `week of ${labelWeek(report.week_start)}` : `${report.window_weeks} weeks from ${labelWeek(report.week_start)}`}{report.set_aside_weeks?.length ? ` · ${report.set_aside_weeks.length} provisional week${report.set_aside_weeks.length > 1 ? "s" : ""} set aside` : ""}</p>}
+      {!running && report.forecast_trx !== null && report.forecast_trx !== undefined && <dl className="mt-5 grid grid-cols-3 divide-x divide-rule border-y border-rule">{[["Forecast",report.forecast_trx],["Actual",report.actual_trx],["Miss",report.variance_trx]].map(([label,value])=><div key={String(label)} className="px-4 py-3 first:pl-0"><dt className="text-xs text-muted">{label} TRx</dt><dd className="mt-0.5 text-lg font-medium tabular-nums">{formatNumber(value as number | null)}</dd></div>)}</dl>}
+      {!running && report.summary && report.summary.trim() !== report.headline.trim() && <p className="mt-4 text-sm leading-relaxed">{report.summary.startsWith(report.headline) ? report.summary.slice(report.headline.length).trim() : report.summary}</p>}
+      {running && <div className="mt-4 space-y-2">
+        <p className="text-sm text-muted">The agent is reading the data. Each step appears here as it happens; every number is computed by code.</p>
+        {analystView && !!run.progress?.length && <ol className="space-y-1.5 text-xs">{run.progress.map((p,i)=><li key={i} className="rounded-lg bg-paper px-3 py-2"><span className="font-medium">{p.tool}</span> <span className="text-muted">{JSON.stringify(p.args).slice(0,140)}</span><div className="mt-0.5 text-muted">{p.result.slice(0,180)}</div></li>)}</ol>}
+      </div>}
+    </article>
+    {!running && !!report.drivers.length && <section className="rounded-xl border border-rule bg-sheet p-6"><h3 className="text-sm font-semibold">Drivers</h3><ul className="mt-2 divide-y divide-rule">{report.drivers.map(d=><li key={(d.label ?? d.driver) + d.impact_trx} className="py-2.5 text-sm"><div className="flex flex-wrap items-baseline justify-between gap-2"><span>{d.label ?? d.driver}</span><span className="tabular-nums text-muted"><span className="text-ink">{formatNumber(d.impact_trx)} TRx</span> · <span className={CONF_TONE[d.confidence] ?? ""}>{d.confidence}</span></span></div>{analystView && !!d.confidence_reasons?.length && <p className="mt-1 text-xs text-muted">{d.confidence_reasons.join("; ")}</p>}</li>)}
+      {report.bias_trx !== null && report.bias_trx !== undefined && <li className="flex flex-wrap items-baseline justify-between gap-2 py-2.5 text-sm text-muted"><span>Usual forecast bias</span><span className="tabular-nums">{formatNumber(report.bias_trx)} TRx</span></li>}
+      {report.residual_trx !== null && report.residual_trx !== undefined && <li className="flex flex-wrap items-baseline justify-between gap-2 py-2.5 text-sm"><span>Unexplained residual</span><span className="tabular-nums">{formatNumber(report.residual_trx)} TRx</span></li>}</ul></section>}
+    {!running && report.sections?.map(sec=><section key={sec.id} className="rounded-xl border border-rule bg-sheet p-6"><h3 className="text-sm font-semibold">{sec.title}</h3><SectionText text={sec.text}/></section>)}
+    {!running && analystView && !!report.decisions?.length && <section className="rounded-xl border border-rule bg-sheet p-6"><h3 className="text-sm font-semibold">How the investigation decided</h3><p className="mt-1 text-xs text-muted">Each decision, who made it and why. Reasons are words only: the agent cannot write a number.</p><ol className="mt-3 space-y-2">{report.decisions.map((d,i)=><li key={i} className="text-sm"><span className={`${chip} mr-2 ${d.by.startsWith("agent") ? "bg-agentbg text-agentdeep" : "bg-paper text-muted"}`}>{d.by}</span><span className="font-medium">{d.action.replace(/_/g, " ")}</span> <span className="text-muted">{d.target}</span><p className="mt-0.5 text-muted">{d.reason}</p></li>)}</ol></section>}
+    {!running && analystView && !!report.comparisons?.length && <details className="rounded-xl border border-rule bg-sheet p-6"><summary className="cursor-pointer text-sm font-semibold">Comparisons run ({report.comparisons.length})</summary><ul className="mt-3 space-y-3 text-xs">{report.comparisons.map(c=><li key={c.id}><p className="font-medium">{c.id} · {c.episode} · {c.method.replace(/_/g, " ")}{c.flags.length ? ` · flags: ${c.flags.join(", ")}` : ""}</p>{!!c.controls.length && <p className="text-muted">Controls: {c.controls.map(labelTerritory).join(", ")}</p>}<p className="text-muted tabular-nums">{Object.entries(c.stats).flatMap(([k,v])=>v && typeof v === "object" && !Array.isArray(v) ? Object.entries(v as Record<string, unknown>) : [[k,v] as [string, unknown]]).filter(([,v])=>v !== null && v !== undefined && typeof v !== "object").map(([k,v])=>`${k.replace(/_/g, " ")} ${String(v)}`).join(" · ")}</p></li>)}</ul></details>}
+    {!running && analystView && report.verification?.checks && <p className="text-xs text-muted">Verification {report.verification.verdict}: {report.verification.checks.map(c=>`${c.detail} (${c.status})`).join("; ")}.</p>}
+    {!running && analystView && run.job_status === "done" && onFollowup && onOpen && <ForecastFollowups run={run} onAsk={onFollowup} onOpen={onOpen}/>}
+  </div>
+}
+
 // Each workspace keeps its sub-pages (a new run, the approved list) as tabs inside the page, not in the sidebar.
 // The third item of an option is its classification key (core-009); the current tab's label sits at the row's end.
 function SubTabs<T extends string>({label, value, options, onChange}: {label: string, value: T, options: readonly (readonly [T, string, string?])[], onChange: (v: T) => void}) {
@@ -223,18 +292,49 @@ function ViewToggle({value, busy=false, onChange}: {value: "analyst" | "leadersh
   </div>
 }
 
-type ForecastSection = "workbench" | "approved"
+const FORECAST_EXAMPLES = [
+  "Week of 2026-08-24: How much of the miss does each driver explain?",
+  "Top 5 largest gaps in the last 3 months",
+  "Mar to Sep 2026: What are the most plausible commercial drivers?",
+  "Weeks of 2026-06-01 to 2026-06-29, Pacific: What supports or contradicts each hypothesis?",
+  "Week of 2026-05-04, New England: Is the deviation reliable, or a data issue?",
+  "Mar to Oct 2026: Should any forecast assumptions be reviewed?",
+]
+
+// Driver recovery: does each system accept the drivers that act in a window, and no others? (eval drivers, draft labels)
+function DriverRecovery() {
+  const [board,setBoard] = useState<DriverBoard | null>(null)
+  const [error,setError] = useState<string | null>(null)
+  useEffect(()=>{ forecastDrivers().then(setBoard).catch(e=>setError(message(e))) }, [])
+  if (error) return <div role="alert" className="rounded-xl bg-amberbg px-5 py-4 text-sm text-amber">{error}</div>
+  if (!board) return <ListSkeleton/>
+  const systems = Object.entries(board.systems)
+  if (!systems.length) return <p className="text-sm text-muted">No driver-recovery run has been exported yet. Run <code>python -m eval drivers --system forecast_rules</code>.</p>
+  return <div className="space-y-4">
+    <p className="text-sm text-muted">Each probe asks a system to explain the miss in a window where the user stories say which drivers act (or that none does). A hit accepts exactly those drivers. The labels are a <span className="text-ink">{board.labels}</span> until the Forecast team confirms them.</p>
+    {systems.map(([name, sys])=><section key={name} className="rounded-xl border border-rule bg-sheet p-6">
+      <div className="flex flex-wrap items-baseline justify-between gap-2"><h3 className="text-sm font-semibold">{name === "forecast_rules" ? "Rules (no model)" : `Agent · ${sys.model ?? ""}`}</h3><span className="text-xs text-muted">run {sys.run_id} · {sys.exported.replace("T", " ")}</span></div>
+      <dl className="mt-4 grid grid-cols-3 divide-x divide-rule border-y border-rule">{[["Drivers recovered", `${Math.round(sys.metrics.driver_recall * 100)}%`], ["False drivers", String(sys.metrics.false_drivers)], ["Exact answers", `${Math.round(sys.metrics.exact_set_share * sys.metrics.probes)} of ${sys.metrics.probes}`]].map(([k,v])=><div key={k} className="px-4 py-3 first:pl-0"><dt className="text-xs text-muted">{k}</dt><dd className="mt-0.5 text-lg font-medium tabular-nums">{v}</dd></div>)}</dl>
+      <div className="mt-4 overflow-x-auto"><table className="text-xs tabular-nums"><thead><tr><th className="pr-4 text-left font-medium text-muted">true \ accepted</th>{sys.drivers.map(d=><th key={d} className="px-3 text-right font-medium text-muted">{d}</th>)}</tr></thead>
+        <tbody>{sys.drivers.map(t=><tr key={t}><td className="pr-4 py-1 text-muted">{t}</td>{sys.drivers.map(d=>{ const n = sys.confusion[t]?.[d] ?? 0; return <td key={d} className={`px-3 py-1 text-right ${n ? (t === d ? "text-ink font-medium" : "text-amber font-medium") : "text-muted"}`}>{n}</td> })}</tr>)}</tbody></table></div>
+      <ul className="mt-4 divide-y divide-rule text-sm">{sys.probes.map(p=>{ const ok = [...p.expect].sort().join() === [...p.got].sort().join(); return <li key={p.id} className="flex flex-wrap items-baseline justify-between gap-2 py-2"><span className="min-w-0"><span className={`${chip} mr-2 ${ok ? "bg-paper text-muted" : "bg-amberbg text-amber"}`}>{ok ? "hit" : "miss"}</span>{p.question}</span><span className="text-xs text-muted">expected {p.expect.join(", ") || "none"} · accepted {p.got.join(", ") || "none"}</span></li> })}</ul>
+    </section>)}
+  </div>
+}
+
+type ForecastSection = "workbench" | "approved" | "drivers"
 function ForecastWorkspace({me, section, onSection}: {me: Me, section: ForecastSection, onSection: (s: ForecastSection) => void}) {
   const r = me.lanes.forecast
   const analyst = !!r?.actions.includes("run")
   const canPreview = analyst && !!r?.views.includes("leadership")
-  const [cases,setCases] = useState<ForecastCase[]>([])
   const [runs,setRuns] = useState<ForecastSummary[]>([])
   const [selected,setSelected] = useState<ForecastRun | null>(null)
   const [context,setContext] = useState<ForecastContext | null>(null)
-  const [territory,setTerritory] = useState("NATIONAL")
-  const [week,setWeek] = useState("")
-  const [windowWeeks,setWindowWeeks] = useState(1)
+  const [question,setQuestion] = useState("")
+  const [scope,setScope] = useState<ForecastScope | null>(null)
+  const [territory,setTerritory] = useState<string>("")
+  const [weekFrom,setWeekFrom] = useState("")
+  const [weekTo,setWeekTo] = useState("")
   const [loading,setLoading] = useState(true)
   const [busy,setBusy] = useState(false)
   const [error,setError] = useState<string | null>(null)
@@ -242,10 +342,16 @@ function ForecastWorkspace({me, section, onSection}: {me: Me, section: ForecastS
   useEffect(()=>setSelected(null), [section])
   // Match the Briefing workspace: the analyst can always return to the list of
   // their own runs, while the approved view is a strictly filtered list.
-  const refresh = async () => { setLoading(true); setError(null); try { const status = section === "approved" ? "approved" : analyst ? undefined : "pending_review"; const values = await Promise.all([listForecasts(status), analyst && section === "workbench" ? forecastCases() : Promise.resolve([]), analyst && section === "workbench" ? forecastContext() : Promise.resolve(null)]); setRuns(values[0]); setCases(values[1]); setContext(values[2]); if (values[2]) { setTerritory(t=>values[2]!.territory_ids.includes(t) ? t : "NATIONAL"); setWeek(w=>values[2]!.available_weeks.includes(w) ? w : values[2]!.latest_week) } } catch(e) { setError(message(e)) } finally { setLoading(false) } }
+  const refresh = async () => { setLoading(true); setError(null); try { const status = section === "approved" ? "approved" : analyst ? undefined : "pending_review"; const values = await Promise.all([listForecasts(status), analyst && section === "workbench" ? forecastContext() : Promise.resolve(null)]); setRuns(values[0]); setContext(values[1]) } catch(e) { setError(message(e)) } finally { setLoading(false) } }
   useEffect(()=>{ void refresh() }, [analyst, section])
-  const start = async (c: ForecastCase) => { setBusy(true); setError(null); try { setSelected(await createForecast(c.request)); await refresh() } catch(e) { setError(message(e)) } finally { setBusy(false) } }
-  const startCustom = async (event: React.FormEvent) => { event.preventDefault(); if (!week) return; setBusy(true); setError(null); try { setSelected(await createForecast({territory_id: territory, week_start: week, window_weeks: windowWeeks})); await refresh() } catch(e) { setError(message(e)) } finally { setBusy(false) } }
+  // Step one reads the question into a scope card; step two runs the investigation on the (possibly edited) scope.
+  const readScope = async (q: string) => { setBusy(true); setError(null); try { const sc = await forecastScope({question: q}); setScope(sc); setTerritory(sc.territory); setWeekFrom(sc.weeks[0] ?? ""); setWeekTo(sc.weeks[sc.weeks.length - 1] ?? "") } catch(e) { setError(message(e)) } finally { setBusy(false) } }
+  const onAsk = async (event: React.FormEvent) => { event.preventDefault(); if (question.trim().length >= 3) await readScope(question.trim()) }
+  const investigate = async () => { if (!scope) return; setBusy(true); setError(null); try { const edited = territory !== scope.territory || weekFrom !== (scope.weeks[0] ?? "") || weekTo !== (scope.weeks[scope.weeks.length - 1] ?? ""); setSelected(await askForecast({question: scope.question, ...(edited ? {territory_id: territory, week_from: weekFrom || null, week_to: weekTo || null} : {})})); setScope(null); await refresh() } catch(e) { setError(message(e)) } finally { setBusy(false) } }
+  const followup = async (q: string) => { if (!selected) return; setError(null); try { setSelected(await askFollowup(selected.forecast_run_id, q)) } catch(e) { setError(message(e)) } }
+  const followupsRunning = !!selected?.followups?.some(f=>f.status === "running")
+  // A running investigation, or one with a follow-up in flight, is polled until it finishes.
+  useEffect(()=>{ if (!selected || (selected.job_status !== "running" && !followupsRunning)) return; const id = selected.forecast_run_id, view = selected.view; const t = setInterval(()=>{ void openForecast(id, view).then(r=>{ setSelected(cur => cur && cur.forecast_run_id === id ? r : cur); if (r.job_status !== "running" && !r.followups?.some(f=>f.status === "running")) void refresh() }).catch(()=>{}) }, 2000); return ()=>clearInterval(t) }, [selected?.forecast_run_id, selected?.job_status, selected?.view, followupsRunning])
   const open = async (id: string, view?: ForecastRun["view"]) => {
     setBusy(true)
     setError(null)
@@ -261,17 +367,19 @@ function ForecastWorkspace({me, section, onSection}: {me: Me, section: ForecastS
   const decide = async (decision: "approved" | "rejected" | "returned") => { if (!selected) return; setBusy(true); setError(null); try { setSelected(await reviewForecast(selected.forecast_run_id, decision, note)); setNote(""); await refresh() } catch(e) { setError(message(e)) } finally { setBusy(false) } }
   return <div className="workspace-content space-y-6 py-8 sm:py-10 pa-rise">
     {!selected && <Greeting detail={context ? `Forecast versus actual, through ${labelWeek(context.latest_week)}.` : undefined}/>}
-    <SubTabs label="Forecast explanation" value={section} onChange={onSection} options={[["workbench", analyst ? "New explanation" : "To review", analyst ? "forecast.new" : "forecast.review"], ["approved", "Approved explanations", "forecast.approved"]] as const}/>
+    <SubTabs label="Forecast explanation" value={section} onChange={onSection} options={[["workbench", analyst ? "New explanation" : "To review", analyst ? "forecast.new" : "forecast.review"], ["approved", "Approved explanations", "forecast.approved"], ["drivers", "Driver recovery", "forecast.drivers"]] as const}/>
+    {section === "drivers" ? <DriverRecovery/> : <>
     {error && <div role="alert" className="rounded-xl bg-amberbg px-5 py-4 text-sm text-amber">{error}</div>}
     {selected ? <>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <button disabled={busy} className="flex items-center gap-1.5 text-sm text-agentdeep hover:underline" onClick={()=>setSelected(null)}><Icon name="back"/>All {section === "approved" ? "approved explanations" : "forecast runs"}</button>
         {canPreview && <ViewToggle value={selected.view} busy={busy} onChange={view => void open(selected.forecast_run_id, view)}/>}
       </div>
-      <ForecastReport run={selected}/>
+      {selected.parent_run_id && <button type="button" disabled={busy} onClick={()=>void open(selected.parent_run_id!)} className="text-xs text-agentdeep hover:underline">Follow-up rerun · back to the original report</button>}
+      {selected.kind === "question" ? <ForecastQuestionReport run={selected} onFollowup={analyst ? followup : undefined} onOpen={id=>void open(id)}/> : <ForecastReport run={selected}/>}
       <AnswerFeedback lane="forecast" refId={selected.forecast_run_id} view={selected.view} agent={!!selected.report.investigator_mode && !/scripted/i.test(selected.report.investigator_mode)}/>
       {analyst && selected.view === "analyst" && selected.review_status === "pending_review" && <p className="text-sm text-muted"><span className="text-ink">Submitted for Brand Manager approval.</span> It can no longer be edited; the Brand Manager can approve, return or reject it.</p>}
-      {analyst && selected.view === "analyst" && section === "workbench" && (selected.review_status === "not_submitted" || selected.review_status === "returned") && <div className="flex justify-end"><button disabled={busy} onClick={()=>void submit()} className={BTN}>Submit to Brand Manager</button></div>}
+      {analyst && selected.view === "analyst" && section === "workbench" && selected.job_status !== "running" && selected.job_status !== "failed" && (selected.review_status === "not_submitted" || selected.review_status === "returned") && <div className="flex justify-end"><button disabled={busy} onClick={()=>void submit()} className={BTN}>Submit to Brand Manager</button></div>}
       {!analyst && selected.review_status === "pending_review" && <section className={`${PANEL} p-5`}>
         <label className={LABEL}>Review note (needed to return or reject)<textarea value={note} onChange={e=>setNote(e.target.value)} className={`${FIELD} mt-0.5`} rows={3}/></label>
         <div className="mt-4 flex flex-wrap justify-end gap-2">
@@ -281,18 +389,33 @@ function ForecastWorkspace({me, section, onSection}: {me: Me, section: ForecastS
         </div>
       </section>}
     </> : <>{analyst && section === "workbench" && <>
-      <p className="text-sm text-muted">Forecast versus actual TRx for {context?.brand ?? "BXA"}, and the drivers behind the gap.</p>
-      <form onSubmit={startCustom} className={`${PANEL} space-y-5 p-6`}>
-        <div className="grid gap-4 sm:grid-cols-3">
-          <label className={LABEL}>Territory<select value={territory} onChange={e=>setTerritory(e.target.value)} disabled={!context || busy} className={FIELD}>{context?.territory_ids.map(id=><option key={id} value={id}>{labelTerritory(id)}</option>)}</select></label>
-          <label className={LABEL}>Reporting week<select value={week} onChange={e=>setWeek(e.target.value)} disabled={!context || busy} className={FIELD}>{[...(context?.available_weeks ?? [])].reverse().map(w=><option key={w} value={w}>{labelWeek(w)}</option>)}</select></label>
-          <label className={LABEL}>Analysis window<select value={windowWeeks} onChange={e=>setWindowWeeks(Number(e.target.value))} disabled={busy} className={FIELD}><option value={1}>1 week</option><option value={4}>4 weeks</option><option value={13}>13 weeks</option></select></label>
-        </div>
-        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-rule pt-4"><span className="text-xs text-muted">{context?.brand ?? "BXA Cardiovela"} · TRx</span><button type="submit" disabled={!context || !week || busy} className={BTN}>{busy ? "Generating…" : "Generate explanation"}</button></div>
+      <p className="text-sm text-muted">Ask about forecast versus actual TRx for {context?.brand ?? "BXA Cardiovela"}: how big a miss is, where it sits, what drove it, and what to check.</p>
+      <form onSubmit={onAsk} className={`${PANEL} space-y-4 p-6`}>
+        <label className={LABEL}>Your question<textarea value={question} onChange={e=>{ setQuestion(e.target.value); setScope(null) }} disabled={busy} rows={2} maxLength={400} placeholder="e.g. Why did we miss forecast in the week of 2026-08-24?" className={`${FIELD} mt-0.5`}/></label>
+        <div className="flex flex-wrap gap-2">{FORECAST_EXAMPLES.map(q=><button key={q} type="button" disabled={busy} onClick={()=>{ setQuestion(q); void readScope(q) }} className="rounded-full border border-rule px-3 py-1 text-xs text-muted transition-colors hover:border-agent hover:text-ink disabled:opacity-60">{q}</button>)}</div>
+        {!scope && <div className="flex justify-end border-t border-rule pt-4"><button type="submit" disabled={busy || question.trim().length < 3} className={BTN}>{busy ? "Reading…" : "Read my question"}</button></div>}
       </form>
-      {!!cases.length && <section><h3 className="text-sm font-semibold">Suggested investigations</h3><ul className={`${PANEL} pa-stagger mt-2 divide-y divide-rule`}>{cases.map(c=><li key={c.case_id}><button disabled={busy} onClick={()=>void start(c)} className="group flex w-full items-center justify-between gap-4 px-5 py-3.5 text-left transition-colors hover:bg-paper/60 disabled:opacity-60"><span className="min-w-0"><span className="block text-sm">{c.label}</span><span className="mt-0.5 block text-xs text-muted">{c.tag} · {labelTerritory(c.request.territory_id)} · {labelWeek(c.request.week_start)}</span></span><Icon name="chevronRight" className="h-4 w-4 shrink-0 text-muted transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-agent"/></button></li>)}</ul></section>}
+      {scope && <section className={`${PANEL} space-y-4 p-6 pa-rise`}>
+        <div><h3 className="text-sm font-semibold">How the agent reads your question</h3><p className="mt-1 text-xs text-muted">Check the scope before anything runs. Change the territory or weeks if this is not what you meant.</p></div>
+        {scope.out_of_scope ? <div className="rounded-lg bg-amberbg px-4 py-3 text-sm text-amber">{scope.out_of_scope}</div> : <>
+          <dl className="grid gap-x-4 gap-y-2 text-sm sm:grid-cols-[120px_1fr]">
+            <dt className="text-muted">Asks</dt><dd>{scope.intent_label}</dd>
+            <dt className="text-muted">Period</dt><dd>{scope.period} · {scope.n_weeks} week{scope.n_weeks === 1 ? "" : "s"}</dd>
+            <dt className="text-muted">Where</dt><dd>{scope.territory_name}</dd>
+            <dt className="text-muted">Engine</dt><dd>{scope.engine === "rules" ? "Rules (no model). Set FORECAST_AGENT_MODEL to run the agent." : `Agent on ${scope.engine}`}</dd>
+          </dl>
+          {!!scope.notes.length && <ul className="list-disc space-y-0.5 pl-5 text-xs text-muted">{scope.notes.map(n=><li key={n}>{n}</li>)}</ul>}
+          <div className="grid gap-4 sm:grid-cols-3">
+            <label className={LABEL}>Territory<select value={territory} onChange={e=>setTerritory(e.target.value)} disabled={!context || busy} className={FIELD}>{(context?.territory_ids ?? [scope.territory]).map(id=><option key={id} value={id}>{labelTerritory(id)}</option>)}</select></label>
+            <label className={LABEL}>First week<select value={weekFrom} onChange={e=>setWeekFrom(e.target.value)} disabled={!context || busy} className={FIELD}>{(context?.available_weeks ?? [weekFrom]).map(w=><option key={w} value={w}>{labelWeek(w)}</option>)}</select></label>
+            <label className={LABEL}>Last week<select value={weekTo} onChange={e=>setWeekTo(e.target.value)} disabled={!context || busy} className={FIELD}>{(context?.available_weeks ?? [weekTo]).filter(w=>w >= weekFrom).map(w=><option key={w} value={w}>{labelWeek(w)}</option>)}</select></label>
+          </div>
+        </>}
+        <div className="flex flex-wrap justify-end gap-2 border-t border-rule pt-4"><button type="button" disabled={busy} onClick={()=>setScope(null)} className={BTN2}>Edit question</button>{!scope.out_of_scope && <button type="button" disabled={busy} onClick={()=>void investigate()} className={BTN}>{busy ? "Starting…" : "Investigate"}</button>}</div>
+      </section>}
     </>}
-    <section><h3 className="text-sm font-semibold">{section === "approved" ? "Approved explanations" : analyst ? "Your forecast runs" : "Waiting for your review"}</h3>{loading ? <div className="mt-2"><ListSkeleton/></div> : runs.length ? <ul className={`${PANEL} pa-stagger mt-2 divide-y divide-rule`}>{runs.map(run=><li key={run.forecast_run_id}><button disabled={busy} onClick={()=>void open(run.forecast_run_id)} className="group flex w-full items-center justify-between gap-4 px-5 py-3.5 text-left transition-colors hover:bg-paper/60"><span className="min-w-0"><span className="block text-sm">{run.headline}</span><span className="mt-0.5 block text-xs text-muted tabular-nums">{labelTerritory(run.territory_id)} · variance {formatNumber(run.variance_trx)} TRx · {forecastReviewLabel(run.review_status)}</span></span><Icon name="chevronRight" className="h-4 w-4 shrink-0 text-muted transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-agent"/></button></li>)}</ul> : <p className="mt-2 text-sm text-muted">{section === "approved" ? "No approved explanations yet. They appear here once the Brand Manager approves one." : analyst ? "No forecast runs yet. Generate one above, or start from a suggested investigation." : "Nothing is waiting for your review."}</p>}</section></>}
+    <section><h3 className="text-sm font-semibold">{section === "approved" ? "Approved explanations" : analyst ? "Your forecast runs" : "Waiting for your review"}</h3>{loading ? <div className="mt-2"><ListSkeleton/></div> : runs.length ? <ul className={`${PANEL} pa-stagger mt-2 divide-y divide-rule`}>{runs.map(run=><li key={run.forecast_run_id}><button disabled={busy} onClick={()=>void open(run.forecast_run_id)} className="group flex w-full items-center justify-between gap-4 px-5 py-3.5 text-left transition-colors hover:bg-paper/60"><span className="min-w-0"><span className="block text-sm">{run.question ?? run.headline}</span><span className="mt-0.5 block text-xs text-muted tabular-nums">{run.job_status === "running" ? "Investigating…" : run.job_status === "failed" ? "Failed" : <>{labelTerritory(run.territory_id)} · miss {formatNumber(run.variance_trx)} TRx · {forecastReviewLabel(run.review_status)}</>}</span></span><Icon name="chevronRight" className="h-4 w-4 shrink-0 text-muted transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-agent"/></button></li>)}</ul> : <p className="mt-2 text-sm text-muted">{section === "approved" ? "No approved explanations yet. They appear here once the Brand Manager approves one." : analyst ? "No forecast questions yet. Ask one above, or start from an example." : "Nothing is waiting for your review."}</p>}</section></>}
+    </>}
   </div>
 }
 

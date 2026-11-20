@@ -10,6 +10,7 @@
 !data/agent_visible/
 !agents/brand-briefing/
 !agents/forecast-explanation/feagent/
+!agents/forecast-explanation/forecast_agent/
 !deploy/agent/entrypoint.sh
 !frontend/figma-make/
 **/__pycache__

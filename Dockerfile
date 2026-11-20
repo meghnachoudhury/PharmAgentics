@@ -27,6 +27,7 @@ COPY sql/ sql/
 COPY data/agent_visible/ data/agent_visible/
 COPY agents/brand-briefing/ agents/brand-briefing/
 COPY agents/forecast-explanation/feagent/ agents/forecast-explanation/feagent/
+COPY agents/forecast-explanation/forecast_agent/ agents/forecast-explanation/forecast_agent/
 RUN uv sync --locked --no-default-groups --group api --group agent \
  && uv run --no-sync python src/pharmagentics/data/load_duckdb.py \
  && uv run --no-sync python src/pharmagentics/data/check_duckdb.py

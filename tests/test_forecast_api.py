@@ -167,3 +167,84 @@ def test_the_lane_is_open_to_the_ui():
     sign_in("dev-forecast-analyst")
     status = CLIENT.get("/api/forecast/status").json()
     assert status["available"] is True and status["actions"] == ["run", "read"]
+
+
+# ---- the question-driven agent (fcst-001) ---------------------------------------------------------------------------
+
+def _wait(run_id: str) -> dict:
+    import time
+
+    for _ in range(100):
+        body = CLIENT.get(f"/api/forecast/runs/{run_id}").json()
+        if body["job_status"] != "running":
+            return body
+        time.sleep(0.1)
+    raise AssertionError("the investigation did not finish")
+
+
+def test_a_question_is_read_into_a_scope_before_it_runs(monkeypatch):
+    monkeypatch.setenv("FORECAST_AGENT_MODEL", "rules")
+    sign_in("dev-forecast-analyst")
+    card = CLIENT.post("/api/forecast/scope", json={"question": "Top 5 largest gaps in the last 3 months"}).json()
+    assert card["intent"] == "screen" and card["territory"] == "NATIONAL" and card["engine"] == "rules"
+    assert CLIENT.post("/api/forecast/scope", json={"question": "hi", "engine": "x"}).status_code == 422
+
+
+def test_a_question_runs_in_the_background_and_leaders_see_no_trace(monkeypatch):
+    monkeypatch.setenv("FORECAST_AGENT_MODEL", "rules")
+    sign_in("dev-forecast-analyst")
+    started = CLIENT.post("/api/forecast/ask", json={"question": "Week of 2026-08-24: How much of the miss does each driver explain?"}).json()
+    assert started["kind"] == "question"
+    done = _wait(started["forecast_run_id"])
+    assert done["job_status"] == "done" and done["report"]["variance_trx"] == -1036
+    assert done["report"]["decisions"] and done["report"]["comparisons"]
+    assert CLIENT.post(f"/api/forecast/runs/{started['forecast_run_id']}/submit").json()["review_status"] == "pending_review"
+    sign_in("dev-forecast-manager")
+    lead = CLIENT.get(f"/api/forecast/runs/{started['forecast_run_id']}").json()
+    assert lead["view"] == "leadership" and "progress" not in lead
+    for hidden in ("decisions", "comparisons", "candidates", "screen", "sections_all"):
+        assert hidden not in lead["report"]
+    assert {s["id"] for s in lead["report"]["sections"]} <= {"summary", "miss", "where", "screen", "attribution", "unknowns", "checks", "assumptions"}
+    assert CLIENT.post("/api/forecast/ask", json={"question": "Top 5 largest gaps"}).status_code == 403
+
+
+def test_a_scope_edit_overrides_the_parsed_weeks(monkeypatch):
+    monkeypatch.setenv("FORECAST_AGENT_MODEL", "rules")
+    sign_in("dev-forecast-analyst")
+    started = CLIENT.post("/api/forecast/ask", json={"question": "Why did we miss?", "territory_id": "PACIFIC",
+                                                     "week_from": "2026-06-01", "week_to": "2026-06-29"}).json()
+    report = _wait(started["forecast_run_id"])["report"]
+    assert report["territory_id"] == "PACIFIC" and report["window_weeks"] == 5
+    assert any(d["driver"] == "supply" for d in report["drivers"])
+
+
+def test_follow_ups_rerun_explain_and_break_down(monkeypatch):
+    import time
+
+    monkeypatch.setenv("FORECAST_AGENT_MODEL", "rules")
+    sign_in("dev-forecast-analyst")
+    rid = CLIENT.post("/api/forecast/ask", json={"question": "Week of 2026-08-24: How much of the miss does each driver explain?"}).json()["forecast_run_id"]
+    _wait(rid)
+    for q in ("Drop South Central from the controls and rerun", "Why not supply?", "Show it week by week"):
+        assert CLIENT.post(f"/api/forecast/runs/{rid}/followups", json={"question": q}).status_code == 200
+    for _ in range(100):
+        body = CLIENT.get(f"/api/forecast/runs/{rid}").json()
+        if all(f["status"] != "running" for f in body["followups"]):
+            break
+        time.sleep(0.1)
+    rerun, why, weekly = body["followups"]
+    assert rerun["op"] == "rerun" and rerun["child_run_id"]
+    child = CLIENT.get(f"/api/forecast/runs/{rerun['child_run_id']}").json()
+    promo = next(d for d in child["report"]["drivers"] if d["driver"] == "promotion")
+    assert promo["impact_trx"] == -204 and child["report"]["residual_trx"] == -145 and child["parent_run_id"] == rid
+    assert why["op"] == "explain" and "supply" in why["answer"]
+    assert weekly["op"] == "weekly" and "-1,036" in weekly["answer"]
+    sign_in("dev-forecast-manager")
+    assert CLIENT.post(f"/api/forecast/runs/{rid}/followups", json={"question": "Why?"}).status_code == 403
+
+
+def test_the_driver_board_is_readable_by_both_forecast_roles():
+    for user in ("dev-forecast-analyst", "dev-forecast-manager"):
+        sign_in(user)
+        body = CLIENT.get("/api/forecast/drivers").json()
+        assert body["labels"] == "draft" and isinstance(body["systems"], dict)

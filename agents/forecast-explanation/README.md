@@ -4,7 +4,37 @@ The Forecast lane (Alvin, Sienna): when the locked weekly TRx forecast differs f
 
 The rule it keeps: **V = A − F = Σc + r.** The miss V is the sum of the driver contributions c plus a residual r. The residual is reported, never absorbed into a driver. When the actual is provisional or the controls are weak, the agent pauses attribution instead of guessing. Every number comes from a deterministic query over `data/agent_visible/`; a language model, if one is used, only chooses which tool to call and words the result.
 
-## Built
+## The question-driven agent (`forecast_agent/`, fcst-001 redesign, 2026-11-20)
+
+The analyst asks a question in words; the app's Forecast page now runs this engine. The older form flow (`feagent/`, below) still answers `POST /api/forecast/runs`.
+
+| Stage | Who | What it does |
+| :- | :- | :- |
+| 1 Scope | code (`scope.py`) | Reads the period, territory and intent (reliability, screen, where, drivers, attribution, unknowns, next checks, assumptions, audit, communicate). The analyst confirms or edits it on a scope card. Questions about another product or a commercial action are out of scope |
+| 2 Data gate | code (`engine.py`) | A week with a provisional actual anywhere is set aside and never compared; if every week is provisional the answer abstains |
+| 3 Screen and discovery | code | Each territory's miss beyond its peers' rate; episodes found in the context tables with no hand-written calendar: rep-call lapses, supply shortfalls, plan access changes, competitor launches, holidays |
+| 4 Investigation | the rules (`policy.py`) or a model (`agent.py`) | Chooses which episodes to compare, which control territories to drop, and accepts or rejects each with a reason in words. A reason with a digit is refused |
+| 5 Challenge | code | Confidence per driver can only go down: no control group, association only, contaminated or few controls, a gap that predates the episode, control noise, overlap |
+| 6 Write and verify | code (`write.py`) | Intent-shaped sections; every figure is a claim token from one governed query; parts plus residual equal the miss |
+
+Numbers: a local driver is the territory's miss beyond the control territories' rate over the episode's weeks; a launch is the brand's relative basket-share loss applied to the forecast; the usual bias is the pre-launch national error rate. A recovery check reports the week after an episode ends.
+
+Engine: `FORECAST_AGENT_MODEL` (e.g. `ollama:qwen3:4b-instruct-2507-q4_K_M`; `rules` forces the rules). Unset, the app uses the hosted Anthropic model when `PHARMAGENTICS_AGENT_MODEL` and its key are set, else the rules. A failed model falls back to the rules for what is still open.
+
+```powershell
+uv run python -m eval run --system forecast_rules --lane forecast                       # no model
+uv run python -m eval run --system forecast_agent --lane forecast --model ollama:qwen3:4b-instruct-2507-q4_K_M
+```
+
+Routes: `POST /api/forecast/scope` (read a question, run nothing), `POST /api/forecast/ask` (start; answers at once with `job_status: running`), then `GET /api/forecast/runs/{id}` until `done`. The analyst view adds the live tool steps, the decision log and the comparisons; the leadership view keeps the summary, miss, attribution, unknowns and checks only. Submission and review work as for form runs.
+
+### Follow-ups, robustness and driver recovery
+
+- **Follow-ups** (`followup.py`, `POST /api/forecast/runs/{id}/followups`, analyst only): each becomes one operation that code runs. *Rerun* for another territory or period, or with control territories dropped (a linked child run that can be submitted like any other); *explain* why an episode was accepted or rejected, from the verified report only; *weekly* breakdown with claim tokens. With a model configured, the model only picks the operation through tools; otherwise keyword rules pick it. Example: "Drop South Central from the controls and rerun" on the week of 2026-08-24 gives Southeast −204 and residual −145.
+- **Robustness** (in `engine.py`): every accepted local driver gets a leave-one-out check over its controls and a check that the gap narrowed after the episode ended. A confirmed concern lowers confidence; a passed one is listed as a reason. These run in code on every driver, so no model skeptic chooses among them: running all of them is cheaper and cannot skip one.
+- **Driver recovery** (`python -m eval drivers --system forecast_rules`, or `forecast_agent --model <spec>`): fifteen draft probes in `eval/labels/forecast_drivers.yaml`, taken from the user stories (not the answer key), including quiet windows, straddling windows, a contaminated control and an access reversal. It logs recall, false drivers and a confusion matrix to MLflow (experiment `pharmagentics-forecast-drivers`) and exports the latest run per system to `src/pharmagentics/api/forecast_drivers.json`, which the app's Driver recovery tab shows. The labels are a draft until Alvin and Sienna confirm them.
+
+## Built (the form engine, `feagent/`)
 
 | Where | What |
 | :- | :- |

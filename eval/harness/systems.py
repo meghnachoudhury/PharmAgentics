@@ -132,5 +132,43 @@ class BriefingAgent(BriefingLowCode):
         self.params = {"agent_config_version": pkg.config_version()}
 
 
+class ForecastRules:
+    """Forecast redesign (fcst-001), scripted arm: question, code scope, discovered episodes, the rules policy
+    choosing comparisons and verdicts, code-written answer (agents/forecast-explanation/forecast_agent/)."""
+
+    name = "forecast_rules"
+    uses_llm = False
+    returns_evidence = True
+    returns_trajectory = True
+
+    def __init__(self, cases: list[Case], model: str | None = None):
+        pkg = _lane_package("forecast-explanation", "forecast_agent")
+        self._answer = pkg.answer
+        self.model = None
+        self.params = {"agent_config_version": pkg.config_version()}
+
+    def predict(self, question: str) -> dict:
+        return AnswerEnvelope.model_validate(self._answer(question, model=self.model)).model_dump()
+
+
+class ForecastAgent(ForecastRules):
+    """Forecast redesign (fcst-001), agent arm: the same engine with a model choosing comparisons and verdicts."""
+
+    name = "forecast_agent"
+    uses_llm = True
+
+    def __init__(self, cases: list[Case], model: str | None = None):
+        super().__init__(cases)
+        from pharmagentics.llm import model_spec
+
+        self.model = model_spec(model)
+
+    def runtime(self) -> dict:
+        from pharmagentics.llm import ollama_runtime
+
+        return ollama_runtime(self.model)
+
+
 SYSTEMS = {"reference": ReferenceSystem, "naive_llm": NaiveLLMSystem, "briefing_scripted": BriefingScripted,
-           "forecast_scripted": ForecastScripted, "briefing_lowcode": BriefingLowCode, "briefing_agent": BriefingAgent}
+           "forecast_scripted": ForecastScripted, "briefing_lowcode": BriefingLowCode, "briefing_agent": BriefingAgent,
+           "forecast_rules": ForecastRules, "forecast_agent": ForecastAgent}

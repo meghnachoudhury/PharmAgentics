@@ -17,13 +17,15 @@ from __future__ import annotations
 import logging
 import os
 import sys
+import threading
+from datetime import date, timedelta
 from pathlib import Path
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Response
 from fastapi.concurrency import run_in_threadpool
 
 from . import forecast_store, rbac, service, store, views
-from .schemas import ForecastReview, ForecastRunRequest
+from .schemas import ForecastAsk, ForecastFollowup, ForecastReview, ForecastRunRequest
 
 log = logging.getLogger("pharmagentics.forecast")
 router = APIRouter(prefix="/api/forecast", tags=["forecast"])
@@ -93,6 +95,222 @@ def _writer_info() -> dict:
         return {"enabled": False, "primary": None, "fallback": None}
 
 
+# ---- the question-driven agent (fcst-001) ------------------------------------------------------------------
+
+def _agent():
+    if not (ENGINE_DIR / "forecast_agent").is_dir():
+        raise HTTPException(status_code=503, detail="The Forecast agent is not installed on this server.")
+    if str(ENGINE_DIR) not in sys.path:
+        sys.path.insert(0, str(ENGINE_DIR))
+    import forecast_agent
+
+    return forecast_agent
+
+
+def question_model() -> str | None:
+    """The model the Forecast investigator uses, or None for the rules policy. FORECAST_AGENT_MODEL wins
+    (`rules` forces the rules); otherwise the hosted app's Anthropic model when its key is set."""
+    from pharmagentics.llm import load_env
+
+    load_env()
+    spec = os.environ.get("FORECAST_AGENT_MODEL", "").strip()
+    if spec:
+        return None if spec in ("rules", "none") else spec
+    hosted = os.environ.get("PHARMAGENTICS_AGENT_MODEL", "")
+    return hosted if hosted.startswith("anthropic:") and os.environ.get("ANTHROPIC_API_KEY") else None
+
+
+def _weeks(ask: ForecastAsk) -> list[str] | None:
+    if not ask.week_from:
+        return None
+    start = ask.week_from - timedelta(days=ask.week_from.weekday())
+    end = ask.week_to or ask.week_from
+    end = end - timedelta(days=end.weekday())
+    if end < start:
+        raise HTTPException(status_code=422, detail="The last week comes before the first.")
+    out, d = [], start
+    while d <= end:
+        out.append(d.isoformat())
+        d += timedelta(days=7)
+    return out
+
+
+def _scope_card(ask: ForecastAsk) -> dict:
+    agent = _agent()
+    first, latest = agent.context(service.DB)
+    weeks = _weeks(ask)
+    if weeks:
+        weeks = [w for w in weeks if first <= w <= latest]
+    from forecast_agent.scope import parse_scope
+
+    return parse_scope(ask.question, first, latest, territory=ask.territory_id, weeks=weeks).card()
+
+
+@router.post("/scope")
+def scope(ask: ForecastAsk, response: Response, who=Forecast) -> dict:
+    """How the agent reads a question, before anything runs: the analyst confirms or edits it."""
+    _no_store(response)
+    rbac.allow(who[1], "run")
+    if not service.DB.is_file():
+        raise HTTPException(status_code=503, detail="DuckDB has not been built. Run the data loader first.")
+    model = question_model()
+    return {**_scope_card(ask), "engine": model or "rules"}
+
+
+def _result(rid: str, out: dict, model: str | None) -> dict:
+    report = out.get("report") or {}
+    if report.get("out_of_scope"):
+        report = {**forecast_store.PLACEHOLDER, **report, "headline": report["out_of_scope"], "abstained": True,
+                  "sections": [{"id": "scope", "title": "Out of scope", "text": report["out_of_scope"]}]}
+    return {"run_id": rid, "lane": "forecast", "engine": model or "rules", "dataset_release": report.get("data_version"),
+            "workflow_status": "Processing Complete — Pending Human Approval", "report": report,
+            "answer": out["answer"], "evidence": out.get("evidence", []), "claims": out.get("claims", []),
+            "trajectory": out.get("trajectory")}
+
+
+def _investigate(rid: str, ask: ForecastAsk, weeks: list[str] | None, model: str | None) -> None:
+    """Runs in a background thread. Steps land on the run as they happen, so the UI can show them."""
+    agent = _agent()
+    steps: list[dict] = []
+
+    def on_step(step: dict) -> None:
+        steps.append({k: step[k] for k in ("tool", "args")} | {"result": step["result"][:240]})
+        forecast_store.update(rid, progress=list(steps))
+
+    try:
+        out = agent.answer(ask.question, model=model, db=service.DB, territory=ask.territory_id, weeks=weeks, on_step=on_step)
+        forecast_store.update(rid, result=_result(rid, out, model), job_status="done", progress=list(steps))
+    except Exception as exc:  # noqa: BLE001 - the run records the failure; the request has already returned
+        log.exception("forecast question failed")
+        forecast_store.update(rid, job_status="failed", job_error=f"{type(exc).__name__}: {str(exc)[:200]}")
+
+
+@router.post("/ask")
+def ask(payload: ForecastAsk, response: Response, who=Forecast) -> dict:
+    """Start an investigation of a question. It answers at once with a running run; poll GET /runs/{id}."""
+    _no_store(response)
+    p, role = who
+    rbac.allow(role, "run")
+    view = rbac.view_for(role, payload.view)
+    if not service.DB.is_file():
+        raise HTTPException(status_code=503, detail="DuckDB has not been built. Run the data loader first.")
+    model = question_model()
+    weeks = _weeks(payload)
+    from pharmagentics.tools import Registry
+    from pharmagentics.tools.registry import data_version
+
+    reg = Registry(service.DB)
+    try:
+        version = data_version(reg.con)
+    finally:
+        reg.close()
+    rid = forecast_store.question_id(payload.question, payload.territory_id, weeks, model or "rules", version)
+    existing = forecast_store.get(rid)
+    if existing and existing.get("job_status") in ("running", "done"):
+        return views.forecast_record(existing, view)
+    request = {"question": payload.question, "territory_id": payload.territory_id, "weeks": weeks and [weeks[0], weeks[-1]]}
+    record = forecast_store.start_question(rid, request, rbac.pseudonym(p.sub), model or "rules")
+    threading.Thread(target=_investigate, args=(rid, payload, weeks, model), daemon=True, name=f"forecast-{rid}").start()
+    store.record_event("forecast_ask", **_who(p, role), forecast_run_id=rid, view=view, engine=model or "rules")
+    return views.forecast_record(record, view)
+
+
+DRIVERS_SNAPSHOT = Path(__file__).with_name("forecast_drivers.json")
+
+
+@router.get("/drivers")
+def drivers(response: Response, who=Forecast) -> dict:
+    """Driver recovery on the draft probes, per system: the board of hits and misses (exported by `eval drivers`)."""
+    _no_store(response)
+    rbac.allow(who[1], "read")
+    if not DRIVERS_SNAPSHOT.is_file():
+        return {"labels": "draft", "systems": {}}
+    import json
+
+    return json.loads(DRIVERS_SNAPSHOT.read_text(encoding="utf-8"))
+
+
+_FOLLOWUP_LOCK = threading.Lock()  # follow-ups on one run append to the same JSON document
+
+
+def _set_followup(rid: str, fid: str, **fields) -> None:
+    with _FOLLOWUP_LOCK:
+        record = forecast_store.get(rid)
+        if record is None:
+            return
+        for f in record.get("followups", []):
+            if f["id"] == fid:
+                f.update(fields)
+        forecast_store.update(rid, followups=record["followups"])
+
+
+def _run_followup(rid: str, fid: str, question: str, model: str | None, by: str) -> None:
+    """Runs in a background thread: route the follow-up to one operation and run it in code."""
+    agent = _agent()
+    from forecast_agent import followup
+
+    try:
+        parent = forecast_store.get(rid)
+        report = parent["result"]["report"]
+        first, latest = agent.context(service.DB)
+        plan = (followup.route_with_model(question, report, model) if model else None) or \
+            followup.route(question, report, first, latest)
+        op = plan["op"]
+        if op == "rerun":
+            scope = report.get("scope") or {}
+            territory = plan.get("territory") or report["territory_id"]
+            weeks = plan.get("weeks") or scope.get("weeks")
+            if weeks and len(weeks) == 2 and weeks[0] != weeks[-1] and (plan.get("weeks") is not None):
+                weeks = _weeks(ForecastAsk(question=question, week_from=date.fromisoformat(weeks[0]),
+                                           week_to=date.fromisoformat(weeks[-1])))
+            drop = sorted(set(plan.get("drop_controls") or []))
+            out = agent.answer(report["question"], model=model, db=service.DB, territory=territory, weeks=weeks,
+                               drop_controls=drop)
+            child_q = report["question"] + f" [follow-up: {question}]"
+            cid = forecast_store.question_id(child_q, territory, weeks, model or "rules", "followup")
+            forecast_store.start_question(cid, {"question": child_q, "territory_id": territory,
+                                                "weeks": weeks and [weeks[0], weeks[-1]], "parent": rid}, by, model or "rules")
+            forecast_store.update(cid, result=_result(cid, out, model), job_status="done")
+            child = out.get("report") or {}
+            text = child.get("summary") or child.get("headline") or out["answer"].split("\n")[0]
+            _set_followup(rid, fid, status="done", op="rerun", answer=text, child_run_id=cid)
+        elif op == "explain":
+            _set_followup(rid, fid, status="done", op="explain", answer=followup.explain(plan.get("topic") or question, report))
+        elif op == "weekly":
+            out = followup.weekly(report, db=service.DB)
+            _set_followup(rid, fid, status="done", op="weekly", answer=out["answer"], evidence=len(out["evidence"]))
+        else:
+            _set_followup(rid, fid, status="done", op="help", answer=followup.HELP)
+    except Exception as exc:  # noqa: BLE001 - recorded on the follow-up; the request has already returned
+        log.exception("forecast follow-up failed")
+        _set_followup(rid, fid, status="failed", answer=f"The follow-up failed: {type(exc).__name__}.")
+
+
+@router.post("/runs/{run_id}/followups")
+def ask_followup(run_id: str, payload: ForecastFollowup, response: Response, who=Forecast) -> dict:
+    """A follow-up on a finished question run (analyst only). It answers at once; poll GET /runs/{id}."""
+    _no_store(response)
+    p, role = who
+    rbac.allow(role, "run")
+    record = _record(run_id)
+    if record.get("kind") != "question" or record.get("job_status") != "done":
+        raise HTTPException(status_code=409, detail="Follow-ups need a finished question run.")
+    model = question_model()
+    with _FOLLOWUP_LOCK:
+        record = forecast_store.get(run_id)
+        followups = record.get("followups", [])
+        if len(followups) >= 20:
+            raise HTTPException(status_code=409, detail="This run already has twenty follow-ups; ask a new question.")
+        fid = f"q{len(followups) + 1}"
+        followups.append({"id": fid, "question": " ".join(payload.question.split()), "status": "running", "op": None,
+                          "answer": None, "child_run_id": None})
+        record = forecast_store.update(run_id, followups=followups)
+    threading.Thread(target=_run_followup, args=(run_id, fid, payload.question, model, rbac.pseudonym(p.sub)),
+                     daemon=True, name=f"forecast-followup-{run_id}-{fid}").start()
+    store.record_event("forecast_followup", **_who(p, role), forecast_run_id=run_id, engine=model or "rules")
+    return views.forecast_record(record, rbac.view_for(role, "analyst"))
+
+
 def _no_store(response: Response) -> None:
     response.headers["Cache-Control"] = "no-store"
 
@@ -103,6 +321,7 @@ def status(response: Response, p: rbac.Principal = Depends(rbac.require_user)) -
     role = p.role("forecast")
     return {
         "lane": "forecast", "available": rbac.lane_available("forecast"), "engine": engine_mode(),
+        "question_engine": question_model() or "rules",
         "role": role.name if role else None, "persona": role.persona if role else None,
         "label": role.label if role else None, "views": list(role.views) if role else [], "writer": _writer_info(),
         "actions": list(role.actions) if role else [],
