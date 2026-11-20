@@ -1,5 +1,22 @@
 # Handoff: memo brief, slices 2 to 5
 
+## Status for the next session (2026-11-20, 12:20)
+
+All five slices are built and committed on `feature/brief-memo-follow-ups`, **rebased onto `origin/main` at `2c99d40`** (which already holds the other session's `feature/eval-telemetry` work, PR #12, and the teammate's forecast agent, `c71d3e7`). The pre-rebase tip is kept as `backup/brief-memo-pre-rebase`. Conflicts were only unions (App.tsx imports, the frontend allow-list in `tests/test_frontend_scope.py`).
+
+Left to do, in order:
+
+1. **Gate the rebased code.** A run was started at 12:20 (full test suite, `briefing_scripted`, `briefing_agent` with `MLFLOW_GENAI_EVAL_MAX_WORKERS=4`; log `C:\Users\micha\AppData\Local\rebase_gate.log`). If it did not finish, rerun those three and gate: `uv run python -m eval gate <scripted> 88e13b759f5c4a1c81807e3d1ed52262` and `uv run python -m eval gate <agent> 66920e2b0f8a4e7d960e05a1427e8a9b` (the slice 4 runs, 30 cases). Expect exit 0 on both; `sections_exist` must be 1.000.
+2. **Commit** the CHANGELOG table fix (`eval/golden/CHANGELOG.md`) and the gate results (a line in `specs/core-008-uat-feedback/tasks.md`, T008), by path.
+3. **Stop and report to Michael.** Pushing the branch, opening a pull request and merging are his calls (a merge to `main` deploys). Before or right after a merge, every checkout needs `uv run python src/pharmagentics/data/load_duckdb.py` for the view `reporting.v_rx_projection`; the Docker image builds it on its own.
+
+Open items to tell Michael about:
+
+- The six two-turn cases FU-1 to FU-6 are drafts: he labels them.
+- `python -m eval improve` has only run with stubbed models in tests; its first live run needs votes with comments. It writes proposals to a local state folder; for the hosted app the proposals must reach the bucket (run it with `--state-dir` on a downloaded copy and upload, or add bucket support).
+- `CLAUDE.md` still says "42 golden questions"; there are now 48 (42 plus the six two-turn drafts).
+- The hosted app shows none of this until the merge.
+
 **Progress (2026-11-20, 05:00):** slices 1 to 4 are done and committed (`dcf616d`, `68b6a51`, `698941c`). Latest gate runs to compare against (30 Briefing cases): scripted `88e13b759f5c`, agent `66920e2b0f8a`. Parallel agent runs (`MLFLOW_GENAI_EVAL_MAX_WORKERS=4`) are verified safe. Next: slice 5 (core-008 FR-019 to FR-022); set `.specify/feature.json` to `specs/core-008-uat-feedback`. The headless-Chrome check scripts used so far live in the session scratchpad and may be gone; the approach is in `specs/brief-003-narrative-renderer/plan.md` (slice 2) and `specs/brief-006-follow-ups/tasks.md` (T008).
 
 For a Claude session that continues this work without Michael present. Every decision below was made with him on 2026-11-19 and 2026-11-20; do not reopen them. If something is not covered here or in the specs, stop and leave a note rather than guess.
